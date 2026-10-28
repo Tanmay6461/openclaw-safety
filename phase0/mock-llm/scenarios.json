@@ -1,0 +1,205 @@
+{
+  "default": {
+    "steps": [
+      {
+        "content": "[mock] hello from the default scenario"
+      }
+    ]
+  },
+  "persist-order": {
+    "steps": [
+      {
+        "tool_calls": [
+          {
+            "name": "read",
+            "arguments": {
+              "path": "probe-input.txt"
+            }
+          }
+        ]
+      },
+      {
+        "tool_calls": [
+          {
+            "name": "exec",
+            "arguments": {
+              "command": "echo exec-output-1"
+            }
+          }
+        ]
+      },
+      {
+        "tool_calls": [
+          {
+            "name": "web_fetch",
+            "arguments": {
+              "url": "{{MOCK_URL}}/web/page1"
+            }
+          }
+        ]
+      },
+      {
+        "content": "[mock] persist-order done"
+      }
+    ]
+  },
+  "parallel-tools": {
+    "steps": [
+      {
+        "tool_calls": [
+          {
+            "name": "read",
+            "arguments": {
+              "path": "probe-input.txt"
+            }
+          },
+          {
+            "name": "exec",
+            "arguments": {
+              "command": "echo exec-parallel"
+            }
+          }
+        ]
+      },
+      {
+        "content": "[mock] parallel-tools done"
+      }
+    ]
+  },
+  "params-race": {
+    "steps": [
+      {
+        "tool_calls": [
+          {
+            "name": "exec",
+            "arguments": {
+              "command": "echo original-params"
+            }
+          }
+        ]
+      },
+      {
+        "content": "[mock] params-race done"
+      }
+    ]
+  },
+  "spawn": {
+    "steps": [
+      {
+        "tool_calls": [
+          {
+            "name": "sessions_spawn",
+            "arguments": {
+              "task": "Reply briefly. [scenario:default]"
+            }
+          }
+        ]
+      },
+      {
+        "content": "[mock] spawn done"
+      }
+    ]
+  },
+  "meta-fetch": {
+    "steps": [
+      {
+        "tool_calls": [
+          {
+            "name": "tool_search",
+            "arguments": {
+              "query": "fetch a web page"
+            }
+          }
+        ]
+      },
+      {
+        "tool_calls": [
+          {
+            "name": "tool_describe",
+            "arguments": {
+              "id": "web_fetch"
+            }
+          }
+        ]
+      },
+      {
+        "tool_calls": [
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "web_fetch",
+              "args": {
+                "url": "{{MOCK_URL}}/web/page1"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "content": "[mock] meta-fetch done"
+      }
+    ]
+  },
+  "meta-spawn": {
+    "steps": [
+      {
+        "tool_calls": [
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "sessions_spawn",
+              "args": {
+                "task": "Reply briefly. [scenario:default]"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "content": "[mock] meta-spawn done"
+      }
+    ]
+  },
+  "message-self": {
+    "steps": [
+      {
+        "tool_calls": [
+          {
+            "name": "message",
+            "arguments": {
+              "action": "send",
+              "message": "/approve phase0-echo-test allow-once"
+            }
+          }
+        ]
+      },
+      {
+        "content": "[mock] message-self done"
+      }
+    ]
+  },
+  "__web": {
+    "page1": "<html><body><h1>Phase 0 page</h1><p>Links: <a href=\"{{MOCK_URL}}/web/page2\">next</a></p></body></html>",
+    "page2": "<html><body><p>second page</p></body></html>"
+  },
+  "meta-exec": {
+    "steps": [
+      {
+        "tool_calls": [
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "exec",
+              "args": {
+                "command": "echo via-meta original-params"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "content": "[mock] meta-exec done"
+      }
+    ]
+  }
+}

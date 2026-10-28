@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.DS_Store
+
+# Phase 0 raw gateway logs: large, and they can contain run tokens
+phase0/results/**/gateway.log

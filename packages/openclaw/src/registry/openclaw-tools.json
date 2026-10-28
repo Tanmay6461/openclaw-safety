@@ -1,0 +1,681 @@
+{
+  "openclawVersion": "2026.10.8",
+  "source": "phase0/docs-findings.md section 4: static read of openclaw/openclaw at v2026.10.8",
+  "aliases": {
+    "bash": "exec",
+    "apply-patch": "apply_patch",
+    "cron": "automations",
+    "Bash": "codex_bash",
+    "exec_command": "codex_bash",
+    "Write": "codex_write",
+    "Edit": "codex_write",
+    "spawn_agent": "codex_agent",
+    "Agent": "codex_agent"
+  },
+  "tools": {
+    "exec": {
+      "category": "privileged_execution",
+      "args": {
+        "command": "code",
+        "env": "code",
+        "workdir": "path",
+        "host": "none",
+        "node": "none",
+        "title": "none"
+      }
+    },
+    "process": {
+      "category": "privileged_execution",
+      "args": {
+        "data": "code",
+        "text": "code",
+        "keys": "code",
+        "hex": "code",
+        "sessionId": "none"
+      },
+      "resultSource": "exec_output",
+      "actionParam": "action",
+      "actions": {
+        "list": {
+          "category": "read_only"
+        },
+        "poll": {
+          "category": "read_only"
+        },
+        "log": {
+          "category": "read_only"
+        }
+      }
+    },
+    "read": {
+      "category": "read_only",
+      "args": {
+        "path": "path"
+      },
+      "resultSource": "file"
+    },
+    "ls": {
+      "category": "read_only",
+      "args": {
+        "path": "path"
+      }
+    },
+    "write": {
+      "category": "persistence_write",
+      "args": {
+        "path": "path",
+        "content": "content"
+      },
+      "writeMode": "replace"
+    },
+    "edit": {
+      "category": "persistence_write",
+      "args": {
+        "path": "path",
+        "edits[].newText": "content",
+        "edits[].oldText": "none"
+      },
+      "writeMode": "merge"
+    },
+    "apply_patch": {
+      "category": "persistence_write",
+      "args": {
+        "input": "content",
+        "__derived.paths": "path"
+      },
+      "writeMode": "merge",
+      "derive": [
+        "apply_patch_paths"
+      ]
+    },
+    "web_fetch": {
+      "category": "external_retrieval",
+      "args": {
+        "url": "egress_url"
+      },
+      "resultSource": "web"
+    },
+    "web_search": {
+      "category": "external_retrieval",
+      "args": {
+        "query": "content",
+        "domain_filter": "none"
+      },
+      "resultSource": "web"
+    },
+    "x_search": {
+      "category": "external_retrieval",
+      "args": {
+        "query": "content"
+      },
+      "resultSource": "web"
+    },
+    "browser": {
+      "category": "external_retrieval",
+      "resultSource": "web",
+      "args": {
+        "url": "egress_url",
+        "targetUrl": "egress_url",
+        "request.url": "egress_url",
+        "text": "content",
+        "request.text": "content",
+        "fields": "content",
+        "request.fields": "content",
+        "values": "content",
+        "request.values": "content",
+        "promptText": "content",
+        "fn": "code",
+        "request.fn": "code",
+        "path": "path",
+        "paths": "path"
+      },
+      "actionParam": "action",
+      "actions": {
+        "act": {
+          "category": "outbound_communication"
+        },
+        "upload": {
+          "category": "outbound_communication"
+        },
+        "download": {
+          "category": "persistence_write"
+        },
+        "waitfordownload": {
+          "category": "persistence_write"
+        },
+        "screenshot": {
+          "category": "persistence_write"
+        },
+        "pdf": {
+          "category": "persistence_write"
+        },
+        "doctor": {
+          "category": "read_only",
+          "resultSource": null
+        },
+        "status": {
+          "category": "read_only",
+          "resultSource": null
+        },
+        "profiles": {
+          "category": "read_only",
+          "resultSource": null
+        },
+        "tabs": {
+          "category": "read_only"
+        },
+        "snapshot": {
+          "category": "read_only"
+        },
+        "console": {
+          "category": "read_only"
+        },
+        "requests": {
+          "category": "read_only"
+        },
+        "errors": {
+          "category": "read_only"
+        },
+        "text": {
+          "category": "read_only"
+        }
+      }
+    },
+    "message": {
+      "category": "outbound_communication",
+      "args": {
+        "target": "destination",
+        "targets": "destination",
+        "to": "destination",
+        "channelId": "destination",
+        "media": "path",
+        "attachments[].media": "path",
+        "filePath": "path",
+        "path": "path",
+        "fileUrl": "egress_url",
+        "gatewayUrl": "egress_url",
+        "channel": "none",
+        "accountId": "none",
+        "dryRun": "none",
+        "messageId": "none",
+        "replyTo": "none",
+        "threadId": "none",
+        "timeoutMs": "none",
+        "silent": "none",
+        "asVoice": "none",
+        "forceDocument": "none",
+        "contentType": "none",
+        "mimeType": "none"
+      },
+      "otherArgs": "content",
+      "actionParam": "action",
+      "actions": {
+        "read": {
+          "category": "read_only",
+          "resultSource": "external_sender"
+        },
+        "reactions": {
+          "category": "read_only",
+          "resultSource": "external_sender"
+        },
+        "search": {
+          "category": "read_only",
+          "resultSource": "external_sender"
+        },
+        "thread-list": {
+          "category": "read_only",
+          "resultSource": "external_sender"
+        },
+        "channel-list": {
+          "category": "read_only",
+          "resultSource": "external_sender"
+        },
+        "channel-info": {
+          "category": "read_only",
+          "resultSource": "external_sender"
+        },
+        "member-info": {
+          "category": "read_only",
+          "resultSource": "external_sender"
+        },
+        "role-info": {
+          "category": "read_only",
+          "resultSource": "external_sender"
+        },
+        "list-pins": {
+          "category": "read_only",
+          "resultSource": "external_sender"
+        },
+        "event-list": {
+          "category": "read_only",
+          "resultSource": "external_sender"
+        },
+        "emoji-list": {
+          "category": "read_only",
+          "resultSource": "external_sender"
+        },
+        "sticker-search": {
+          "category": "read_only",
+          "resultSource": "external_sender"
+        },
+        "permissions": {
+          "category": "read_only",
+          "resultSource": "external_sender"
+        },
+        "download-file": {
+          "category": "persistence_write",
+          "resultSource": "external_sender"
+        }
+      }
+    },
+    "automations": {
+      "category": "autonomous_scheduling",
+      "args": {
+        "job.payload.message": "deferred_instruction",
+        "job.payload.text": "deferred_instruction",
+        "job.payload.script": "deferred_instruction",
+        "job.payload.argv": "deferred_instruction",
+        "job.trigger.script": "deferred_instruction",
+        "job.schedule.stream.command": "deferred_instruction",
+        "payload.message": "deferred_instruction",
+        "payload.text": "deferred_instruction",
+        "payload.script": "deferred_instruction",
+        "payload.argv": "deferred_instruction",
+        "trigger.script": "deferred_instruction",
+        "schedule.stream.command": "deferred_instruction",
+        "text": "deferred_instruction",
+        "message": "deferred_instruction",
+        "job.delivery.to": "destination",
+        "delivery.to": "destination",
+        "job.delivery.completionDestination.to": "destination",
+        "delivery.completionDestination.to": "destination",
+        "job.failureAlert.to": "destination",
+        "failureAlert.to": "destination",
+        "jobId": "none",
+        "id": "none",
+        "agentId": "none",
+        "sessionKey": "none"
+      },
+      "actionParam": "action",
+      "actions": {
+        "status": {
+          "category": "read_only"
+        },
+        "list": {
+          "category": "read_only"
+        },
+        "get": {
+          "category": "read_only"
+        },
+        "runs": {
+          "category": "read_only"
+        },
+        "next_check": {
+          "category": "read_only"
+        }
+      }
+    },
+    "sessions_send": {
+      "category": "inter_session",
+      "args": {
+        "message": "content",
+        "sessionKey": "none",
+        "label": "none",
+        "agentId": "none",
+        "mode": "none"
+      }
+    },
+    "sessions_spawn": {
+      "category": "inter_session",
+      "args": {
+        "task": "deferred_instruction",
+        "attachments[].content": "content",
+        "cwd": "path",
+        "agentId": "none",
+        "model": "none"
+      }
+    },
+    "subagents": {
+      "category": "read_only",
+      "args": {}
+    },
+    "sessions": {
+      "category": "read_only",
+      "args": {}
+    },
+    "conversations_list": {
+      "category": "read_only",
+      "args": {}
+    },
+    "conversations_send": {
+      "category": "outbound_communication",
+      "args": {
+        "conversationRef": "destination",
+        "message": "content"
+      }
+    },
+    "conversations_turn": {
+      "category": "outbound_communication",
+      "args": {
+        "conversationRef": "destination",
+        "message": "content",
+        "timeoutSeconds": "none"
+      },
+      "resultSource": "external_sender"
+    },
+    "gateway": {
+      "category": "install",
+      "args": {
+        "path": "none",
+        "note": "content",
+        "gatewayUrl": "egress_url",
+        "gatewayToken": "content"
+      },
+      "actionParam": "action",
+      "actions": {
+        "config.get": {
+          "category": "read_only",
+          "resultPrivate": "secret"
+        },
+        "config.schema.lookup": {
+          "category": "read_only"
+        }
+      }
+    },
+    "openclaw": {
+      "category": "config",
+      "args": {
+        "message": "config",
+        "sessionId": "none"
+      }
+    },
+    "plugins": {
+      "category": "install",
+      "args": {
+        "pluginId": "content",
+        "packageName": "content",
+        "query": "content",
+        "source": "none",
+        "version": "none",
+        "reviewToken": "none",
+        "acknowledgeInstallPolicyWarning": "none"
+      },
+      "actionParam": "action",
+      "actions": {
+        "list": {
+          "category": "read_only"
+        },
+        "inspect": {
+          "category": "read_only"
+        },
+        "search": {
+          "category": "read_only"
+        },
+        "disable": {
+          "category": "config"
+        },
+        "uninstall": {
+          "category": "config"
+        },
+        "reload": {
+          "category": "config"
+        },
+        "reloadAndResume": {
+          "category": "config"
+        }
+      }
+    },
+    "skill_workshop": {
+      "category": "install",
+      "args": {},
+      "otherArgs": "content",
+      "actionParam": "action",
+      "actions": {
+        "view": {
+          "category": "read_only"
+        },
+        "list": {
+          "category": "read_only"
+        }
+      }
+    },
+    "personal_instructions": {
+      "category": "persistence_write",
+      "args": {
+        "content": "content",
+        "__derived.paths": "path",
+        "agentId": "none",
+        "expectedHash": "none"
+      },
+      "writeMode": "replace",
+      "derive": [
+        "personal_instructions_path"
+      ],
+      "actionParam": "action",
+      "actions": {
+        "get": {
+          "category": "read_only",
+          "resultSource": "file"
+        }
+      }
+    },
+    "nodes": {
+      "category": "privileged_execution",
+      "args": {
+        "invokeCommand": "code",
+        "invokeParamsJson": "code",
+        "title": "content",
+        "body": "content",
+        "notificationReplyText": "content",
+        "outPath": "path",
+        "node": "none",
+        "sessionKey": "none"
+      },
+      "actionParam": "action",
+      "actions": {
+        "status": {
+          "category": "read_only"
+        },
+        "describe": {
+          "category": "read_only"
+        },
+        "pending": {
+          "category": "read_only"
+        },
+        "which": {
+          "category": "read_only"
+        },
+        "approve": {
+          "category": "config"
+        },
+        "reject": {
+          "category": "config"
+        },
+        "notify": {
+          "category": "outbound_communication"
+        },
+        "location_get": {
+          "category": "read_only",
+          "resultPrivate": "personal"
+        },
+        "photos_latest": {
+          "category": "read_only",
+          "resultPrivate": "personal"
+        }
+      }
+    },
+    "memory_search": {
+      "category": "read_only",
+      "args": {
+        "query": "none",
+        "corpus": "none",
+        "maxResults": "none",
+        "minScore": "none"
+      },
+      "resultSource": "memory",
+      "actionParam": "corpus",
+      "actions": {
+        "sessions": {
+          "resultSource": "inter_session",
+          "resultPrivate": "personal"
+        },
+        "all": {
+          "resultSource": "inter_session",
+          "resultPrivate": "memory"
+        }
+      }
+    },
+    "memory_get": {
+      "category": "read_only",
+      "args": {
+        "path": "none",
+        "from": "none",
+        "lines": "none",
+        "corpus": "none"
+      },
+      "resultSource": "memory"
+    },
+    "terminal": {
+      "category": "privileged_execution",
+      "args": {},
+      "otherArgs": "code",
+      "resultSource": "exec_output"
+    },
+    "code_execution": {
+      "category": "privileged_execution",
+      "args": {},
+      "otherArgs": "code",
+      "resultSource": "exec_output"
+    },
+    "computer": {
+      "category": "unknown",
+      "args": {},
+      "otherArgs": "content",
+      "resultSource": "web"
+    },
+    "mobile_ui": {
+      "category": "unknown",
+      "args": {},
+      "otherArgs": "content",
+      "resultSource": "skill_output"
+    },
+    "screen": {
+      "category": "read_only",
+      "args": {},
+      "resultSource": "skill_output",
+      "resultPrivate": "personal"
+    },
+    "portal": {
+      "category": "unknown",
+      "args": {},
+      "otherArgs": "content",
+      "resultSource": "skill_output"
+    },
+    "canvas": {
+      "category": "unknown",
+      "args": {},
+      "otherArgs": "content",
+      "resultSource": "skill_output"
+    },
+    "secrets": {
+      "category": "config",
+      "args": {},
+      "otherArgs": "content",
+      "actionParam": "action",
+      "actions": {
+        "list": {
+          "category": "read_only",
+          "resultPrivate": "secret"
+        }
+      }
+    },
+    "github_publish": {
+      "category": "unknown",
+      "args": {},
+      "otherArgs": "content",
+      "resultSource": "skill_output"
+    },
+    "tts": {
+      "category": "outbound_communication",
+      "args": {},
+      "otherArgs": "content"
+    },
+    "image_generate": {
+      "category": "external_retrieval",
+      "args": {},
+      "otherArgs": "content"
+    },
+    "music_generate": {
+      "category": "external_retrieval",
+      "args": {},
+      "otherArgs": "content"
+    },
+    "video_generate": {
+      "category": "external_retrieval",
+      "args": {},
+      "otherArgs": "content"
+    },
+    "voice_call": {
+      "category": "outbound_communication",
+      "args": {
+        "to": "destination"
+      },
+      "otherArgs": "content"
+    },
+    "codex_bash": {
+      "category": "privileged_execution",
+      "args": {
+        "workdir": "path",
+        "cwd": "path"
+      },
+      "otherArgs": "code",
+      "blockOnly": true
+    },
+    "codex_write": {
+      "category": "persistence_write",
+      "args": {
+        "file_path": "path",
+        "path": "path"
+      },
+      "otherArgs": "content",
+      "writeMode": "merge",
+      "blockOnly": true
+    },
+    "codex_agent": {
+      "category": "inter_session",
+      "args": {},
+      "otherArgs": "deferred_instruction",
+      "blockOnly": true
+    },
+    "tool_search": {
+      "category": "read_only",
+      "args": {
+        "query": "none",
+        "queries": "none",
+        "limit": "none"
+      }
+    },
+    "tool_describe": {
+      "category": "read_only",
+      "args": {
+        "id": "none"
+      }
+    },
+    "tool_call": {
+      "category": "read_only",
+      "args": {
+        "id": "none",
+        "args": "none"
+      },
+      "metaWrapper": true
+    },
+    "sessions_yield": {
+      "category": "inter_session",
+      "args": {
+        "message": "content",
+        "acknowledgment": "content",
+        "waitFor": "none"
+      }
+    }
+  }
+}
