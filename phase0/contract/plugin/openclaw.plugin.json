@@ -1,0 +1,14 @@
+{
+  "id": "pg-contract",
+  "name": "Provenance Guard contract sentinel",
+  "description": "Phase 0 contract sweep: records every before_tool_call event and blocks it after the Guard has decided, so sweep calls never run.",
+  "activation": { "onStartup": true },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "logPath": { "type": "string" },
+      "passMarker": { "type": "string" }
+    }
+  }
+}
