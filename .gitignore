@@ -5,3 +5,6 @@ dist/
 
 # Phase 0 raw gateway logs: large, and they can contain run tokens
 phase0/results/**/gateway.log
+
+# Local progress notes (kept up to date, not committed)
+PROGRESS.md
