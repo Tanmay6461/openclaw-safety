@@ -441,7 +441,9 @@ export function decide(call: ToolCall, session: SessionState, env: GuardEnv): De
     if (defanged + images > 0) b.note(`Defanged ${defanged} link(s) the agent built and removed ${images} image(s).`);
   }
 
-  if (spec.category === "persistence_write") b.note("write allowed; the file inherits this session's labels");
+  if (spec.category === "persistence_write") {
+    b.note(localPaths.length > 0 ? "write allowed; the file inherits this session's labels" : "state change allowed");
+  }
   if (spec.category === "inter_session") b.note("allowed; the target session inherits this session's labels");
   return b.build();
 }

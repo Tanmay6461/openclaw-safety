@@ -45,7 +45,23 @@ Every schema parameter and action is now listed explicitly (UI controls as `none
 
 ## Guard decisions in the sweep
 
-FINAL_NUMBERS
+contract-4, the verification sweep (the corrected registry, compact surface off, 57 tools, 192 calls):
+
+- **Every call reached the Guard, in both passes** (192/192 clean, 192/192 tainted). No params were changed on the way to the hook, no tool got an inferred spec, 0 Guard errors, and no runs failed.
+- **Coverage:** all schema parameters and actions are mapped. The only leftovers are the allowlisted known-unseen `message` channel params and Codex-native `exec.cmd` / `apply_patch.patch`.
+
+| Pass | allow | ask | block | hard sinks |
+|---|---|---|---|---|
+| Clean owner, one fresh session per call | 182 | 10 | 0 | 19 |
+| Tainted+private owner, one session | 84 | 88 | 20 | 20 |
+
+- **Clean asks (10):** all config-class hard sinks: `browser.importprofile`, `nodes` approve/reject, `openclaw` (config delegate), `plugins` disable/uninstall/reload/reloadAndResume, `secrets.delete`, `sessions.assign_owner`. Installs in a clean owner session are allowed (§5.12).
+- **Tainted blocks (20):** the same config sinks, installs (`plugins` install/enable, `gateway update.run`, every `skill_workshop` write), and `mobile_ui.act`.
+- **Tainted allows** of side-effecting calls are the by-design kinds:
+  - file writes (`write`, `edit`, `apply_patch`, `file_write`), with the file inheriting the session's labels;
+  - UI and session state (`dashboard`, `theme`, `talk_voice`, `sessions` patch/groups, `portal.open`, goals);
+  - inter-session actions whose target inherits the labels (`sessions` stop/reset/delete, `sessions_send`, `subagents.cancel`);
+  - owner-facing output with no destination (`tts`, `progress_card`, `dashboard.widget_put`), whose constructed links are defanged.
 
 ## Reproduce
 

@@ -66,11 +66,17 @@ case "$CODEX_INSTALL" in
   *) echo "CODEX_INSTALL must be managed or link"; exit 2 ;;
 esac
 
-# Network fence: only the plugin install above needs the outside (the npm registry). From here on every
-# proxy points at a dead local port, and the hosts file (run-codex.sh) sends model APIs to loopback, so
-# nothing reaches a real LLM API; Codex and OpenClaw talk to the mock on 127.0.0.1 (NO_PROXY).
+# Network fence: only the plugin install above needs the outside (the npm registry, via Explorer's
+# proxy). From here on every proxy points at a dead local port, and Explorer compute nodes have no
+# direct route out, so nothing reaches a real LLM API; Codex and OpenClaw talk to the mock on
+# 127.0.0.1 (NO_PROXY). The check below aborts the run if any outside connection still succeeds.
+# (A hosts file bound over /etc/hosts doesn't work here: Apptainer keeps its own.)
 export HTTPS_PROXY=http://127.0.0.1:9 HTTP_PROXY=http://127.0.0.1:9 https_proxy=http://127.0.0.1:9 http_proxy=http://127.0.0.1:9 ALL_PROXY=http://127.0.0.1:9 all_proxy=http://127.0.0.1:9
-getent hosts api.openai.com > "$RUN/out/fence.txt" 2>&1; echo "fence: api.openai.com -> $(awk '{print $1}' "$RUN/out/fence.txt")"
+if node -e 'const ok=(u)=>fetch(u,{signal:AbortSignal.timeout(6000)}).then(()=>true,()=>false);Promise.all(["https://example.com","https://api.openai.com/v1/models"].map(ok)).then((r)=>process.exit(r.some(Boolean)?1:0))'; then
+  echo "fence: ok (no outside connection succeeds)"
+else
+  echo "fence: FAILED, an outside connection succeeded; aborting"; exit 1
+fi
 
 # 2. API-key auth profile for provider openai, as QA stages it for packaged builds
 #    (extensions/qa-lab/src/gateway-child-setup.ts:136-170). The mock accepts any key.
@@ -91,7 +97,10 @@ for _ in $(seq 1 60); do
 done
 echo "mock: $(cat "$RUN/mock.out")"
 
-"$OC" gateway run --port "$PORT_GW" --bind loopback --auth token --token "$TOKEN" > "$RUN/gateway.log" 2>&1 &
+# setsid: inside the container's PID namespace, a process whose group leader is outside it shows pgid 0
+# in /proc/<pid>/stat, and the Codex plugin rejects that ("Process identity is unavailable", codex-1;
+# extensions/codex/src/app-server/transport-process-snapshot.ts parseLinuxProcess).
+setsid "$OC" gateway run --port "$PORT_GW" --bind loopback --auth token --token "$TOKEN" > "$RUN/gateway.log" 2>&1 &
 GW_PID=$!
 trap 'kill $GW_PID $MOCK_PID 2>/dev/null; wait 2>/dev/null' EXIT
 for _ in $(seq 1 180); do

@@ -2,7 +2,8 @@
   "openclawVersion": "2026.10.8",
   "runs": [
     "contract-2",
-    "contract-3"
+    "contract-3",
+    "contract-4"
   ],
   "tools": {
     "agents_list": {

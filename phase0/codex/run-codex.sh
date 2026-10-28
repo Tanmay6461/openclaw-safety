@@ -3,10 +3,9 @@
 # Optional: RUN=..., CODEX_INSTALL=managed|link, CODEX_SPEC=@openclaw/codex@2026.10.8, PG_CODEX_SANDBOX=...
 set -euo pipefail
 PG=${PG:-/scratch/$USER/pg}
-# phase0/codex/hosts is bound over /etc/hosts: real model APIs resolve to loopback (mock LLM only).
+# inner.sh fences the network after the plugin install and aborts if an outside connection succeeds.
 exec apptainer exec --containall --cleanenv \
   --home "$PG/home:/home/pg" --workdir "$PG/apptainer-work" --bind "$PG":/pg --pwd /pg \
-  --bind "$PG/codex/hosts":/etc/hosts \
   --env npm_config_cache=/pg/npm-cache \
   ${RUN:+--env RUN="$RUN"} \
   ${CODEX_INSTALL:+--env CODEX_INSTALL="$CODEX_INSTALL"} \
