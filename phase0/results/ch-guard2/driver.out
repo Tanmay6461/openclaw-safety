@@ -1,0 +1,10 @@
+[driver] a-dm-alice start
+[driver] a-dm-alice inbound
+[driver] a-dm-alice agent_end ok
+[driver] c1-owner start
+[driver] c1-owner inbound
+[driver] c1-owner approval-prompt id=plugin:96fc35ca-abe8-4030-ab02-66a76e9ea363
+[driver] c1-owner inbound
+[driver] c1-owner resolution decision=cancelled
+[driver] c1-owner agent_end ok
+[driver]  driver-done

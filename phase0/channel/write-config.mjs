@@ -3,7 +3,8 @@
 // Usage: node write-config.mjs <runDir> <gatewayPort> <mockPort> <token> <busUrl> [variant]
 // Variants: "base" (default): commands.allowFrom unset. "bobcmd": commands.allowFrom lists alice and bob, so
 // bob is command-authorized but still not an owner. Any variant ending in "-nofwd" leaves approvals.plugin
-// unset (then qa-channel never shows plugin approval prompts; see channel-results.md).
+// unset (then qa-channel never shows plugin approval prompts; see channel-results.md). Any variant containing
+// "guard" also loads the bundled Provenance Guard (enforce mode) from /pg/guard-plugin/provenance-guard.
 const [run, gwPort, mockPort, token, busUrl, variant = "base"] = process.argv.slice(2);
 if (!run || !gwPort || !mockPort || !token || !busUrl) {
   console.error("usage: write-config.mjs <runDir> <gatewayPort> <mockPort> <token> <busUrl>");
@@ -100,5 +101,14 @@ const config = {
     },
   },
 };
+
+if (variant.includes("guard")) {
+  config.plugins.load.paths.unshift("/pg/guard-plugin/provenance-guard");
+  config.plugins.entries["provenance-guard"] = {
+    enabled: true,
+    hooks: { allowConversationAccess: true, timeoutMs: 15000 },
+    config: { mode: "enforce", preset: "balanced", stateDir: `${run}/guard-state` },
+  };
+}
 
 console.log(JSON.stringify(config, null, 2));

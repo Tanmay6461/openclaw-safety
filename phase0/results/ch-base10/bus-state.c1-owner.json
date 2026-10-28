@@ -1,0 +1,251 @@
+{
+  "cursor": 6,
+  "conversations": [
+    {
+      "id": "alice",
+      "kind": "direct",
+      "accountId": "default"
+    }
+  ],
+  "threads": [],
+  "messages": [
+    {
+      "id": "60dbbc53-911a-416f-89fb-a4ef22364acd",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "alice",
+      "senderName": "alice",
+      "text": "Approval probe. [scenario:approve-low]",
+      "timestamp": 1793224312365,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "aade5121-d101-48c3-9052-a84ad2d50ee7",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "🛡️ Plugin approval required\nTitle: pg-probe: approve exec?\nDescription: pg-probe test approval (low) for exec {\"command\":\"echo pg-approve-low ok\"}\nTool: exec\nPlugin: pg-probe\nAgent: main\nID: plugin:3c478d65-6942-4825-9a28-9316ceb9d410\nExpires in: 90s\nReply with: /approve plugin:3c478d65-6942-4825-9a28-9316ceb9d410 allow-once|allow-always|deny\n\n- Allow Once\n- Allow Always\n- Deny",
+      "timestamp": 1793224337228,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "c19f17af-01e8-4e88-9ed6-98666da502f3",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "alice",
+      "senderName": "alice",
+      "text": "/approve plugin:3c478d65-6942-4825-9a28-9316ceb9d410 allow-once",
+      "timestamp": 1793224337531,
+      "attachments": [],
+      "nativeCommand": {
+        "name": "approve"
+      },
+      "reactions": []
+    },
+    {
+      "id": "8e5fb614-89f8-40c6-bd53-59dcc685cae9",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "✅ Approval allow-once submitted for plugin:3c478d65-6942-4825-9a28-9316ceb9d410.",
+      "timestamp": 1793224338128,
+      "replyToId": "c19f17af-01e8-4e88-9ed6-98666da502f3",
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "05d3a9ad-7e11-4227-9bcb-f3ae8671cb40",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "✅ Plugin approval allowed once. Resolved by Chat approval (qa-channel:alice). ID: plugin:3c478d65-6942-4825-9a28-9316ceb9d410",
+      "timestamp": 1793224338272,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "22ed5c7e-7e78-4822-9ab3-8dd02e030ffa",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "[mock] approve-low done",
+      "timestamp": 1793224338722,
+      "replyToId": "60dbbc53-911a-416f-89fb-a4ef22364acd",
+      "attachments": [],
+      "toolCalls": [
+        {
+          "name": "exec",
+          "arguments": {
+            "command": "[redacted]"
+          }
+        }
+      ],
+      "reactions": []
+    }
+  ],
+  "events": [
+    {
+      "cursor": 1,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "60dbbc53-911a-416f-89fb-a4ef22364acd",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "alice",
+        "senderName": "alice",
+        "text": "Approval probe. [scenario:approve-low]",
+        "timestamp": 1793224312365,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 2,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "aade5121-d101-48c3-9052-a84ad2d50ee7",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "🛡️ Plugin approval required\nTitle: pg-probe: approve exec?\nDescription: pg-probe test approval (low) for exec {\"command\":\"echo pg-approve-low ok\"}\nTool: exec\nPlugin: pg-probe\nAgent: main\nID: plugin:3c478d65-6942-4825-9a28-9316ceb9d410\nExpires in: 90s\nReply with: /approve plugin:3c478d65-6942-4825-9a28-9316ceb9d410 allow-once|allow-always|deny\n\n- Allow Once\n- Allow Always\n- Deny",
+        "timestamp": 1793224337228,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 3,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "c19f17af-01e8-4e88-9ed6-98666da502f3",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "alice",
+        "senderName": "alice",
+        "text": "/approve plugin:3c478d65-6942-4825-9a28-9316ceb9d410 allow-once",
+        "timestamp": 1793224337531,
+        "attachments": [],
+        "nativeCommand": {
+          "name": "approve"
+        },
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 4,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "8e5fb614-89f8-40c6-bd53-59dcc685cae9",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "✅ Approval allow-once submitted for plugin:3c478d65-6942-4825-9a28-9316ceb9d410.",
+        "timestamp": 1793224338128,
+        "replyToId": "c19f17af-01e8-4e88-9ed6-98666da502f3",
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 5,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "05d3a9ad-7e11-4227-9bcb-f3ae8671cb40",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "✅ Plugin approval allowed once. Resolved by Chat approval (qa-channel:alice). ID: plugin:3c478d65-6942-4825-9a28-9316ceb9d410",
+        "timestamp": 1793224338272,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 6,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "22ed5c7e-7e78-4822-9ab3-8dd02e030ffa",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "[mock] approve-low done",
+        "timestamp": 1793224338722,
+        "replyToId": "60dbbc53-911a-416f-89fb-a4ef22364acd",
+        "attachments": [],
+        "toolCalls": [
+          {
+            "name": "exec",
+            "arguments": {
+              "command": "[redacted]"
+            }
+          }
+        ],
+        "reactions": []
+      }
+    }
+  ]
+}

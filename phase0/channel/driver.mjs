@@ -8,7 +8,10 @@ import fs from "node:fs";
 const [run, bus, testsCsv = "all"] = process.argv.slice(2);
 const OC = process.env.OC ?? "/pg/oc/node_modules/.bin/openclaw";
 const only = new Set(testsCsv.split(","));
-const want = (t) => only.has("all") || only.has(t) || only.has(t.split("-")[0]);
+const selected = (t) => only.has("all") || only.has(t) || only.has(t.split("-")[0]);
+// The slash-session warm-up runs whenever an approval test (c*) is selected.
+const approvalTests = [...only].some((t) => /^c\d/.test(t)) || only.has("all");
+const want = (t) => (t === "w-slash" ? approvalTests : selected(t));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const out = (rec) => {
   fs.appendFileSync(`${run}/driver.jsonl`, `${JSON.stringify({ t: Date.now(), ...rec })}\n`);
@@ -98,6 +101,21 @@ async function dumpBus(test) {
 }
 
 const tests = {
+  // Warm-up for the approval tests. A sender's first native command creates their slash session
+  // (agent:main:qa-channel:slash:<sender>); creating a session bumps the Gateway access revision,
+  // which fails any pending approval closed ("Approval requester authority changed"). So open
+  // both slash sessions before an approval is pending. /guardauth because the probe and the Guard
+  // both register /guard in the guard variant.
+  async "w-slash"() {
+    for (const sender of ["alice", "bob"]) {
+      const test = `w-slash-${sender}`;
+      const t0 = Date.now();
+      await send(test, sender, DM(sender), "/guardauth warmup", { name: "guardauth" });
+      await sleep(4000);
+      out({ test, step: "result", note: `replies=${(await outbound(t0)).length}` });
+    }
+  },
+
   // (a) owner vs non-owner tool calls in DMs and in a group.
   async "a-dm-alice"() {
     const t0 = Date.now();

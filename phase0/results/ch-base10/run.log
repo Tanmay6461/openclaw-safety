@@ -1,0 +1,12 @@
+run=/pg/runs/ch-base10 gateway=20545 mock=20546 bus=20547 tests=c1-owner variant=base
+mock: mock-llm listening on http://127.0.0.1:20546 (scenarios: default, persist-order, parallel-tools, params-race, spawn, meta-fetch, meta-spawn, message-self, meta-exec, approve-low, approve-race, approve-both, message-approve, message-guard, exec-approve, spawn-exec, child-exec, send-exec, message-approve-meta, message-guard-meta, exec-approve-cli, spawn-exec-meta, send-exec-meta, self-approve-parallel, self-approve-background)
+bus: {"ready":true,"baseUrl":"http://127.0.0.1:20547"}
+gateway ready
+[driver] c1-owner start
+[driver] c1-owner inbound
+[driver] c1-owner approval-prompt id=plugin:3c478d65-6942-4825-9a28-9316ceb9d410
+[driver] c1-owner inbound
+[driver] c1-owner resolution decision=cancelled
+[driver] c1-owner agent_end ok
+[driver]  driver-done
+report: /pg/runs/ch-base10/report.md

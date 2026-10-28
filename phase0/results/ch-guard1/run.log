@@ -1,0 +1,27 @@
+run=/pg/runs/ch-guard1 gateway=28099 mock=28100 bus=28101 tests=c1-owner,c4b-approvals-cli,c4f-same-run,c4g-background variant=guard
+mock: mock-llm listening on http://127.0.0.1:28100 (scenarios: default, persist-order, parallel-tools, params-race, spawn, meta-fetch, meta-spawn, message-self, meta-exec, approve-low, approve-race, approve-both, message-approve, message-guard, exec-approve, spawn-exec, child-exec, send-exec, message-approve-meta, message-guard-meta, exec-approve-cli, spawn-exec-meta, send-exec-meta, self-approve-parallel, self-approve-background)
+bus: {"ready":true,"baseUrl":"http://127.0.0.1:28101"}
+gateway ready
+[driver] c1-owner start
+[driver] c1-owner inbound
+[driver] c1-owner approval-prompt id=plugin:8b96d381-3bc8-47e9-a261-0bbd8b2233b3
+[driver] c1-owner inbound
+[driver] c1-owner resolution decision=cancelled
+[driver] c1-owner agent_end ok
+[driver] c4b-approvals-cli start
+[driver] c4b-approvals-cli inbound
+[driver] c4b-approvals-cli approval-prompt id=plugin:fd3c21a7-5246-4e8a-b06b-0c03287d86cd
+[driver] c4b-approvals-cli cli
+[driver] c4b-approvals-cli resolution none within 10000ms
+[driver] c4b-approvals-cli inbound
+[driver] c4b-approvals-cli resolution decision=cancelled
+[driver] c4f-same-run start
+[driver] c4f-same-run inbound
+[driver] c4f-same-run resolution none within 60000ms
+[driver] c4f-same-run tool-result no resolution
+[driver] c4g-background start
+[driver] c4g-background inbound
+[driver] c4g-background resolution none within 60000ms
+[driver] c4g-background tool-result no resolution
+[driver]  driver-done
+report: /pg/runs/ch-guard1/report.md

@@ -64,6 +64,7 @@ The full generated configs are saved per run as `phase0/results/ch-*/openclaw.js
 | `ch-base7` | base | d-send |
 | `ch-base8` | base | c4f (self-approval with parallel tool calls) |
 | `ch-base9` | base | **c4g (end-to-end self-approval with a background exec)** |
+| `ch-guard1`–`3`, `ch-base10` | guard / base | Self-approval with the Guard loaded, and the c1 cancellation (see "With the Guard loaded") |
 
 ---
 
@@ -185,6 +186,24 @@ How bob's `/approve` was authorized (`commands-approve.ts`, `infra/channel-appro
 6. **Operational:**
    - Plugin approval prompts reach a chat only with `approvals.plugin` forwarding enabled (or on a native approval client); otherwise they expire unseen.
    - Any concurrent `openclaw agent` CLI turn makes pending plugin approvals fail closed. That is safe, but it is an availability bug worth reporting upstream.
+
+## With the Guard loaded (runs ch-guard1–3, ch-base10)
+
+Variant `guard` (`write-config.mjs`) loads the bundled Provenance Guard from `/pg/guard-plugin/provenance-guard` in enforce mode next to the probe. The config passes `/guard doctor` (`ownerAllowFrom` set, `allowFrom` unset, `approvals.plugin` on), so `confirm: auto` uses approval prompts. Audit logs are in `ch-guard*/guard-state/audit.jsonl`.
+
+| Run | Tests | Result |
+|---|---|---|
+| `ch-guard1` | c1-owner, c4b, c4f, c4g | **c4b, c4f, c4g: no self-approval.** The Guard blocked every agent exec that ran `openclaw approvals ...` (hard sink, "This runs the openclaw CLI..."), so nothing resolved the gated call: c4b was cancelled by the next run, c4f and c4g expired ("Approval timed out"). **c1-owner: `cancelled`** even though alice's `/approve` was accepted ("Resolved by Chat approval (qa-channel:alice)"); see below |
+| `ch-guard2` | a-dm-alice, c1-owner | c1 still `cancelled` with alice's DM session already warm |
+| `ch-base10` | c1-owner, **no Guard** | c1 `cancelled` too, so the Guard isn't the cause |
+| `ch-guard3` | (w-slash), c1-owner, c4g | After the slash-session warm-up: **c1 `allow-once`**, the gated exec ran, 0 authority errors. c4g is still blocked and expires |
+
+**Why c1 was cancelled.** The Gateway logged `plugin approval gateway request failed; blocking tool call: Error: Approval requester authority changed` at the moment of resolution. The error comes from `assertPolicyCurrent` in `src/gateway/server-methods/approval-request-authority.ts`:
+- A pending approval is revoked if the Gateway access revision changes while it waits.
+- `bumpGatewayAccessRevision()` runs on every committed session change event (`server-methods/session-change-event.ts`).
+- A native `/approve` runs in the sender's slash session (`agent:main:qa-channel:slash:alice`). The **first** native command from a sender creates that session, and creating it revokes the very approval being resolved.
+
+In ch-base3 and ch-bobcmd1 the b tests had already sent native `/guard` commands, which is why c1 passed there. This is OpenClaw behaviour, not a Guard bug, and the same mechanism explains the c4d/c4e "gateway unavailable" fail-closed results. The driver now runs a `w-slash` warm-up (native `/guardauth` from alice and bob) before any approval test. For real users it means an owner's first-ever native `/approve` fails closed. That's safe, but confusing, and worth reporting upstream with the c4d case.
 
 ## Still unresolved
 

@@ -1,0 +1,21 @@
+run=/pg/runs/ch-guard3 gateway=20664 mock=20665 bus=20666 tests=c1-owner,c4g-background variant=guard
+mock: mock-llm listening on http://127.0.0.1:20665 (scenarios: default, persist-order, parallel-tools, params-race, spawn, meta-fetch, meta-spawn, message-self, meta-exec, approve-low, approve-race, approve-both, message-approve, message-guard, exec-approve, spawn-exec, child-exec, send-exec, message-approve-meta, message-guard-meta, exec-approve-cli, spawn-exec-meta, send-exec-meta, self-approve-parallel, self-approve-background)
+bus: {"ready":true,"baseUrl":"http://127.0.0.1:20666"}
+gateway ready
+[driver] w-slash start
+[driver] w-slash-alice inbound
+[driver] w-slash-alice result replies=0
+[driver] w-slash-bob inbound
+[driver] w-slash-bob result replies=0
+[driver] c1-owner start
+[driver] c1-owner inbound
+[driver] c1-owner approval-prompt id=plugin:d8cbaaf0-2f6b-4890-ad9a-86ecea830bd5
+[driver] c1-owner inbound
+[driver] c1-owner resolution decision=allow-once
+[driver] c1-owner agent_end ok
+[driver] c4g-background start
+[driver] c4g-background inbound
+[driver] c4g-background resolution none within 60000ms
+[driver] c4g-background tool-result no resolution
+[driver]  driver-done
+report: /pg/runs/ch-guard3/report.md
