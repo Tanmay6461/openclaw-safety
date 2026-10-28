@@ -1,10 +1,11 @@
 import { normalizePath } from "@provenance-guard/core";
 import type { Guard } from "./guard.js";
-import type { CommandDefinition, PluginApi } from "./host.js";
+import type { CommandDefinition } from "./host.js";
 
 const HELP = [
   "/guard status · enforce · shadow · pause <30m|2h> · preset <balanced|strict>",
   "/guard rules · forget <id> · trust <path> · report · off",
+  "/guard doctor · pending · allow <code> [always] · deny <code>",
 ].join("\n");
 
 function duration(raw: string | undefined): number | null {
@@ -14,12 +15,7 @@ function duration(raw: string | undefined): number | null {
   return (m[2]?.toLowerCase().startsWith("m") ? n * 60 : n * 3600) * 1000;
 }
 
-function hostHooks(api: PluginApi | undefined): Record<string, unknown> {
-  const h = (api?.config as { plugins?: { entries?: Record<string, { hooks?: Record<string, unknown> }> } } | undefined)?.plugins?.entries?.[api?.id ?? ""]?.hooks;
-  return h ?? {};
-}
-
-export function runGuardCommand(guard: Guard, args: string, api?: PluginApi): string {
+export function runGuardCommand(guard: Guard, args: string): string {
   const [sub = "status", ...rest] = args.trim().split(/\s+/).filter(Boolean);
   const now = Date.now();
   switch (sub.toLowerCase()) {
@@ -30,14 +26,35 @@ export function runGuardCommand(guard: Guard, args: string, api?: PluginApi): st
         `Mode: ${guard.mode}${guard.pausedUntil > now ? ` (paused until ${new Date(guard.pausedUntil).toISOString()})` : ""} · preset: ${guard.preset}`,
         `Sessions: ${sessions.length} (${tainted} started tainted or became tainted) · rules: ${guard.store.rules().length}`,
         `Decisions: ${guard.counts.allow} allow, ${guard.counts.ask} ask, ${guard.counts.block} block, ${guard.counts.shadowed} shadowed · errors: ${guard.counts.errors}`,
+        `Confirmations: ${guard.confirmVia === "command" ? `/guard allow <code> (${guard.pendingConfirmations().length} pending)` : "OpenClaw approval prompts"}`,
       ];
-      if (hostHooks(api).allowConversationAccess !== true) {
-        lines.push(
-          "Missing: plugins.entries.provenance-guard.hooks.allowConversationAccess: true. Without it, heartbeat and sub-agent runs can't be told apart from other non-owner runs.",
-        );
-      }
+      const failing = guard.doctor().filter((c) => !c.ok).length;
+      if (failing > 0) lines.push(`${failing} config check(s) need attention: /guard doctor`);
       return lines.join("\n");
     }
+    case "doctor": {
+      const lines = guard.doctor().map((c) => `${c.ok ? "ok" : "fix"}: ${c.text}`);
+      lines.push(
+        guard.confirmVia === "approval"
+          ? "Asks use OpenClaw approval prompts."
+          : "Asks are blocked with a code; confirm with /guard allow <code>, which only you can run.",
+      );
+      return lines.join("\n");
+    }
+    case "pending": {
+      const list = guard.pendingConfirmations().filter((p) => !p.granted);
+      if (list.length === 0) return "Nothing waiting for confirmation.";
+      return list.map((p) => `${p.code}: ${p.summary} (expires ${new Date(p.expiresAt).toISOString()})`).join("\n");
+    }
+    case "allow": {
+      if (!rest[0]) return "Usage: /guard allow <code> [always] (see /guard pending)";
+      const always = rest[1]?.toLowerCase() === "always";
+      const p = guard.grantConfirmation(rest[0], always);
+      if (!p) return `No pending confirmation ${rest[0]}. It may have expired; see /guard pending.`;
+      return `Allowed ${always ? "this and future matching actions" : "once"}: ${p.summary}. Ask the agent to try again.`;
+    }
+    case "deny":
+      return rest[0] && guard.denyConfirmation(rest[0]) ? `Denied ${rest[0]}.` : "Usage: /guard deny <code> (see /guard pending)";
     case "enforce":
       guard.setMode("enforce");
       return "Guard is now enforcing.";
@@ -79,13 +96,14 @@ export function runGuardCommand(guard: Guard, args: string, api?: PluginApi): st
 }
 
 /** Owner-only on chat surfaces through `requiredScopes` (§4.6); `requireAuth` alone isn't enough. */
-export function guardCommand(guard: Guard, api: PluginApi): CommandDefinition {
+export function guardCommand(guard: Guard): CommandDefinition {
   return {
     name: "guard",
     description: "Provenance Guard status and controls",
     acceptsArgs: true,
     requireAuth: true,
     requiredScopes: ["operator.admin"],
-    handler: (ctx) => ({ text: runGuardCommand(guard, ctx.args ?? "", api) }),
+    // requiredScopes already limits channel senders to the owner; refuse if the host says otherwise.
+    handler: (ctx) => ({ text: ctx.senderIsOwner === false ? "Only the owner can use /guard." : runGuardCommand(guard, ctx.args ?? "") }),
   };
 }

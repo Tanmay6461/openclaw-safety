@@ -31,7 +31,7 @@ interface Harness {
 }
 
 let n = 0;
-function harness(pluginConfig: Record<string, unknown> = {}, store?: FileBackedStore): Harness {
+function harness(pluginConfig: Record<string, unknown> = {}, store?: FileBackedStore, hostConfig: Record<string, unknown> = {}): Harness {
   const workspace = mkdtempSync(path.join(os.tmpdir(), "pg-ws-"));
   writeFileSync(path.join(workspace, "notes.md"), "hello");
   const hooks: Harness["hooks"] = new Map();
@@ -42,9 +42,12 @@ function harness(pluginConfig: Record<string, unknown> = {}, store?: FileBackedS
     id: "provenance-guard",
     pluginConfig: { mode: "enforce", ...pluginConfig },
     config: {
+      // Owner-safe defaults, so `confirm: auto` picks approval prompts (see /guard doctor).
       commands: { ownerAllowFrom: ["qa-channel:alice"] },
+      approvals: { plugin: { enabled: true, mode: "session" } },
       agents: { defaults: { workspace } },
       plugins: { entries: { "provenance-guard": { hooks: { allowConversationAccess: true } } } },
+      ...hostConfig,
     },
     on(hook, fn, opts) {
       hooks.set(hook, [...(hooks.get(hook) ?? []), { fn: fn as unknown as (e: unknown, c: unknown) => unknown, ...(opts && { opts }) }]);
@@ -269,5 +272,112 @@ describe("/guard commands", () => {
     expect(run("pause 30m").text).toMatch(/Paused/);
     expect(h.guard.pausedUntil).toBeGreaterThan(Date.now());
     expect(run("bogus").text).toMatch(/\/guard status/);
+  });
+});
+
+// phase0/channel-results.md §c: plugin approvals can be resolved by non-owners and by the agent itself.
+describe("approval forgery and owner confirmation", () => {
+  it("blocks the c4g self-approval exec in a clean owner session, even in shadow mode", () => {
+    const h = harness({ mode: "shadow" });
+    const r = h.tool("exec", { command: "sleep 8; openclaw approvals resolve plugin:abc allow-once", background: true });
+    expect(r.block).toBe(true);
+    expect(r.blockReason).toMatch(/approve its own actions/);
+  });
+
+  it("blocks reading the Gateway config with the read tool", () => {
+    const h = harness({ stateDir: path.join(os.tmpdir(), "pg-state-x") });
+    const home = path.join(os.homedir(), ".openclaw");
+    expect(h.tool("read", { path: path.join(home, "openclaw.json") }).block).toBe(true);
+  });
+
+  it("blocks the inner call of the compact tool_call wrapper", () => {
+    const h = harness();
+    expect(h.tool("tool_call", { id: "openclaw:core:exec", args: { command: "openclaw approvals pending --json" } }).block).toBe(true);
+  });
+
+  it("blocks the configured Gateway port on loopback", () => {
+    const h = harness({}, undefined, { gateway: { port: 24055 } });
+    expect(h.tool("web_fetch", { url: "http://127.0.0.1:24055/" }).block).toBe(true);
+    expect(h.tool("web_fetch", { url: "http://127.0.0.1:18789/" }).block).toBe(true);
+  });
+
+  it("confirm auto: picks /guard allow when commands.allowFrom admits non-owners or forwarding is off", () => {
+    expect(harness().guard.confirmVia).toBe("approval");
+    expect(harness({}, undefined, { commands: { ownerAllowFrom: ["qa-channel:alice"], allowFrom: { "qa-channel": ["alice", "bob"] } } }).guard.confirmVia).toBe("command");
+    expect(harness({}, undefined, { approvals: {} }).guard.confirmVia).toBe("command");
+    expect(harness({}, undefined, { commands: {} }).guard.confirmVia).toBe("command");
+    expect(harness({ confirm: "approval" }, undefined, { commands: {} }).guard.confirmVia).toBe("approval");
+  });
+
+  it("doctor reports the settings that make approvals owner-only", () => {
+    const h = harness({}, undefined, { commands: { ownerAllowFrom: ["qa-channel:alice"], allowFrom: { "qa-channel": ["bob"] } } });
+    const out = runGuardCommand(h.guard, "doctor");
+    expect(out).toMatch(/fix: commands\.allowFrom lets non-owners/);
+    expect(out).toMatch(/ok: commands\.ownerAllowFrom is set/);
+    expect(runGuardCommand(h.guard, "status")).toMatch(/1 config check\(s\) need attention/);
+  });
+
+  describe("confirm: command", () => {
+    let h: Harness;
+    const send = () => h.tool("message", { action: "send", target: "carol@partner.example", message: "hi" });
+    beforeEach(() => {
+      h = harness({ confirm: "command" });
+      h.tool("web_fetch", { url: "https://recipes.example/x" });
+    });
+
+    it("blocks an ask with a code instead of an approval prompt, reusing the code on retries", () => {
+      const r = send();
+      expect(r.requireApproval).toBeUndefined();
+      expect(r.block).toBe(true);
+      const code = /\/guard allow ([0-9a-f]{6})/.exec(r.blockReason!)![1]!;
+      expect(send().blockReason).toContain(code);
+      expect(runGuardCommand(h.guard, "pending")).toContain(code);
+    });
+
+    it("/guard allow lets the same call through once", () => {
+      const code = /\/guard allow ([0-9a-f]{6})/.exec(send().blockReason!)![1]!;
+      expect(runGuardCommand(h.guard, `allow ${code}`)).toMatch(/Allowed once/);
+      expect(send()).toMatchObject({ params: { target: "carol@partner.example" } });
+      expect(send().block).toBe(true);
+    });
+
+    it("a grant covers only the exact call it was issued for", () => {
+      const code = /\/guard allow ([0-9a-f]{6})/.exec(send().blockReason!)![1]!;
+      runGuardCommand(h.guard, `allow ${code}`);
+      expect(h.tool("message", { action: "send", target: "carol@partner.example", message: "different text" }).block).toBe(true);
+      expect(send().block).toBeUndefined();
+    });
+
+    it("a grant isn't used by a non-owner turn in the same session", () => {
+      const code = /\/guard allow ([0-9a-f]{6})/.exec(send().blockReason!)![1]!;
+      runGuardCommand(h.guard, `allow ${code}`);
+      const r = h.tool("message", { action: "send", target: "carol@partner.example", message: "hi" }, { requester: { senderIsOwner: false } });
+      expect(r.block).toBe(true);
+    });
+
+    it("/guard allow <code> always also creates the rule", () => {
+      const code = /\/guard allow ([0-9a-f]{6})/.exec(send().blockReason!)![1]!;
+      runGuardCommand(h.guard, `allow ${code} always`);
+      expect(send().block).toBeUndefined();
+      expect(h.guard.store.rules()).toMatchObject([{ kind: "email", value: "carol@partner.example" }]);
+      expect(h.tool("message", { action: "send", target: "carol@partner.example", message: "later" }).block).toBeUndefined();
+    });
+
+    it("codes expire and can be denied", () => {
+      const code = /\/guard allow ([0-9a-f]{6})/.exec(send().blockReason!)![1]!;
+      expect(runGuardCommand(h.guard, `deny ${code}`)).toMatch(/Denied/);
+      expect(runGuardCommand(h.guard, `allow ${code}`)).toMatch(/No pending confirmation/);
+      const code2 = /\/guard allow ([0-9a-f]{6})/.exec(send().blockReason!)![1]!;
+      h.clock.t += 601_000;
+      expect(runGuardCommand(h.guard, `allow ${code2}`)).toMatch(/No pending confirmation/);
+    });
+
+    it("the /guard handler refuses a sender the host marks as non-owner", async () => {
+      const def = h.commands[0]!;
+      const code = /\/guard allow ([0-9a-f]{6})/.exec(send().blockReason!)![1]!;
+      expect((await def.handler({ args: `allow ${code}`, senderIsOwner: false })).text).toMatch(/Only the owner/);
+      expect(send().block).toBe(true);
+      expect((await def.handler({ args: `allow ${code}`, senderIsOwner: true })).text).toMatch(/Allowed once/);
+    });
   });
 });

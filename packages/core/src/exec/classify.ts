@@ -12,6 +12,11 @@ export interface ExecInfo {
   scheduling: boolean;
   /** Invokes the openclaw CLI in a way that can change config, plugins, or skills (§5.12). */
   guardCli: boolean;
+  /**
+   * Invokes the openclaw CLI at all, other than --version or help. The CLI reads the Gateway token
+   * itself, so it can resolve the agent's own approvals (channel results c4g).
+   */
+  openclawCli: boolean;
   /** Files the command is known to create (git clone, curl -o, wget). */
   downloadTargets: string[];
   /** Arguments that look like file paths, or that a file-reading command will read. */
@@ -61,6 +66,7 @@ const SCHEDULING: readonly RegExp[] = [
 
 const OPENCLAW = /(?:^|[^\w.-])openclaw(?:\.mjs)?(?=\s|$|["'`;|&)])/;
 const OPENCLAW_HARMLESS: readonly (readonly string[])[] = [["--version"], ["-V"], ["help"], ["--help"], ["status"]];
+const OPENCLAW_INERT: readonly (readonly string[])[] = [["--version"], ["-V"], ["help"], ["--help"]];
 
 const FILE_READERS = new Set([
   "cat", "head", "tail", "less", "more", "bat", "strings", "xxd", "od", "sort", "uniq", "wc",
@@ -78,9 +84,12 @@ export function classifyExec(command: string): ExecInfo {
   const scheduling = SCHEDULING.some((re) => re.test(raw));
 
   let guardCli = OPENCLAW.test(raw);
+  let openclawCli = guardCli;
   if (guardCli && argv && cmd === "openclaw") {
     const rest = argv.slice(1);
-    if (OPENCLAW_HARMLESS.some((p) => rest.length === p.length && argvHasPrefix(rest, p))) guardCli = false;
+    const only = (list: readonly (readonly string[])[]) => list.some((p) => rest.length === p.length && argvHasPrefix(rest, p));
+    if (only(OPENCLAW_HARMLESS)) guardCli = false;
+    if (only(OPENCLAW_INERT)) openclawCli = false;
   }
 
   return {
@@ -90,6 +99,7 @@ export function classifyExec(command: string): ExecInfo {
     sensitive,
     scheduling,
     guardCli,
+    openclawCli,
     downloadTargets: argv ? downloadTargets(argv) : [],
     pathArgs: pathArgs(raw, argv),
   };

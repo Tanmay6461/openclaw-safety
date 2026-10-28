@@ -2,6 +2,7 @@ import { attestCommand, attestDestination, isOwnerIdentity } from "../attest/loo
 import { hostMatches, normalizePath, normalizeUrl } from "../attest/normalize.js";
 import { pathContext, type GuardEnv } from "../env.js";
 import { classifyExec, type ExecInfo } from "../exec/classify.js";
+import { forgeryInExec, forgeryInPath, forgeryInUrl, type Forgery } from "./forgery.js";
 import { rolePaths, specFor } from "../registry/resolve.js";
 import { redactSecrets, scanSecrets } from "../secrets/scan.js";
 import type { SessionState } from "../session.js";
@@ -141,6 +142,20 @@ export function neutralizeChatCommands(text: string): { text: string; found: str
   return { text: out, found };
 }
 
+function findForgery(call: ToolCall, spec: ToolSpec, env: GuardEnv, execs: { arg: string; info: ExecInfo }[], cwd: string): Forgery | null {
+  for (const e of execs) {
+    const f = forgeryInExec(e.arg, e.info, cwd, env);
+    if (f) return f;
+  }
+  for (const role of ["egress_url", "destination", "path"] as const) {
+    for (const v of argValues(call, spec, role)) {
+      const f = forgeryInUrl(v.arg, v.value, env) ?? (role === "path" ? forgeryInPath(v.arg, v.value, env) : null);
+      if (f) return f;
+    }
+  }
+  return null;
+}
+
 function short(v: string): string {
   return sanitizePreview(v, 60);
 }
@@ -168,11 +183,6 @@ export function decide(call: ToolCall, session: SessionState, env: GuardEnv): De
   for (const v of pathVals) if (normalizeUrl(v.value) !== null) urls.push(v);
   const localPaths = pathVals.filter((v) => normalizeUrl(v.value) === null);
 
-  if (spec.category === "read_only" && urls.length === 0) {
-    b.note("read-only tool");
-    return b.build();
-  }
-
   // Exec commands, and the paths they or file tools touch.
   const execs: { arg: string; info: ExecInfo }[] = argValues(call, spec, "code").map((c) => ({
     arg: c.arg,
@@ -181,6 +191,20 @@ export function decide(call: ToolCall, session: SessionState, env: GuardEnv): De
   // For exec, the path-role argument is the working directory.
   const cwdArg = spec.category === "privileged_execution" ? localPaths[0] : undefined;
   const ctx = pathContext(env, cwdArg ? normalizePath(cwdArg.value, pathContext(env)) : env.cwd);
+
+  // Approval forgery: blocked before anything else, read-only tools and owner turns included.
+  const forged = findForgery(call, spec, env, execs, ctx.cwd);
+  if (forged) {
+    b.hardSink = true;
+    b.findings.push({ arg: forged.arg, role: forged.role, value: forged.value, status: "protected" });
+    b.raise("block", `${forged.reason} With that the agent could approve its own actions, so the guard always blocks it. If you need this, run it yourself in a terminal.`);
+    return b.build();
+  }
+
+  if (spec.category === "read_only" && urls.length === 0) {
+    b.note("read-only tool");
+    return b.build();
+  }
 
   // Browsing to a messaging or webmail client acts as the owner there: hard sink (§5.9).
   for (const u of urls) {

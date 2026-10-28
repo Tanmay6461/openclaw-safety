@@ -1,7 +1,7 @@
 # Provenance Guard for OpenClaw: Implementation Plan
 
 > **Working name.** Check npm and ClawHub for name collisions before publishing.
-> **Status:** draft v2.2 (2026-10-28). Items marked **(verify)** still need a runtime test on the test cluster (§13). Static Phase 0 research against OpenClaw `v2026.10.8` is in `phase0/docs-findings.md`; implementation status is in `PROGRESS.md`. §15 lists what changed in each version.
+> **Status:** draft v2.3 (2026-10-28). Items marked **(verify)** still need a runtime test on the test cluster (§13). Static Phase 0 research against OpenClaw `v2026.10.8` is in `phase0/docs-findings.md`; implementation status is in `PROGRESS.md`. §15 lists what changed in each version.
 
 ---
 
@@ -138,7 +138,12 @@ Why: this address didn't come from you. This session read untrusted
 content: web page recipes.example (2 min ago).
 Options: allow once · always allow · deny   (expires in 10 min)
 ```
-- The host resolves the approval and calls the plugin's `onResolution` handler with a typed decision: `allow-once`, `allow-always`, `deny`, `timeout`, or `cancelled`. The agent never relays approval IDs, so it can't approve its own actions by echoing one back.
+- The host resolves the approval and calls the plugin's `onResolution` handler with a typed decision: `allow-once`, `allow-always`, `deny`, `timeout`, or `cancelled`. The handler learns only the decision, never who resolved it.
+- **Plugin approvals are not owner-only by themselves** (channel results, §13). Any sender allowed to run commands can resolve any pending approval by its id, from any chat. The agent can resolve its own approvals through the `openclaw` CLI with the Gateway's credentials, which is why those routes are always blocked (§5.12). If another plugin asks first, the Guard's own ask is dropped without a prompt.
+- **How the owner confirms (`confirm`, default `auto`):**
+  - `approval`: the native prompt above.
+  - `command`: the call is blocked with a short code, and the owner confirms with `/guard allow <code>` (or `/guard allow <code> always`), which only the owner can run. The agent then retries, and the grant matches only that exact call in that session, in an owner turn. Codes expire after `approvalTimeoutSec`. `/guard pending` lists them, so the owner doesn't depend on the agent relaying the code.
+  - `auto` picks `approval` only when `/guard doctor` passes: `commands.ownerAllowFrom` set, `commands.allowFrom` unset, and `approvals.plugin.enabled` on. Otherwise it picks `command`.
 - `timeout` and `cancelled` count as **deny**.
 - `requireApproval` takes `title` (≤ 80 chars), `description` (≤ 512), `severity`, `timeoutMs` (default 120 s, max 600 s), `timeoutReason`, and `allowedDecisions`. The plugin maps `approvalTimeoutSec` to `timeoutMs`.
 - OpenClaw doesn't persist `allow-always`; the plugin stores the rule itself in `onResolution`. That handler is fire-and-forget, so rule writes must be fast and idempotent.
@@ -150,7 +155,7 @@ Options: allow once · always allow · deny   (expires in 10 min)
 
 ### 4.6 Owner commands (owner identity only)
 
-Commands are registered with `api.registerCommand`, so the agent never sees them. `requireAuth: true` alone only checks the channel allowlist, which can include people other than the owner, and external plugins never receive `senderIsOwner` in a command context. So every `/guard` command also sets `requiredScopes: ["operator.admin"]`: on chat surfaces that admits only the owner, and gateway clients need the real scope **(verify on WhatsApp and Telegram)**. On WhatsApp self-chat setups, commands that loosen policy (`shadow`, `pause`, `off`, `preset` to a weaker preset, `forget`, `trust`) are accepted only from the local CLI.
+Commands are registered with `api.registerCommand`, so the agent never sees them. `requireAuth: true` alone only checks the channel allowlist, which can include people other than the owner. So every `/guard` command also sets `requiredScopes: ["operator.admin"]`: on chat surfaces that admits only the owner (confirmed on qa-channel, by a channel-agnostic code path; **verify on WhatsApp and Telegram**), and gateway clients need the real scope. Commands with `requiredScopes` also receive `ctx.senderIsOwner`, and the handler refuses when it is `false`. On WhatsApp self-chat setups, commands that loosen policy (`shadow`, `pause`, `off`, `preset` to a weaker preset, `forget`, `trust`) are accepted only from the local CLI.
 
 | Command | Effect |
 |---|---|
@@ -161,6 +166,8 @@ Commands are registered with `api.registerCommand`, so the agent never sees them
 | `/guard rules` / `/guard forget <id>` | Manage learned rules |
 | `/guard trust <path>` | Clear the label on a file the owner has reviewed |
 | `/guard report` | Redacted summary for sharing false positives |
+| `/guard doctor` | Checks the host settings that make approvals owner-only (§4.4) and shows the confirmation mode |
+| `/guard pending` / `/guard allow <code> [always]` / `/guard deny <code>` | Owner confirmation in `confirm: command` mode (§4.4) |
 | `/guard off` | Local CLI only: kill switch that stops all enforcement, including hard sinks, until `/guard enforce` (§5.12) |
 
 ### 4.7 Optional config for power users
@@ -530,7 +537,7 @@ Blocked calls return a short, structured reason that tells the agent to stop ret
 
 ### 5.9 Approval router
 
-- **Delivery:** `before_tool_call` returns `requireApproval`, the run pauses, and the host asks through plugin approvals. `onResolution` receives `allow-once`, `allow-always`, `deny`, `timeout`, or `cancelled`. `allow-once` lets this call through, `allow-always` also creates a rule, and the other three block. The paused call itself resumes, so there's no retry and no grant to match. Approved calls still go through the rewriter and secret scan. Fields and surfaces are in §4.4.
+- **Delivery:** in `confirm: command` mode the ask is a block with a code, confirmed by `/guard allow` (§4.4). Otherwise `before_tool_call` returns `requireApproval`, the run pauses, and the host asks through plugin approvals. `onResolution` receives `allow-once`, `allow-always`, `deny`, `timeout`, or `cancelled`. `allow-once` lets this call through, `allow-always` also creates a rule, and the other three block. The paused call itself resumes, so there's no retry and no grant to match. Approved calls still go through the rewriter and secret scan. Fields and surfaces are in §4.4.
 - **No one to ask.** OpenClaw rejects plugin approvals for runs whose trigger isn't a user (cron, heartbeat) and for non-interactive CLI runs. When `ctx.requester` is missing, the Guard treats the run as unable to answer: an ask becomes a block with a clear reason, listed in the owner's next digest.
 - **Double prompts.** Host exec approvals (`tools.exec.mode: ask`) run after the Guard. When the host will prompt the owner for this exec anyway, a Guard ask defers to that prompt: the Guard allows the call and records in the audit log why it would have asked. In other exec modes the Guard asks itself.
 - **No relay fallback.** v1 had the agent relay an approval ID for the owner to echo back. That gave the agent a way to approve itself, so it's gone. If native approvals aren't available on a surface, the call is blocked with a structured reason, and the owner can add a rule with `/guard` instead.
@@ -584,6 +591,12 @@ Kept in the host's per-plugin SQLite keyed stores (`api.runtime.state.openKeyedS
 
 - **Protected paths:** OpenClaw config, this plugin's directory, rules, store and audit logs, skills and plugins directories, shell init files, SSH config and keys, crontab, systemd and launchd units.
 - Writes to protected paths through file tools **or** exec commands that reference them are blocked in tainted sessions and require approval in clean ones, unless made through a `/guard` command.
+- **Approval forgery is always blocked** (channel results c4b, c4g). With the Gateway's credentials the agent can resolve its own pending approvals: a background exec read the token from `openclaw.json`, ran `openclaw approvals resolve`, and the gated call then ran with no human involved. So these are hard sinks that block in every session state, trigger, and mode except `off`, read-only tools included:
+  - reading or writing Gateway secrets: the config file (and its backups), `.env`, the state SQLite files, `state/`, `identity/`, `devices/`, `credentials/`, `agents/*/agent/`, and the Guard's own directory, under the real state dir and `OPENCLAW_CONFIG_PATH`;
+  - exec text that names the config file, `$OPENCLAW_STATE_DIR`/`$OPENCLAW_CONFIG_PATH`, or the Gateway token variables, or that dumps the environment;
+  - running the `openclaw` CLI at all, other than `--version` and `help` (the CLI reads the token itself);
+  - connecting to the Gateway port on a loopback address (`web_fetch`, `browser`, exec).
+  The workspace, skills, and media under the state dir stay usable. Matching exec text is best-effort: a script written to disk and then run is not caught, so sandbox mode for exec is still the backstop.
 - **CLI routes count as config writes.** Exec commands that run the `openclaw` CLI's config, plugins, or skills subcommands, or that start a gateway with different config or plugin flags, are hard sinks. Scheduling commands (`crontab`, `at`, `systemd-run`, `launchctl load`/`bootstrap`) follow the cron rules. Matching on command text is best-effort; sandbox mode is the backstop.
 - **Install routes.** `before_install` has no session context, so installs from tainted sessions are blocked in `before_tool_call` on every route: `plugins` (`install`, `enable`), `skill_workshop`, the `openclaw` delegate tool, `gateway` `update.run`, and `openclaw plugins|skills` through exec. `before_install` stays as an audit backstop.
 - **Startup integrity check:** hash the rules file and plugin config block; if they changed outside `/guard` commands, notify the owner.
@@ -917,13 +930,25 @@ Details and evidence: `phase0/runtime-results.md`.
 | Lowest-priority params win? (was still-open 6) | **Yes**, including on the `tool_call` path | §5.2 confirmed |
 | Do tools hidden by the compact surface bypass the hook? | **No.** Called by name they fail as "not found". Through `tool_call {id, args}`, `before_tool_call` fires for the wrapper and again for the inner tool | Wrapper is read-only; the inner call is judged (§5.2, §5.5) |
 
+### Channel results (cluster, qa-channel, 2026-10-28)
+Details and evidence: `phase0/channel-results.md`. qa-channel was built from a `v2026.10.8` source checkout and driven through its bus; no real accounts.
+
+| Question | Result | Plan change |
+|---|---|---|
+| `senderIsOwner` on channel turns? (was still-open 2) | `ctx.requester.senderIsOwner` is true for the owner and false for a non-owner, in DMs and in a shared group session, **per turn**. Sub-agent children, the parent's follow-up, and `sessions_send` targets report `false` (the target's channel shows as `webchat`). History messages carry `__openclaw.senderIsOwner` | Ownership judged per call, never per session (§4.2) |
+| `/guard` with `requiredScopes`? (was still-open 3, second half) | Owner only, even for command-authorized non-owners ("requires gateway scope: operator.admin"). The handler gets `ctx.senderIsOwner` | §4.6 |
+| Who can resolve a plugin approval? | Any **command-authorized** sender, by id, from any chat; `onResolution` doesn't say who. `commands.ownerAllowFrom` alone makes every command, `/approve` included, owner-only; `commands.allowFrom` re-admits others | `confirm` modes, `/guard doctor` (§4.4) |
+| Can the agent resolve its own approval? | **Yes (c4g).** A background exec read the token from the config, ran `openclaw approvals pending` and `openclaw approvals resolve`, and the gated exec ran. `openclaw gateway call` was refused (least-privilege scope). A `/approve` posted with `message` did nothing on qa-channel, which never re-ingests bot messages | Approval forgery is a hard block (§5.12) |
+| Another plugin's `requireApproval`? (was still-open 6, remainder) | If a higher-priority plugin asks, later `params` are dropped, and the Guard's own ask is dropped with no prompt and no `onResolution`. `block` still works | `confirm: command` doesn't depend on the ask (§4.4) |
+| Prompt delivery | Prompts reach a chat only with `approvals.plugin.enabled`; otherwise they expire unseen. Any other agent run starting while an approval is pending makes the wait fail closed ("gateway unavailable") | `auto` requires forwarding; report the fail-closed wait upstream |
+
 ### Still open (runtime tests on the cluster)
 1. ~~`tool_result_persist` ordering~~ (answered above).
-2. Channel turns: is `ctx.requester.senderIsOwner` true for the owner and false or absent for a non-owner on each channel? Needs a channel (`qa-channel` from a source checkout, or a burner bot). (go/no-go)
-3. Self-chat echo: does an `/approve <id>`, a `/guard` command, or a 👍 reaction sent through the `message` tool resolve anything? Does `requiredScopes: ["operator.admin"]` admit only the owner on WhatsApp and Telegram? (go/no-go)
+2. ~~Channel turns: owner flag~~ (answered on qa-channel, above). Still open: the same check on a real channel.
+3. Self-chat echo on **WhatsApp**: does an `/approve <id>`, a `/guard` command, or a 👍 reaction sent through the `message` tool resolve anything? qa-channel can't show this, because it never reads the bot's own messages back. Do Telegram, Slack, and Discord native approvals bind the resolver to their approver lists? (go/no-go)
 4. Do Codex-native tool names reach `before_tool_call` normalized (`exec`) or native (`Bash`)?
 5. Does `message_sending` fire for `message` sends that a channel plugin handles itself?
-6. ~~Lowest-priority params win~~ (answered above). Still open: the interaction with another plugin's `requireApproval`, which freezes params.
+6. ~~Lowest-priority params win; another plugin's `requireApproval`~~ (both answered above).
 7. Confirm the exact parameter names of the less common tools in the registry (`nodes`, `secrets`, `terminal`, `github_publish`, `voice_call`, ...) with contract tests.
 8. Host exec `ask` plus a Guard ask: confirm exactly one prompt when the Guard defers.
 9. Benchmark cost: run count × tokens per run × price (§9).
@@ -963,6 +988,12 @@ Details and evidence: `phase0/runtime-results.md`.
 ---
 
 ## 15. Changelog
+
+### v2.3: channel results
+- **Approval forgery is a hard block** in every mode but `off`: Gateway secrets (config, state, identity, credentials), the `openclaw` CLI, and the Gateway port on loopback (§5.12). The agent resolved its own approval at runtime (c4g).
+- **Owner confirmation** has `confirm: auto | approval | command`. Command mode blocks with a code that the owner confirms with `/guard allow <code>`. `/guard doctor` checks the settings that make native approvals owner-only (§4.4, §4.6).
+- **Ownership is per turn**, from `ctx.requester.senderIsOwner`; `/guard` handlers refuse when the host says the sender isn't the owner (§4.2, §4.6).
+- §13: channel results table; still-open 2 and 6 answered, 3 narrowed to real channels.
 
 ### v2.2: static research at `v2026.10.8` and implementation decisions
 - **Tool registry rewritten for `v2026.10.8`** (§5.5): `automations` replaces `cron`, `exec` uses `workdir`, `apply_patch` takes one `input`, and `gateway` only reads config or runs `update.run`. New entries: `openclaw`, `plugins`, `skill_workshop`, `conversations_*`, `personal_instructions`, `process`, `nodes`, and Codex-native names. Specs gained parameter paths, `otherArgs`, `resultPrivate`, and per-action overrides (§5.3).

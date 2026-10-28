@@ -19,6 +19,7 @@ export * from "./registry/validate.js";
 export * from "./policy/presets.js";
 export * from "./policy/decide.js";
 export * from "./policy/enforce.js";
+export * from "./policy/forgery.js";
 export * from "./policy/explain.js";
 export * from "./labeler.js";
 export * from "./store/memory.js";

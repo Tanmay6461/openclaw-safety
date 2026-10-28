@@ -38,6 +38,14 @@ export interface GuardEnv {
    * there is a hard sink: ask if clean, block if tainted (§5.9).
    */
   sensitiveHosts: readonly string[];
+  /**
+   * The Gateway's credentials and state: config (with the Gateway token), device identities,
+   * credential stores, and the guard's own key. An agent that reads them can resolve its own
+   * pending approvals through the Gateway (channel results c4g), so touching them is always blocked.
+   */
+  gatewaySecrets: PathMatcher;
+  /** Gateway ports; connecting to one on a loopback address is always blocked, for the same reason. */
+  gatewayPorts: readonly number[];
   store: ProvenanceStore;
   resolveLinks?: boolean;
   /** File modification time in epoch ms, for exec windows (§5.4). */
@@ -96,13 +104,37 @@ export const DEFAULT_SENSITIVE_HOSTS: readonly string[] = [
   "outlook.office.com",
 ];
 
-export interface EnvOptions extends Partial<Omit<GuardEnv, "protectedPaths" | "untrustedPaths" | "privatePaths" | "memoryPaths">> {
+/** Under the default state dir; the adapter adds the real state dir and config path. */
+export const DEFAULT_GATEWAY_SECRET_PATHS: readonly string[] = gatewaySecretPaths("~/.openclaw");
+
+/** Secret paths under an OpenClaw state dir. The workspace, skills, and media stay readable. */
+export function gatewaySecretPaths(stateDir: string): string[] {
+  const d = stateDir.replace(/\/+$/, "");
+  return [
+    `${d}/*.json`,
+    `${d}/*.json.*`,
+    `${d}/.env`,
+    `${d}/*.sqlite*`,
+    `${d}/*.db*`,
+    `${d}/state/**`,
+    `${d}/identity/**`,
+    `${d}/devices/**`,
+    `${d}/credentials/**`,
+    `${d}/agents/*/agent/**`,
+    `${d}/provenance-guard/**`,
+  ];
+}
+
+export const DEFAULT_GATEWAY_PORT = 18789;
+
+export interface EnvOptions extends Partial<Omit<GuardEnv, "protectedPaths" | "untrustedPaths" | "privatePaths" | "memoryPaths" | "gatewaySecrets">> {
   home: string;
   hmacKey: string;
   protectedPaths?: readonly string[];
   untrustedPaths?: readonly string[];
   privatePaths?: readonly string[];
   memoryPaths?: readonly string[];
+  gatewaySecrets?: readonly string[];
 }
 
 export function createEnv(opts: EnvOptions): GuardEnv {
@@ -126,6 +158,8 @@ export function createEnv(opts: EnvOptions): GuardEnv {
     privateSources: opts.privateSources ?? new Set(["email", "memory"]),
     linkFollowLimit: opts.linkFollowLimit ?? { max: 5, windowMs: 10 * 60 * 1000 },
     sensitiveHosts: opts.sensitiveHosts ?? DEFAULT_SENSITIVE_HOSTS,
+    gatewaySecrets: new PathMatcher(opts.gatewaySecrets ?? DEFAULT_GATEWAY_SECRET_PATHS, home),
+    gatewayPorts: opts.gatewayPorts ?? [DEFAULT_GATEWAY_PORT],
     store: opts.store ?? new MemoryStore(),
     ...(opts.resolveLinks !== undefined && { resolveLinks: opts.resolveLinks }),
     ...(opts.mtime && { mtime: opts.mtime }),

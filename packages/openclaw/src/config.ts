@@ -16,6 +16,13 @@ export interface GuardConfig {
   /** Extra protected paths on top of the defaults. */
   protectedPaths: string[];
   failMode: { other: "ask" | "allow" | "block" };
+  /**
+   * How the owner confirms an ask (channel results §c). "approval" uses OpenClaw's plugin
+   * approvals; "command" blocks with a code the owner confirms with `/guard allow <code>`, which
+   * only the owner can run. "auto" picks "approval" only when the host config makes plugin
+   * approvals owner-only and visible (see `/guard doctor`).
+   */
+  confirm: "auto" | "approval" | "command";
   /** Overrides for where the Guard keeps its store, audit log, and HMAC key. */
   stateDir?: string;
   auditPath?: string;
@@ -31,11 +38,12 @@ export const DEFAULT_CONFIG: GuardConfig = {
   privateSources: ["email", "memory"],
   protectedPaths: [],
   failMode: { other: "ask" },
+  confirm: "auto",
 };
 
 const KNOWN = new Set([
   "mode", "preset", "deadlineMs", "approvalTimeoutSec", "trusted", "untrustedPaths", "privateSources",
-  "protectedPaths", "failMode", "stateDir", "auditPath", "secretScan", "extractor",
+  "protectedPaths", "failMode", "confirm", "stateDir", "auditPath", "secretScan", "extractor",
 ]);
 
 function strings(v: unknown, where: string, errors: string[]): string[] {
@@ -81,6 +89,7 @@ export function parseConfig(raw: unknown): { config: GuardConfig; errors: string
     privateSources: r.privateSources === undefined ? DEFAULT_CONFIG.privateSources : strings(r.privateSources, "privateSources", errors),
     protectedPaths: strings(r.protectedPaths, "protectedPaths", errors),
     failMode: { other: oneOf(failMode.other, ["ask", "allow", "block"] as const, DEFAULT_CONFIG.failMode.other, "failMode.other", errors) },
+    confirm: oneOf(r.confirm, ["auto", "approval", "command"] as const, DEFAULT_CONFIG.confirm, "confirm", errors),
   };
   if (typeof r.stateDir === "string") config.stateDir = r.stateDir;
   if (typeof r.auditPath === "string") config.auditPath = r.auditPath;

@@ -9,8 +9,11 @@ import {
   auditRecord,
   createEnv,
   decide,
+  DEFAULT_GATEWAY_PORT,
   destinationForms,
   enforce,
+  gatewaySecretPaths,
+  hmac,
   ingestOwnerMessage,
   JsonlAuditLog,
   labelContent,
@@ -28,6 +31,7 @@ import {
   type Trigger,
 } from "@provenance-guard/core";
 import type { GuardConfig, GuardMode } from "./config.js";
+import { approvalsOwnerOnly, doctorChecks, type DoctorCheck } from "./doctor.js";
 import type {
   AfterToolCallEvent,
   AgentContext,
@@ -58,6 +62,22 @@ interface RunInfo {
   provenanceKind?: string;
   sessionKey?: string;
 }
+
+/** An ask waiting for `/guard allow <code>` (confirm: command). */
+export interface PendingConfirmation {
+  code: string;
+  sessionKey: string;
+  tool: string;
+  digest: string;
+  summary: string;
+  createdAt: number;
+  expiresAt: number;
+  granted?: "once" | "always";
+  call: ToolCall;
+  decision: Decision;
+}
+
+const MAX_CONFIRMATIONS = 50;
 
 export interface AuditSink {
   append(rec: AuditRecord | Record<string, unknown>): void;
@@ -115,6 +135,9 @@ export class Guard {
   private readonly commandRules: string[][] = [];
   private readonly ownerSenders = new Set<string>();
   private readonly workspace: string;
+  private readonly confirms = new Map<string, PendingConfirmation>();
+  /** Resolved `confirm` setting: how the owner confirms asks. */
+  readonly confirmVia: "approval" | "command";
   readonly counts = { allow: 0, ask: 0, block: 0, shadowed: 0, errors: 0, mismatches: 0 };
   mode: GuardMode;
   preset: "balanced" | "strict";
@@ -140,6 +163,9 @@ export class Guard {
     this.workspace = realpathBestEffort(
       path.resolve(String(get(this.api.config, "agents", "defaults", "workspace") ?? path.join(this.hostStateDir(), "workspace"))),
     );
+    const hostState = this.hostStateDir();
+    const configPath = process.env.OPENCLAW_CONFIG_PATH?.trim();
+    const port = Number(get(this.api.config, "gateway", "port") ?? process.env.OPENCLAW_GATEWAY_PORT ?? DEFAULT_GATEWAY_PORT);
     const privatePaths = config.privateSources.filter((s) => s.startsWith("files:")).map((s) => s.slice(6));
     this.env = createEnv({
       home,
@@ -157,9 +183,21 @@ export class Guard {
       store: this.store,
       ...(config.untrustedPaths.length > 0 && { untrustedPaths: config.untrustedPaths }),
       ...(config.protectedPaths.length > 0 && { protectedPaths: config.protectedPaths }),
+      gatewaySecrets: [
+        ...gatewaySecretPaths(hostState),
+        ...gatewaySecretPaths(realpathBestEffort(hostState)),
+        ...gatewaySecretPaths(stateDir),
+        ...(configPath ? [configPath, `${configPath}.*`] : []),
+      ],
+      gatewayPorts: Number.isInteger(port) && port > 0 && port !== DEFAULT_GATEWAY_PORT ? [port, DEFAULT_GATEWAY_PORT] : [DEFAULT_GATEWAY_PORT],
     });
+    this.confirmVia = config.confirm === "auto" ? (approvalsOwnerOnly(this.doctor()) ? "approval" : "command") : config.confirm;
     this.loadIdentities();
     this.rebuildRules();
+  }
+
+  doctor(): DoctorCheck[] {
+    return doctorChecks(this.api.config, this.api.id);
   }
 
   private hostStateDir(): string {
@@ -292,14 +330,18 @@ export class Guard {
 
       const prepared = prepareCall(event, this.registry, cctx);
       const decision = decide(prepared.call, s, this.env);
-      const outcome = enforce(
-        decision,
-        prepared.call,
-        s,
-        { mode: this.mode === "enforce" ? "enforce" : "shadow", pausedUntil: this.pausedUntil, canAsk },
-        this.now(),
-        this.env.hmacKey,
-      );
+      const granted = decision.verdict === "ask" && canAsk ? this.takeGrant(s.sessionKey, prepared.call) : undefined;
+      const outcome: Outcome = granted
+        ? { action: "allow", decision, shadowed: false, reason: "confirmed with /guard allow", ...(decision.rewrite && { params: decision.rewrite }) }
+        : enforce(
+            decision,
+            prepared.call,
+            s,
+            { mode: this.mode === "enforce" ? "enforce" : "shadow", pausedUntil: this.pausedUntil, canAsk },
+            this.now(),
+            this.env.hmacKey,
+          );
+      if (granted) this.onResolution(granted.granted === "always" ? "allow-always" : "allow-once", granted.call, granted.decision);
       if (this.now() - start > this.config.deadlineMs) throw new DeadlineError("deadline exceeded");
 
       // Up-front labels for anything that may run. Labeling an ask that ends up denied over-labels,
@@ -341,6 +383,15 @@ export class Guard {
     if (outcome.action === "allow") return { params: finalParams };
 
     const text = approvalText(prepared.call, decision, s, this.now());
+    if (this.confirmVia === "command") {
+      const p = this.pendingFor(s.sessionKey, prepared.call, decision, text.action);
+      return {
+        block: true,
+        blockReason:
+          `[Guard] This needs the owner's OK: ${text.why} Ask the owner to reply "/guard allow ${p.code}" ` +
+          `(or "/guard allow ${p.code} always"), then try the same action again. Don't retry before the owner confirms.`,
+      };
+    }
     return {
       params: finalParams,
       requireApproval: {
@@ -359,7 +410,7 @@ export class Guard {
     if (this.mode !== "enforce") return { params: event.params };
     const other = this.config.failMode.other;
     if (other === "allow") return { params: event.params };
-    if (other === "ask" && canAsk) {
+    if (other === "ask" && canAsk && this.confirmVia === "approval") {
       return {
         params: event.params,
         requireApproval: {
@@ -400,6 +451,80 @@ export class Guard {
     } catch {
       // Fire-and-forget by host contract; never throw back.
     }
+  }
+
+  // ---- owner confirmation by command (confirm: command) --------------------------------------
+
+  private log(rec: Record<string, unknown>): void {
+    try {
+      this.audit.append(rec);
+    } catch {
+      // The audit log must never break a decision.
+    }
+  }
+
+  private digest(call: ToolCall): string {
+    return hmac(this.env.hmacKey, `${call.tool}\u0000${JSON.stringify(call.params)}`);
+  }
+
+  private pruneConfirmations(): void {
+    const now = this.now();
+    for (const [code, p] of this.confirms) if (p.expiresAt <= now) this.confirms.delete(code);
+    bounded(this.confirms, MAX_CONFIRMATIONS);
+  }
+
+  /** The pending confirmation for this exact call, reusing its code on retries. */
+  private pendingFor(sessionKey: string, call: ToolCall, decision: Decision, summary: string): PendingConfirmation {
+    this.pruneConfirmations();
+    const digest = this.digest(call);
+    for (const p of this.confirms.values()) if (p.sessionKey === sessionKey && p.digest === digest && !p.granted) return p;
+    let code = randomBytes(3).toString("hex");
+    while (this.confirms.has(code)) code = randomBytes(3).toString("hex");
+    const now = this.now();
+    const p: PendingConfirmation = {
+      code, sessionKey, tool: call.tool, digest, summary: summary.slice(0, 160), createdAt: now,
+      expiresAt: now + this.config.approvalTimeoutSec * 1000, call, decision,
+    };
+    this.confirms.set(code, p);
+    this.log({ ts: now, kind: "confirm-pending", code, tool: call.tool, callId: call.id, sessionKey });
+    return p;
+  }
+
+  /** A granted confirmation for this exact call in this session, consumed on use. */
+  private takeGrant(sessionKey: string, call: ToolCall): PendingConfirmation | undefined {
+    if (this.confirms.size === 0) return undefined;
+    this.pruneConfirmations();
+    const digest = this.digest(call);
+    for (const [code, p] of this.confirms) {
+      if (p.granted && p.sessionKey === sessionKey && p.digest === digest) {
+        this.confirms.delete(code);
+        return p;
+      }
+    }
+    return undefined;
+  }
+
+  pendingConfirmations(): PendingConfirmation[] {
+    this.pruneConfirmations();
+    return [...this.confirms.values()];
+  }
+
+  /** `/guard allow <code> [always]`. The command itself is owner-only. */
+  grantConfirmation(code: string, always: boolean): PendingConfirmation | undefined {
+    this.pruneConfirmations();
+    const p = this.confirms.get(code.toLowerCase());
+    if (!p) return undefined;
+    p.granted = always ? "always" : "once";
+    this.log({ ts: this.now(), kind: "confirm-granted", code: p.code, always, tool: p.tool, sessionKey: p.sessionKey });
+    return p;
+  }
+
+  denyConfirmation(code: string): boolean {
+    const p = this.confirms.get(code.toLowerCase());
+    if (!p) return false;
+    this.confirms.delete(p.code);
+    this.log({ ts: this.now(), kind: "confirm-denied", code: p.code, tool: p.tool, sessionKey: p.sessionKey });
+    return true;
   }
 
   forgetRule(id: string): boolean {

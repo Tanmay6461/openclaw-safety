@@ -130,6 +130,8 @@ export interface CommandContext {
   channel?: string;
   sessionKey?: string;
   isAuthorizedSender?: boolean;
+  /** Sent to commands with requiredScopes (channel results §b). */
+  senderIsOwner?: boolean;
 }
 
 export interface CommandDefinition {
