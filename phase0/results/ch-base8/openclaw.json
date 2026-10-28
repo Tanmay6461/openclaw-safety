@@ -1,0 +1,151 @@
+{
+  "gateway": {
+    "mode": "local",
+    "port": 25761,
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": "<redacted-test-token>"
+    },
+    "controlUi": {
+      "enabled": false
+    }
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "mock": {
+        "baseUrl": "http://127.0.0.1:25762/v1",
+        "apiKey": "mock-key",
+        "api": "openai-completions",
+        "agentRuntime": {
+          "id": "openclaw"
+        },
+        "request": {
+          "allowPrivateNetwork": true
+        },
+        "timeoutSeconds": 60,
+        "models": [
+          {
+            "id": "mock-model",
+            "name": "Mock",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 128000,
+            "maxTokens": 4096
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "mock/mock-model",
+        "fallbacks": []
+      },
+      "models": {
+        "mock/mock-model": {
+          "agentRuntime": {
+            "id": "openclaw"
+          }
+        }
+      },
+      "workspace": "/pg/runs/ch-base8/state/workspace",
+      "skipBootstrap": true,
+      "timeoutSeconds": 180,
+      "heartbeat": {
+        "every": "0m"
+      }
+    }
+  },
+  "session": {
+    "dmScope": "per-channel-peer"
+  },
+  "commands": {
+    "ownerAllowFrom": [
+      "qa-channel:alice"
+    ]
+  },
+  "approvals": {
+    "plugin": {
+      "enabled": true,
+      "mode": "session"
+    }
+  },
+  "channels": {
+    "qa-channel": {
+      "enabled": true,
+      "baseUrl": "http://127.0.0.1:25763",
+      "botUserId": "openclaw",
+      "botDisplayName": "OpenClaw QA",
+      "allowFrom": [
+        "alice",
+        "bob"
+      ],
+      "groupPolicy": "open",
+      "pollTimeoutMs": 1000
+    }
+  },
+  "tools": {
+    "profile": "full",
+    "exec": {
+      "host": "gateway",
+      "mode": "full",
+      "strictInlineEval": false
+    },
+    "web": {
+      "fetch": {
+        "ssrfPolicy": {
+          "dangerouslyAllowPrivateNetwork": true
+        }
+      }
+    }
+  },
+  "skills": {
+    "allowBundled": []
+  },
+  "plugins": {
+    "enabled": true,
+    "load": {
+      "paths": [
+        "/pg/probe-plugin",
+        "/pg/oc/fixtures/qa-channel"
+      ]
+    },
+    "entries": {
+      "qa-channel": {
+        "enabled": true
+      },
+      "pg-probe": {
+        "enabled": true,
+        "hooks": {
+          "allowConversationAccess": true,
+          "timeoutMs": 15000
+        },
+        "config": {
+          "logPath": "/pg/runs/ch-base8/probe.jsonl",
+          "stampPersist": true,
+          "raceTest": true,
+          "approveTools": [
+            "exec"
+          ],
+          "approveMatch": "pg-approve-low",
+          "approveHighTools": [
+            "exec"
+          ],
+          "approveHighMatch": "pg-approve-high",
+          "approvalTimeoutMs": 90000
+        }
+      }
+    }
+  }
+}

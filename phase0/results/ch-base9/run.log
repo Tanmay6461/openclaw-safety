@@ -1,0 +1,10 @@
+run=/pg/runs/ch-base9 gateway=20981 mock=20982 bus=20983 tests=c4g-background variant=base
+mock: mock-llm listening on http://127.0.0.1:20982 (scenarios: default, persist-order, parallel-tools, params-race, spawn, meta-fetch, meta-spawn, message-self, meta-exec, approve-low, approve-race, approve-both, message-approve, message-guard, exec-approve, spawn-exec, child-exec, send-exec, message-approve-meta, message-guard-meta, exec-approve-cli, spawn-exec-meta, send-exec-meta, self-approve-parallel, self-approve-background)
+bus: {"ready":true,"baseUrl":"http://127.0.0.1:20983"}
+gateway ready
+[driver] c4g-background start
+[driver] c4g-background inbound
+[driver] c4g-background resolution decision=allow-once
+[driver] c4g-background tool-result decision=allow-once
+[driver]  driver-done
+report: /pg/runs/ch-base9/report.md

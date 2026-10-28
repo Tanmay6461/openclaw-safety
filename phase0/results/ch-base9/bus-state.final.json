@@ -1,0 +1,189 @@
+{
+  "cursor": 4,
+  "conversations": [
+    {
+      "id": "alice",
+      "kind": "direct",
+      "accountId": "default"
+    }
+  ],
+  "threads": [],
+  "messages": [
+    {
+      "id": "0532c195-4e42-4899-ace9-98fa9592e925",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "alice",
+      "senderName": "alice",
+      "text": "Background self approve. [scenario:self-approve-background] CONFIG=/pg/runs/ch-base9/state/openclaw.json PORT=20981",
+      "timestamp": 1793217837842,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "8c68f12f-c50d-4657-9a45-53e01acef884",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "🛡️ Plugin approval required\nTitle: pg-probe: approve exec?\nDescription: pg-probe test approval (low) for exec {\"command\":\"echo pg-approve-low self-background\"}\nTool: exec\nPlugin: pg-probe\nAgent: main\nID: plugin:24490949-1160-42a0-b115-9273f345857d\nExpires in: 90s\nReply with: /approve plugin:24490949-1160-42a0-b115-9273f345857d allow-once|allow-always|deny\n\n- Allow Once\n- Allow Always\n- Deny",
+      "timestamp": 1793217865245,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "23f75952-97e5-43a3-8935-841bf3553968",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "✅ Plugin approval allowed once. Resolved by cli. ID: plugin:24490949-1160-42a0-b115-9273f345857d",
+      "timestamp": 1793217884555,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "bf584b5f-eaa1-4466-8888-dfac5ce4fe5f",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "[mock] self-approve-background done",
+      "timestamp": 1793217885632,
+      "replyToId": "0532c195-4e42-4899-ace9-98fa9592e925",
+      "attachments": [],
+      "toolCalls": [
+        {
+          "name": "exec",
+          "arguments": {
+            "command": "[redacted]",
+            "background": true,
+            "timeoutSeconds": 120
+          }
+        },
+        {
+          "name": "exec",
+          "arguments": {
+            "command": "[redacted]"
+          }
+        }
+      ],
+      "reactions": []
+    }
+  ],
+  "events": [
+    {
+      "cursor": 1,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "0532c195-4e42-4899-ace9-98fa9592e925",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "alice",
+        "senderName": "alice",
+        "text": "Background self approve. [scenario:self-approve-background] CONFIG=/pg/runs/ch-base9/state/openclaw.json PORT=20981",
+        "timestamp": 1793217837842,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 2,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "8c68f12f-c50d-4657-9a45-53e01acef884",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "🛡️ Plugin approval required\nTitle: pg-probe: approve exec?\nDescription: pg-probe test approval (low) for exec {\"command\":\"echo pg-approve-low self-background\"}\nTool: exec\nPlugin: pg-probe\nAgent: main\nID: plugin:24490949-1160-42a0-b115-9273f345857d\nExpires in: 90s\nReply with: /approve plugin:24490949-1160-42a0-b115-9273f345857d allow-once|allow-always|deny\n\n- Allow Once\n- Allow Always\n- Deny",
+        "timestamp": 1793217865245,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 3,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "23f75952-97e5-43a3-8935-841bf3553968",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "✅ Plugin approval allowed once. Resolved by cli. ID: plugin:24490949-1160-42a0-b115-9273f345857d",
+        "timestamp": 1793217884555,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 4,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "bf584b5f-eaa1-4466-8888-dfac5ce4fe5f",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "[mock] self-approve-background done",
+        "timestamp": 1793217885632,
+        "replyToId": "0532c195-4e42-4899-ace9-98fa9592e925",
+        "attachments": [],
+        "toolCalls": [
+          {
+            "name": "exec",
+            "arguments": {
+              "command": "[redacted]",
+              "background": true,
+              "timeoutSeconds": 120
+            }
+          },
+          {
+            "name": "exec",
+            "arguments": {
+              "command": "[redacted]"
+            }
+          }
+        ],
+        "reactions": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+[driver] c4f-same-run start
+[driver] c4f-same-run inbound
+[driver] c4f-same-run resolution none within 60000ms
+[driver] c4f-same-run tool-result no resolution
+[driver]  driver-done

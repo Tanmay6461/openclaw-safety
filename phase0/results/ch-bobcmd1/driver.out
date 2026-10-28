@@ -1,0 +1,47 @@
+[driver] a-dm-bob start
+[driver] a-dm-bob inbound
+[driver] a-dm-bob agent_end ok
+[driver] b start
+[driver] b-guard-alice-direct inbound
+[driver] b-guard-alice-direct result handler=true replies=1 agentRun=false
+[driver] b-guardauth-alice-direct inbound
+[driver] b-guardauth-alice-direct result handler=true replies=1 agentRun=false
+[driver] b-guard-native-alice-direct inbound
+[driver] b-guard-native-alice-direct result handler=true replies=1 agentRun=false
+[driver] b-guard-bob-direct inbound
+[driver] b-guard-bob-direct result handler=false replies=1 agentRun=false
+[driver] b-guardauth-bob-direct inbound
+[driver] b-guardauth-bob-direct result handler=true replies=1 agentRun=false
+[driver] b-guard-native-bob-direct inbound
+[driver] b-guard-native-bob-direct result handler=false replies=1 agentRun=false
+[driver] b-guard-bob-group inbound
+[driver] b-guard-bob-group result handler=false replies=1 agentRun=false
+[driver] b-guardauth-bob-group inbound
+[driver] b-guardauth-bob-group result handler=true replies=1 agentRun=false
+[driver] b-guard-native-bob-group inbound
+[driver] b-guard-native-bob-group result handler=false replies=1 agentRun=false
+[driver] b-guard-alice-group inbound
+[driver] b-guard-alice-group result handler=true replies=1 agentRun=false
+[driver] b-guardauth-alice-group inbound
+[driver] b-guardauth-alice-group result handler=true replies=1 agentRun=false
+[driver] b-guard-native-alice-group inbound
+[driver] b-guard-native-alice-group result handler=true replies=1 agentRun=false
+[driver] c1-owner start
+[driver] c1-owner inbound
+[driver] c1-owner approval-prompt id=plugin:9a5c0ab9-382f-4c05-bb2f-6795e0fa66f3
+[driver] c1-owner inbound
+[driver] c1-owner resolution decision=allow-once
+[driver] c1-owner agent_end ok
+[driver] c2-bob-dm start
+[driver] c2-bob-dm inbound
+[driver] c2-bob-dm approval-prompt id=plugin:d25770fa-9655-4a55-a612-812c2671417f
+[driver] c2-bob-dm inbound
+[driver] c2-bob-dm resolution decision=allow-once
+[driver] c2-bob-dm bob-replies
+[driver] c2-bob-group start
+[driver] c2-bob-group inbound
+[driver] c2-bob-group approval-prompt id=plugin:7f1a2de3-2329-417e-bcdf-982fd9648356
+[driver] c2-bob-group inbound
+[driver] c2-bob-group resolution decision=allow-once
+[driver] c2-bob-group bob-replies
+[driver]  driver-done

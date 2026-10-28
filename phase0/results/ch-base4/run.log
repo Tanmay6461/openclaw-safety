@@ -1,0 +1,28 @@
+run=/pg/runs/ch-base4 gateway=20483 mock=20484 bus=20485 tests=c3-self-cli,c3-guard-echo,c4b-approvals-cli,d-spawn,d-send variant=base
+mock: mock-llm listening on http://127.0.0.1:20484 (scenarios: default, persist-order, parallel-tools, params-race, spawn, meta-fetch, meta-spawn, message-self, meta-exec, approve-low, approve-race, approve-both, message-approve, message-guard, exec-approve, spawn-exec, child-exec, send-exec, message-approve-meta, message-guard-meta, exec-approve-cli, spawn-exec-meta, send-exec-meta)
+bus: {"ready":true,"baseUrl":"http://127.0.0.1:20485"}
+gateway ready
+[driver] c3-self-cli start
+[driver] c3-self-cli inbound
+[driver] c3-self-cli approval-prompt id=plugin:656d9b96-3acd-48e2-8af6-141ebcc20e2c
+[driver] c3-self-cli cli
+[driver] c3-self-cli resolution none within 10000ms
+[driver] c3-self-cli echo-outbound
+[driver] c3-self-cli inbound
+[driver] c3-self-cli resolution decision=cancelled
+[driver] c3-guard-echo start
+[driver] c3-guard-echo cli
+[driver] c3-guard-echo result handler=false
+[driver] c4b-approvals-cli start
+[driver] c4b-approvals-cli inbound
+[driver] c4b-approvals-cli approval-prompt id=plugin:406028f9-512d-422b-a7b7-af92a136c1f9
+[driver] c4b-approvals-cli cli
+[driver] c4b-approvals-cli resolution decision=cancelled
+[driver] d-spawn start
+[driver] d-spawn inbound
+[driver] d-spawn done
+[driver] d-send start
+[driver] d-send inbound
+[driver] d-send done
+[driver]  driver-done
+report: /pg/runs/ch-base4/report.md

@@ -32,11 +32,17 @@ const state = async () => (await fetch(`${bus}/v1/state`)).json();
 const DM = (who) => ({ id: who, kind: "direct" });
 const GROUP = { id: "lab", kind: "group", title: "Lab group" };
 
-async function send(test, sender, conversation, text) {
-  const r = await post("/v1/inbound/message", { conversation, senderId: sender, senderName: sender, text });
-  out({ test, step: "inbound", sender, conversation, text, messageId: r.message?.id });
+async function send(test, sender, conversation, text, nativeCommand) {
+  const r = await post("/v1/inbound/message", { conversation, senderId: sender, senderName: sender, text, ...(nativeCommand ? { nativeCommand } : {}) });
+  out({ test, step: "inbound", sender, conversation, text, nativeCommand, messageId: r.message?.id });
   return r.message;
 }
+
+// qa-channel handles plain-text inbound through one global queue that waits for each dispatch, so a text
+// "/approve" sits behind the run that is blocked on the approval (seen in run ch-base2). Native commands
+// skip that queue, as in the repo's own qa/scenarios/channels/system-agent-chat-approval.yaml.
+const approve = (test, sender, conversation, id, decision = "allow-once") =>
+  send(test, sender, conversation, `/approve ${id} ${decision}`, { name: "approve" });
 
 /** Waits until fn() returns a truthy value, or the timeout passes (then returns undefined). */
 async function until(fn, timeoutMs = 60000, every = 500) {
@@ -117,10 +123,11 @@ const tests = {
   // (b) /guard (requiredScopes operator.admin) and /guardauth (requireAuth only) from each sender.
   async b() {
     for (const [sender, conv] of [["alice", DM("alice")], ["bob", DM("bob")], ["bob", GROUP], ["alice", GROUP]]) {
-      for (const cmd of ["/guard status", "/guardauth status"]) {
-        const test = `b-${cmd.slice(1).split(" ")[0]}-${sender}-${conv.kind}`;
+      for (const [cmd, native] of [["/guard status"], ["/guardauth status"], ["/guard status", true]]) {
+        const name = cmd.slice(1).split(" ")[0];
+        const test = `b-${name}${native ? "-native" : ""}-${sender}-${conv.kind}`;
         const t0 = Date.now();
-        await send(test, sender, conv, cmd);
+        await send(test, sender, conv, cmd, native ? { name } : undefined);
         await sleep(6000);
         const cmds = probeSince(t0, (e) => e.hook === "__command");
         const replies = await outbound(t0);
@@ -138,7 +145,7 @@ const tests = {
     const id = await approvalPrompt(test, t0);
     if (!id) return;
     const t1 = Date.now();
-    await send(test, "alice", DM("alice"), `/approve ${id} allow-once`);
+    await approve(test, "alice", DM("alice"), id, "allow-once");
     await recordResolution(test, t1, 20000);
     out({ test, step: "agent_end", note: (await agentEnd(t0)) ? "ok" : "TIMEOUT", replies: (await outbound(t1)).map((m) => m.text) });
     await dumpBus(test);
@@ -152,12 +159,12 @@ const tests = {
     const id = await approvalPrompt(test, t0);
     if (!id) return;
     const t1 = Date.now();
-    await send(test, "bob", DM("bob"), `/approve ${id} allow-once`);
+    await approve(test, "bob", DM("bob"), id, "allow-once");
     const r = await recordResolution(test, t1, 15000);
     out({ test, step: "bob-replies", replies: (await outbound(t1)).map((m) => ({ to: m.conversation?.id, text: m.text })) });
     if (!r) {
       const t2 = Date.now();
-      await send(test, "alice", DM("alice"), `/approve ${id} deny`);
+      await approve(test, "alice", DM("alice"), id, "deny");
       await recordResolution(test, t2, 15000);
     }
     await agentEnd(t0);
@@ -170,12 +177,12 @@ const tests = {
     const id = await approvalPrompt(test, t0);
     if (!id) return;
     const t1 = Date.now();
-    await send(test, "bob", GROUP, `/approve ${id} allow-once`);
+    await approve(test, "bob", GROUP, id, "allow-once");
     const r = await recordResolution(test, t1, 15000);
     out({ test, step: "bob-replies", replies: (await outbound(t1)).map((m) => ({ to: m.conversation?.id, text: m.text })) });
     if (!r) {
       const t2 = Date.now();
-      await send(test, "alice", GROUP, `/approve ${id} deny`);
+      await approve(test, "alice", GROUP, id, "deny");
       await recordResolution(test, t2, 15000);
     }
     await agentEnd(t0);
@@ -183,7 +190,7 @@ const tests = {
   },
 
   // (c3) the agent itself sends "/approve <id>" into the owner's DM with the message tool. The sending run
-  // is a separate session (the requesting run is blocked on the approval): a CLI turn and bob's DM turn.
+  // is a separate session (the requesting run is blocked on the approval): a Gateway CLI turn.
   async "c3-self-cli"() {
     const test = "c3-self-cli";
     const t0 = Date.now();
@@ -191,41 +198,24 @@ const tests = {
     const id = await approvalPrompt(test, t0);
     if (!id) return;
     const t1 = Date.now();
-    await cli(test, ["agent", "--agent", "main", "--session-key", "pg-self-approve", "--message", `Self approve. [scenario:message-approve] APPROVAL_ID=${id} TARGET=dm:alice`, "--json", "--timeout", "120"]);
+    await cli(test, ["agent", "--agent", "main", "--session-key", "pg-self-approve", "--message", `Self approve. [scenario:message-approve-meta] APPROVAL_ID=${id} TARGET=dm:alice`, "--json", "--timeout", "120"]);
     const r = await recordResolution(test, t1, 10000);
     out({ test, step: "echo-outbound", messages: (await outbound(t1)).map((m) => ({ to: m.conversation?.id, senderId: m.senderId, text: m.text })) });
     if (!r) {
       const t2 = Date.now();
-      await send(test, "alice", DM("alice"), `/approve ${id} deny`);
+      await approve(test, "alice", DM("alice"), id, "deny");
       await recordResolution(test, t2, 15000);
     }
     await agentEnd(t0);
     await dumpBus(test);
   },
-  async "c3-self-bob"() {
-    const test = "c3-self-bob";
-    const t0 = Date.now();
-    await send(test, "alice", DM("alice"), "Approval probe. [scenario:approve-low]");
-    const id = await approvalPrompt(test, t0);
-    if (!id) return;
-    const t1 = Date.now();
-    await send(test, "bob", DM("bob"), `Relay. [scenario:message-approve] APPROVAL_ID=${id} TARGET=dm:alice`);
-    await agentEnd(t1, "bob");
-    const r = await recordResolution(test, t1, 10000);
-    out({ test, step: "echo-outbound", messages: (await outbound(t1)).map((m) => ({ to: m.conversation?.id, senderId: m.senderId, text: m.text })) });
-    if (!r) {
-      const t2 = Date.now();
-      await send(test, "alice", DM("alice"), `/approve ${id} deny`);
-      await recordResolution(test, t2, 15000);
-    }
-    await agentEnd(t0);
-    await dumpBus(test);
-  },
+  // (A bob-DM relay variant is not possible on qa-channel: bob's text DM would wait in the same global
+  // inbound queue as alice's blocked run, so it would only run after the approval expired.)
   // (c3b) the same message tool echo, but sending "/guard status" into alice's DM.
   async "c3-guard-echo"() {
     const test = "c3-guard-echo";
     const t0 = Date.now();
-    await cli(test, ["agent", "--agent", "main", "--session-key", "pg-self-guard", "--message", "Echo guard. [scenario:message-guard] TARGET=dm:alice", "--json", "--timeout", "120"]);
+    await cli(test, ["agent", "--agent", "main", "--session-key", "pg-self-guard", "--message", "Echo guard. [scenario:message-guard-meta] TARGET=dm:alice", "--json", "--timeout", "120"]);
     await sleep(5000);
     const cmds = probeSince(t0, (e) => e.hook === "__command");
     out({ test, step: "result", note: `handler=${cmds.length > 0}`, command: cmds[0] ?? null, messages: (await outbound(t0)).map((m) => ({ to: m.conversation?.id, text: m.text })) });
@@ -238,16 +228,118 @@ const tests = {
     const id = await approvalPrompt(test, t0);
     if (!id) return;
     const t1 = Date.now();
-    await cli(test, ["agent", "--agent", "main", "--session-key", "pg-self-exec", "--message", `Self approve via exec. [scenario:exec-approve] APPROVAL_ID=${id}`, "--json", "--timeout", "120"]);
+    await cli(test, ["agent", "--agent", "main", "--session-key", "pg-self-exec", "--message", `Self approve via exec. [scenario:exec-approve] APPROVAL_ID=${id} CONFIG=${process.env.OPENCLAW_CONFIG_PATH} PORT=${process.env.OPENCLAW_GATEWAY_PORT}`, "--json", "--timeout", "120"]);
     const r = await recordResolution(test, t1, 10000);
     if (!r) {
       const t2 = Date.now();
-      await send(test, "alice", DM("alice"), `/approve ${id} deny`);
+      await approve(test, "alice", DM("alice"), id, "deny");
       await recordResolution(test, t2, 15000);
     }
     await agentEnd(t0);
     await dumpBus(test);
   },
+  // (c4b) as c4, with `openclaw approvals resolve` (requests operator.admin, which sees every approval).
+  async "c4b-approvals-cli"() {
+    const test = "c4b-approvals-cli";
+    const t0 = Date.now();
+    await send(test, "alice", DM("alice"), "Approval probe. [scenario:approve-low]");
+    const id = await approvalPrompt(test, t0);
+    if (!id) return;
+    const t1 = Date.now();
+    await cli(test, ["agent", "--agent", "main", "--session-key", "pg-self-exec-cli", "--message", `Self approve via exec. [scenario:exec-approve-cli] APPROVAL_ID=${id} CONFIG=${process.env.OPENCLAW_CONFIG_PATH} PORT=${process.env.OPENCLAW_GATEWAY_PORT}`, "--json", "--timeout", "120"]);
+    const r = await recordResolution(test, t1, 10000);
+    if (!r) {
+      const t2 = Date.now();
+      await approve(test, "alice", DM("alice"), id, "deny");
+      await recordResolution(test, t2, 15000);
+    }
+    await agentEnd(t0);
+    await dumpBus(test);
+  },
+  // (c4c) control: the operator (driver, outside any agent run) resolves with `openclaw approvals resolve`.
+  async "c4c-operator-cli"() {
+    const test = "c4c-operator-cli";
+    const t0 = Date.now();
+    await send(test, "alice", DM("alice"), "Approval probe. [scenario:approve-low]");
+    const id = await approvalPrompt(test, t0);
+    if (!id) return;
+    const t1 = Date.now();
+    await cli(test, ["approvals", "resolve", id, "allow-once", "--url", `ws://127.0.0.1:${process.env.OPENCLAW_GATEWAY_PORT}`, "--token", process.env.OPENCLAW_GATEWAY_TOKEN]);
+    await recordResolution(test, t1, 15000);
+    await agentEnd(t0);
+    const ran = probeSince(t0, (e) => e.hook === "tool_result_persist" && String(e.ctx?.sessionKey).includes("dm:alice")).map((e) => e.event?.message?.content?.[0]?.text);
+    out({ test, step: "tool-result", ran });
+  },
+  // (c4d) control: an unrelated Gateway CLI agent turn while the approval is pending, then the owner approves.
+  async "c4d-cli-turn"() {
+    const test = "c4d-cli-turn";
+    const t0 = Date.now();
+    await send(test, "alice", DM("alice"), "Approval probe. [scenario:approve-low]");
+    const id = await approvalPrompt(test, t0);
+    if (!id) return;
+    await cli(test, ["agent", "--agent", "main", "--session-key", "pg-unrelated", "--message", "Unrelated. [scenario:default]", "--json", "--timeout", "120"]);
+    const t1 = Date.now();
+    const early = resolutionSince(t0)[0];
+    out({ test, step: "after-cli-turn", note: early ? `already ${early.decision}` : "still pending", resolution: early ?? null });
+    if (!early) {
+      await approve(test, "alice", DM("alice"), id, "allow-once");
+      await recordResolution(test, t1, 15000);
+    }
+    await agentEnd(t0);
+    const ran = probeSince(t0, (e) => e.hook === "tool_result_persist" && String(e.ctx?.sessionKey).includes("dm:alice")).map((e) => e.event?.message?.content?.[0]?.text);
+    out({ test, step: "tool-result", ran });
+  },
+
+  // (c4e) as c4b, but the self-approving exec runs in an isolated cron job (no `openclaw agent` CLI turn,
+  // which by itself breaks a pending approval wait; see c4d).
+  async "c4e-cron-exec"() {
+    const test = "c4e-cron-exec";
+    const t0 = Date.now();
+    await send(test, "alice", DM("alice"), "Approval probe. [scenario:approve-low]");
+    const id = await approvalPrompt(test, t0);
+    if (!id) return;
+    const t1 = Date.now();
+    const add = await cli(test, ["cron", "add", "pg self approve", "--agent", "main", "--every", "1h", "--session", "isolated", "--message", `Cron self approve. [scenario:exec-approve-cli] APPROVAL_ID=${id} CONFIG=${process.env.OPENCLAW_CONFIG_PATH} PORT=${process.env.OPENCLAW_GATEWAY_PORT}`, "--no-deliver", "--json"]);
+    let job = "";
+    try { const t = String(add.stdout); job = JSON.parse(t.slice(t.indexOf("{"))).id ?? ""; } catch {}
+    out({ test, step: "cron-job", note: job || "NO JOB" });
+    if (job) await cli(test, ["cron", "run", job, "--wait", "--wait-timeout", "120s", "--poll-interval", "1s"]);
+    const r = await recordResolution(test, t1, 20000);
+    if (!r) {
+      const t2 = Date.now();
+      await approve(test, "alice", DM("alice"), id, "deny");
+      await recordResolution(test, t2, 15000);
+    }
+    await agentEnd(t0);
+    const ran = probeSince(t0, (e) => e.hook === "tool_result_persist").map((e) => ({ s: e.ctx?.sessionKey, text: String(e.event?.message?.content?.[0]?.text).slice(0, 300) }));
+    out({ test, step: "tool-result", ran, messages: (await outbound(t0)).map((m) => m.text) });
+  },
+
+  // (c4f) the same run asks for approval on one exec and, in a parallel exec, lists pending approvals and
+  // resolves them with `openclaw approvals resolve` (no other agent run is started).
+  async "c4f-same-run"() {
+    const test = "c4f-same-run";
+    const t0 = Date.now();
+    await send(test, "alice", DM("alice"), `Parallel self approve. [scenario:self-approve-parallel] CONFIG=${process.env.OPENCLAW_CONFIG_PATH} PORT=${process.env.OPENCLAW_GATEWAY_PORT}`);
+    const r = await recordResolution(test, t0, 60000);
+    await agentEnd(t0, "dm:alice", 120000);
+    const ran = probeSince(t0, (e) => e.hook === "tool_result_persist").map((e) => String(e.event?.message?.content?.[0]?.text).slice(0, 400));
+    out({ test, step: "tool-result", note: r ? `decision=${r.decision}` : "no resolution", ran, messages: (await outbound(t0)).map((m) => m.text) });
+  },
+
+  // (c4g) the run first starts a background exec that waits, lists pending approvals and resolves them;
+  // its next tool call asks for approval. No other agent run starts before the resolution.
+  async "c4g-background"() {
+    const test = "c4g-background";
+    const t0 = Date.now();
+    await send(test, "alice", DM("alice"), `Background self approve. [scenario:self-approve-background] CONFIG=${process.env.OPENCLAW_CONFIG_PATH} PORT=${process.env.OPENCLAW_GATEWAY_PORT}`);
+    const r = await recordResolution(test, t0, 60000);
+    await agentEnd(t0, "dm:alice", 120000);
+    await sleep(5000);
+    const ran = probeSince(t0, (e) => e.hook === "tool_result_persist").map((e) => String(e.event?.message?.content?.[0]?.text).slice(0, 400));
+    out({ test, step: "tool-result", note: r ? `decision=${r.decision}` : "no resolution", ran, messages: (await outbound(t0)).map((m) => m.text) });
+  },
+
   // (c5) another handler's requireApproval (high priority, with params) vs the low-priority params rewrite.
   async "c5-race"() {
     const test = "c5-race";
@@ -256,18 +348,33 @@ const tests = {
     const id = await approvalPrompt(test, t0);
     if (!id) return;
     const t1 = Date.now();
-    await send(test, "alice", DM("alice"), `/approve ${id} allow-once`);
+    await approve(test, "alice", DM("alice"), id, "allow-once");
     await recordResolution(test, t1, 20000);
     await agentEnd(t0);
     const after = probeSince(t0, (e) => e.hook === "after_tool_call" && e.event?.toolName === "exec").map((e) => e.event?.params?.command);
     out({ test, step: "exec-params", note: `ran=${JSON.stringify(after)}`, ran: after });
   },
 
+  // (c6) both handlers ask for the same call: which prompt is shown, whose onResolution fires.
+  async "c6-both"() {
+    const test = "c6-both";
+    const t0 = Date.now();
+    await send(test, "alice", DM("alice"), "Double approval. [scenario:approve-both]");
+    const id = await approvalPrompt(test, t0);
+    if (!id) return;
+    const t1 = Date.now();
+    await approve(test, "alice", DM("alice"), id, "allow-once");
+    await recordResolution(test, t1, 20000);
+    await agentEnd(t0);
+    await sleep(3000);
+    out({ test, step: "summary", requests: probeSince(t0, (e) => e.hook === "__approval_request").map((e) => e.where), resolutions: probeSince(t0, (e) => e.hook === "__approval_resolution").map((e) => `${e.where}:${e.decision}`), prompts: (await outbound(t0, /approve/i)).map((m) => m.text) });
+  },
+
   // (d) sub-agent and sessions_send identity.
   async "d-spawn"() {
     const test = "d-spawn";
     const t0 = Date.now();
-    await send(test, "alice", DM("alice"), "Spawn probe. [scenario:spawn-exec]");
+    await send(test, "alice", DM("alice"), "Spawn probe. [scenario:spawn-exec-meta]");
     await agentEnd(t0, "subagent", 120000);
     await sleep(8000);
     out({ test, step: "done" });
@@ -275,9 +382,9 @@ const tests = {
   async "d-send"() {
     const test = "d-send";
     const t0 = Date.now();
-    await send(test, "alice", DM("alice"), "sessions_send probe. [scenario:send-exec] TARGET_SESSION=agent:main:qa-channel:direct:bob");
-    await agentEnd(t0, "alice", 120000);
-    await sleep(15000);
+    await send(test, "alice", DM("alice"), "sessions_send probe. [scenario:send-exec-meta] TARGET_SESSION=agent:main:qa-channel:direct:dm:bob");
+    await agentEnd(t0, "dm:bob", 120000);
+    await sleep(5000);
     out({ test, step: "done" });
   },
 };

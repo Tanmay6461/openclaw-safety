@@ -1,0 +1,7 @@
+{"t":1793217238595,"test":"a-dm-bob","step":"start"}
+{"t":1793217238682,"test":"a-dm-bob","step":"inbound","sender":"bob","conversation":{"id":"bob","kind":"direct"},"text":"Non-owner DM probe. [scenario:persist-order]","messageId":"92dc127b-6235-43c4-b4de-04baa02069e6"}
+{"t":1793217262294,"test":"a-dm-bob","step":"agent_end","note":"ok"}
+{"t":1793217264299,"test":"d-send","step":"start"}
+{"t":1793217264310,"test":"d-send","step":"inbound","sender":"alice","conversation":{"id":"alice","kind":"direct"},"text":"sessions_send probe. [scenario:send-exec-meta] TARGET_SESSION=agent:main:qa-channel:direct:dm:bob","messageId":"a999ab2f-1ffe-4bd6-aad9-771d69fabd43"}
+{"t":1793217283097,"test":"d-send","step":"done"}
+{"t":1793217285120,"step":"driver-done"}

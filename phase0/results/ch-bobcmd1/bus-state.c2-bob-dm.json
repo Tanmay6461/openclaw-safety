@@ -1,0 +1,1726 @@
+{
+  "cursor": 42,
+  "conversations": [
+    {
+      "id": "bob",
+      "kind": "direct",
+      "accountId": "default"
+    },
+    {
+      "id": "alice",
+      "kind": "direct",
+      "accountId": "default"
+    },
+    {
+      "id": "lab",
+      "kind": "group",
+      "title": "Lab group",
+      "accountId": "default"
+    }
+  ],
+  "threads": [],
+  "messages": [
+    {
+      "id": "fec1e427-00b7-4432-90da-0a4779b6d577",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "bob",
+        "kind": "direct"
+      },
+      "senderId": "bob",
+      "senderName": "bob",
+      "text": "Non-owner DM probe. [scenario:persist-order]",
+      "timestamp": 1793215476866,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "a5b91ee4-1e2d-42b7-9498-89b385b879cc",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "bob",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "[mock] persist-order done",
+      "timestamp": 1793215500506,
+      "replyToId": "fec1e427-00b7-4432-90da-0a4779b6d577",
+      "attachments": [],
+      "toolCalls": [
+        {
+          "name": "read",
+          "arguments": {
+            "path": "[redacted]"
+          }
+        },
+        {
+          "name": "exec",
+          "arguments": {
+            "command": "[redacted]"
+          }
+        },
+        {
+          "name": "web_fetch",
+          "arguments": {
+            "url": "[redacted]"
+          }
+        }
+      ],
+      "reactions": [],
+      "deleted": true
+    },
+    {
+      "id": "ee103ae0-696a-4e13-b96d-44feeb840755",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "bob",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "[mock] persist-order done",
+      "timestamp": 1793215501409,
+      "replyToId": "fec1e427-00b7-4432-90da-0a4779b6d577",
+      "attachments": [],
+      "toolCalls": [
+        {
+          "name": "read",
+          "arguments": {
+            "path": "[redacted]"
+          }
+        },
+        {
+          "name": "exec",
+          "arguments": {
+            "command": "[redacted]"
+          }
+        },
+        {
+          "name": "web_fetch",
+          "arguments": {
+            "url": "[redacted]"
+          }
+        }
+      ],
+      "reactions": []
+    },
+    {
+      "id": "8bc7f217-1d90-4b66-82d1-5bc44e896c5e",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "alice",
+      "senderName": "alice",
+      "text": "/guard status",
+      "timestamp": 1793215503006,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "9a39e6ac-652c-4683-bd11-bb61a3d037fb",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "guard probe ok: status",
+      "timestamp": 1793215504657,
+      "replyToId": "8bc7f217-1d90-4b66-82d1-5bc44e896c5e",
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "93fd6a7b-eae2-4882-beac-4af5df5a3bb8",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "alice",
+      "senderName": "alice",
+      "text": "/guardauth status",
+      "timestamp": 1793215509042,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "dc336f62-3390-43d8-8628-f236d8041b72",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "guardauth probe ok: status",
+      "timestamp": 1793215510035,
+      "replyToId": "93fd6a7b-eae2-4882-beac-4af5df5a3bb8",
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "52d05fe5-9cab-4aca-8b95-864fa2d3d735",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "alice",
+      "senderName": "alice",
+      "text": "/guard status",
+      "timestamp": 1793215515075,
+      "attachments": [],
+      "nativeCommand": {
+        "name": "guard"
+      },
+      "reactions": []
+    },
+    {
+      "id": "7f0bedc2-ed0a-46bf-b754-fe5314d1e28b",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "guard probe ok: status",
+      "timestamp": 1793215515628,
+      "replyToId": "52d05fe5-9cab-4aca-8b95-864fa2d3d735",
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "9c830a61-2bd8-4441-93a1-68626a66e83c",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "bob",
+        "kind": "direct"
+      },
+      "senderId": "bob",
+      "senderName": "bob",
+      "text": "/guard status",
+      "timestamp": 1793215521107,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "94c8c784-6036-495a-83f5-ed7b2e9b66ed",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "bob",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "⚠️ This command requires gateway scope: operator.admin.",
+      "timestamp": 1793215522037,
+      "replyToId": "9c830a61-2bd8-4441-93a1-68626a66e83c",
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "e0725a35-6a8b-4430-b949-bc979fb335a8",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "bob",
+        "kind": "direct"
+      },
+      "senderId": "bob",
+      "senderName": "bob",
+      "text": "/guardauth status",
+      "timestamp": 1793215527139,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "0a52c167-bb71-4b29-ba86-f14ea74306fa",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "bob",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "guardauth probe ok: status",
+      "timestamp": 1793215528164,
+      "replyToId": "e0725a35-6a8b-4430-b949-bc979fb335a8",
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "619e6534-94d9-43e3-abee-85c2a9990f44",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "bob",
+        "kind": "direct"
+      },
+      "senderId": "bob",
+      "senderName": "bob",
+      "text": "/guard status",
+      "timestamp": 1793215533168,
+      "attachments": [],
+      "nativeCommand": {
+        "name": "guard"
+      },
+      "reactions": []
+    },
+    {
+      "id": "33785fac-684c-45e8-9d04-b15d06bbb5ac",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "bob",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "⚠️ This command requires gateway scope: operator.admin.",
+      "timestamp": 1793215533685,
+      "replyToId": "619e6534-94d9-43e3-abee-85c2a9990f44",
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "40ec8dfc-8918-49e7-ac7f-034edaf833c7",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "lab",
+        "kind": "group",
+        "title": "Lab group"
+      },
+      "senderId": "bob",
+      "senderName": "bob",
+      "text": "/guard status",
+      "timestamp": 1793215539204,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "955dccae-3795-4363-870a-c30c3b79323f",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "lab",
+        "kind": "group",
+        "title": "Lab group"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "⚠️ This command requires gateway scope: operator.admin.",
+      "timestamp": 1793215540439,
+      "replyToId": "40ec8dfc-8918-49e7-ac7f-034edaf833c7",
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "754f0373-34e2-4a86-9305-4fc8f4fd9e5f",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "lab",
+        "kind": "group",
+        "title": "Lab group"
+      },
+      "senderId": "bob",
+      "senderName": "bob",
+      "text": "/guardauth status",
+      "timestamp": 1793215545237,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "f5ad6278-0c44-443b-8a2c-8c1dc2cf11c4",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "lab",
+        "kind": "group",
+        "title": "Lab group"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "guardauth probe ok: status",
+      "timestamp": 1793215546319,
+      "replyToId": "754f0373-34e2-4a86-9305-4fc8f4fd9e5f",
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "b1cda2c5-4c38-4a71-8aa1-73b4dbd5d696",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "lab",
+        "kind": "group",
+        "title": "Lab group"
+      },
+      "senderId": "bob",
+      "senderName": "bob",
+      "text": "/guard status",
+      "timestamp": 1793215551269,
+      "attachments": [],
+      "nativeCommand": {
+        "name": "guard"
+      },
+      "reactions": []
+    },
+    {
+      "id": "e32f0b2f-179c-4ce1-a010-2f20ec59ad5b",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "lab",
+        "kind": "group",
+        "title": "Lab group"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "⚠️ This command requires gateway scope: operator.admin.",
+      "timestamp": 1793215551844,
+      "replyToId": "b1cda2c5-4c38-4a71-8aa1-73b4dbd5d696",
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "8cd97497-bce6-4c2f-a5a7-c1a4d3d755dd",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "lab",
+        "kind": "group",
+        "title": "Lab group"
+      },
+      "senderId": "alice",
+      "senderName": "alice",
+      "text": "/guard status",
+      "timestamp": 1793215557302,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "12136653-0001-4d61-9656-5b7023072faf",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "lab",
+        "kind": "group",
+        "title": "Lab group"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "guard probe ok: status",
+      "timestamp": 1793215558350,
+      "replyToId": "8cd97497-bce6-4c2f-a5a7-c1a4d3d755dd",
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "97403bd4-82e0-42d9-8a81-bf8c182a9635",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "lab",
+        "kind": "group",
+        "title": "Lab group"
+      },
+      "senderId": "alice",
+      "senderName": "alice",
+      "text": "/guardauth status",
+      "timestamp": 1793215563336,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "7d3b6bbd-5f59-482e-ab35-278109d67e01",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "lab",
+        "kind": "group",
+        "title": "Lab group"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "guardauth probe ok: status",
+      "timestamp": 1793215564320,
+      "replyToId": "97403bd4-82e0-42d9-8a81-bf8c182a9635",
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "63c0fabb-528d-402f-9316-d6e2942161c2",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "lab",
+        "kind": "group",
+        "title": "Lab group"
+      },
+      "senderId": "alice",
+      "senderName": "alice",
+      "text": "/guard status",
+      "timestamp": 1793215569368,
+      "attachments": [],
+      "nativeCommand": {
+        "name": "guard"
+      },
+      "reactions": []
+    },
+    {
+      "id": "5334269d-6aa3-4b08-a2a8-9bb488378059",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "lab",
+        "kind": "group",
+        "title": "Lab group"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "guard probe ok: status",
+      "timestamp": 1793215569995,
+      "replyToId": "63c0fabb-528d-402f-9316-d6e2942161c2",
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "0259ef3f-003b-4d18-8c71-884b045152db",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "alice",
+      "senderName": "alice",
+      "text": "Approval probe. [scenario:approve-low]",
+      "timestamp": 1793215577406,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "df34dae0-73e4-400f-b430-f2f21b34f9df",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "🛡️ Plugin approval required\nTitle: pg-probe: approve exec?\nDescription: pg-probe test approval (low) for exec {\"command\":\"echo pg-approve-low ok\"}\nTool: exec\nPlugin: pg-probe\nAgent: main\nID: plugin:9a5c0ab9-382f-4c05-bb2f-6795e0fa66f3\nExpires in: 90s\nReply with: /approve plugin:9a5c0ab9-382f-4c05-bb2f-6795e0fa66f3 allow-once|allow-always|deny\n\n- Allow Once\n- Allow Always\n- Deny",
+      "timestamp": 1793215586753,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "bbc4c809-4977-4e7f-a4f2-e937b028f3cb",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "alice",
+      "senderName": "alice",
+      "text": "/approve plugin:9a5c0ab9-382f-4c05-bb2f-6795e0fa66f3 allow-once",
+      "timestamp": 1793215587121,
+      "attachments": [],
+      "nativeCommand": {
+        "name": "approve"
+      },
+      "reactions": []
+    },
+    {
+      "id": "686065f4-eb0a-4b2b-b17f-86033272b6d0",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "✅ Approval allow-once submitted for plugin:9a5c0ab9-382f-4c05-bb2f-6795e0fa66f3.",
+      "timestamp": 1793215587946,
+      "replyToId": "bbc4c809-4977-4e7f-a4f2-e937b028f3cb",
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "f4c4b14b-6971-481b-ab4d-01681e87fca9",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "✅ Plugin approval allowed once. Resolved by Chat approval (qa-channel:alice). ID: plugin:9a5c0ab9-382f-4c05-bb2f-6795e0fa66f3",
+      "timestamp": 1793215588240,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "642ec9a8-dfbe-4bfd-bd6f-b7c447e7e474",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "[mock] approve-low done",
+      "timestamp": 1793215589032,
+      "replyToId": "0259ef3f-003b-4d18-8c71-884b045152db",
+      "attachments": [],
+      "toolCalls": [
+        {
+          "name": "exec",
+          "arguments": {
+            "command": "[redacted]"
+          }
+        }
+      ],
+      "reactions": [],
+      "deleted": true
+    },
+    {
+      "id": "96e035f2-d4bb-4f28-a2d3-899d234b0e9a",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "[mock] approve-low done",
+      "timestamp": 1793215590301,
+      "replyToId": "0259ef3f-003b-4d18-8c71-884b045152db",
+      "attachments": [],
+      "toolCalls": [
+        {
+          "name": "exec",
+          "arguments": {
+            "command": "[redacted]"
+          }
+        }
+      ],
+      "reactions": []
+    },
+    {
+      "id": "1f474199-09cf-4d06-b13b-9d83c943aa23",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "alice",
+      "senderName": "alice",
+      "text": "Approval probe. [scenario:approve-low]",
+      "timestamp": 1793215591261,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "7ae7dd92-95c3-4db9-9a4c-86cb26da6af1",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "🛡️ Plugin approval required\nTitle: pg-probe: approve exec?\nDescription: pg-probe test approval (low) for exec {\"command\":\"echo pg-approve-low ok\"}\nTool: exec\nPlugin: pg-probe\nAgent: main\nID: plugin:d25770fa-9655-4a55-a612-812c2671417f\nExpires in: 90s\nReply with: /approve plugin:d25770fa-9655-4a55-a612-812c2671417f allow-once|allow-always|deny\n\n- Allow Once\n- Allow Always\n- Deny",
+      "timestamp": 1793215597264,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "ad717bc5-30ae-428c-83f5-eee643ac23a5",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "bob",
+        "kind": "direct"
+      },
+      "senderId": "bob",
+      "senderName": "bob",
+      "text": "/approve plugin:d25770fa-9655-4a55-a612-812c2671417f allow-once",
+      "timestamp": 1793215597466,
+      "attachments": [],
+      "nativeCommand": {
+        "name": "approve"
+      },
+      "reactions": []
+    },
+    {
+      "id": "36012dd3-768b-4c22-8f62-d650def12c63",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "bob",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "✅ Approval allow-once submitted for plugin:d25770fa-9655-4a55-a612-812c2671417f.",
+      "timestamp": 1793215598833,
+      "replyToId": "ad717bc5-30ae-428c-83f5-eee643ac23a5",
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "b7cf462d-d7ae-4062-a547-7a444929cc96",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "✅ Plugin approval allowed once. Resolved by Chat approval (qa-channel:bob). ID: plugin:d25770fa-9655-4a55-a612-812c2671417f",
+      "timestamp": 1793215599371,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "3171c769-d7cc-4f67-b27c-f8724fc47d14",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "[mock] approve-low done",
+      "timestamp": 1793215599694,
+      "replyToId": "1f474199-09cf-4d06-b13b-9d83c943aa23",
+      "attachments": [],
+      "toolCalls": [
+        {
+          "name": "exec",
+          "arguments": {
+            "command": "[redacted]"
+          }
+        }
+      ],
+      "reactions": []
+    }
+  ],
+  "events": [
+    {
+      "cursor": 1,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "fec1e427-00b7-4432-90da-0a4779b6d577",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "bob",
+          "kind": "direct"
+        },
+        "senderId": "bob",
+        "senderName": "bob",
+        "text": "Non-owner DM probe. [scenario:persist-order]",
+        "timestamp": 1793215476866,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 2,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "a5b91ee4-1e2d-42b7-9498-89b385b879cc",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "bob",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "[mock] persist-order done",
+        "timestamp": 1793215500506,
+        "replyToId": "fec1e427-00b7-4432-90da-0a4779b6d577",
+        "attachments": [],
+        "toolCalls": [
+          {
+            "name": "read",
+            "arguments": {
+              "path": "[redacted]"
+            }
+          },
+          {
+            "name": "exec",
+            "arguments": {
+              "command": "[redacted]"
+            }
+          },
+          {
+            "name": "web_fetch",
+            "arguments": {
+              "url": "[redacted]"
+            }
+          }
+        ],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 3,
+      "kind": "message-deleted",
+      "accountId": "default",
+      "message": {
+        "id": "a5b91ee4-1e2d-42b7-9498-89b385b879cc",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "bob",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "[mock] persist-order done",
+        "timestamp": 1793215500506,
+        "replyToId": "fec1e427-00b7-4432-90da-0a4779b6d577",
+        "attachments": [],
+        "toolCalls": [
+          {
+            "name": "read",
+            "arguments": {
+              "path": "[redacted]"
+            }
+          },
+          {
+            "name": "exec",
+            "arguments": {
+              "command": "[redacted]"
+            }
+          },
+          {
+            "name": "web_fetch",
+            "arguments": {
+              "url": "[redacted]"
+            }
+          }
+        ],
+        "reactions": [],
+        "deleted": true
+      }
+    },
+    {
+      "cursor": 4,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "ee103ae0-696a-4e13-b96d-44feeb840755",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "bob",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "[mock] persist-order done",
+        "timestamp": 1793215501409,
+        "replyToId": "fec1e427-00b7-4432-90da-0a4779b6d577",
+        "attachments": [],
+        "toolCalls": [
+          {
+            "name": "read",
+            "arguments": {
+              "path": "[redacted]"
+            }
+          },
+          {
+            "name": "exec",
+            "arguments": {
+              "command": "[redacted]"
+            }
+          },
+          {
+            "name": "web_fetch",
+            "arguments": {
+              "url": "[redacted]"
+            }
+          }
+        ],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 5,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "8bc7f217-1d90-4b66-82d1-5bc44e896c5e",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "alice",
+        "senderName": "alice",
+        "text": "/guard status",
+        "timestamp": 1793215503006,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 6,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "9a39e6ac-652c-4683-bd11-bb61a3d037fb",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "guard probe ok: status",
+        "timestamp": 1793215504657,
+        "replyToId": "8bc7f217-1d90-4b66-82d1-5bc44e896c5e",
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 7,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "93fd6a7b-eae2-4882-beac-4af5df5a3bb8",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "alice",
+        "senderName": "alice",
+        "text": "/guardauth status",
+        "timestamp": 1793215509042,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 8,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "dc336f62-3390-43d8-8628-f236d8041b72",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "guardauth probe ok: status",
+        "timestamp": 1793215510035,
+        "replyToId": "93fd6a7b-eae2-4882-beac-4af5df5a3bb8",
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 9,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "52d05fe5-9cab-4aca-8b95-864fa2d3d735",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "alice",
+        "senderName": "alice",
+        "text": "/guard status",
+        "timestamp": 1793215515075,
+        "attachments": [],
+        "nativeCommand": {
+          "name": "guard"
+        },
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 10,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "7f0bedc2-ed0a-46bf-b754-fe5314d1e28b",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "guard probe ok: status",
+        "timestamp": 1793215515628,
+        "replyToId": "52d05fe5-9cab-4aca-8b95-864fa2d3d735",
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 11,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "9c830a61-2bd8-4441-93a1-68626a66e83c",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "bob",
+          "kind": "direct"
+        },
+        "senderId": "bob",
+        "senderName": "bob",
+        "text": "/guard status",
+        "timestamp": 1793215521107,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 12,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "94c8c784-6036-495a-83f5-ed7b2e9b66ed",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "bob",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "⚠️ This command requires gateway scope: operator.admin.",
+        "timestamp": 1793215522037,
+        "replyToId": "9c830a61-2bd8-4441-93a1-68626a66e83c",
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 13,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "e0725a35-6a8b-4430-b949-bc979fb335a8",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "bob",
+          "kind": "direct"
+        },
+        "senderId": "bob",
+        "senderName": "bob",
+        "text": "/guardauth status",
+        "timestamp": 1793215527139,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 14,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "0a52c167-bb71-4b29-ba86-f14ea74306fa",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "bob",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "guardauth probe ok: status",
+        "timestamp": 1793215528164,
+        "replyToId": "e0725a35-6a8b-4430-b949-bc979fb335a8",
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 15,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "619e6534-94d9-43e3-abee-85c2a9990f44",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "bob",
+          "kind": "direct"
+        },
+        "senderId": "bob",
+        "senderName": "bob",
+        "text": "/guard status",
+        "timestamp": 1793215533168,
+        "attachments": [],
+        "nativeCommand": {
+          "name": "guard"
+        },
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 16,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "33785fac-684c-45e8-9d04-b15d06bbb5ac",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "bob",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "⚠️ This command requires gateway scope: operator.admin.",
+        "timestamp": 1793215533685,
+        "replyToId": "619e6534-94d9-43e3-abee-85c2a9990f44",
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 17,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "40ec8dfc-8918-49e7-ac7f-034edaf833c7",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "lab",
+          "kind": "group",
+          "title": "Lab group"
+        },
+        "senderId": "bob",
+        "senderName": "bob",
+        "text": "/guard status",
+        "timestamp": 1793215539204,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 18,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "955dccae-3795-4363-870a-c30c3b79323f",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "lab",
+          "kind": "group",
+          "title": "Lab group"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "⚠️ This command requires gateway scope: operator.admin.",
+        "timestamp": 1793215540439,
+        "replyToId": "40ec8dfc-8918-49e7-ac7f-034edaf833c7",
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 19,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "754f0373-34e2-4a86-9305-4fc8f4fd9e5f",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "lab",
+          "kind": "group",
+          "title": "Lab group"
+        },
+        "senderId": "bob",
+        "senderName": "bob",
+        "text": "/guardauth status",
+        "timestamp": 1793215545237,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 20,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "f5ad6278-0c44-443b-8a2c-8c1dc2cf11c4",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "lab",
+          "kind": "group",
+          "title": "Lab group"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "guardauth probe ok: status",
+        "timestamp": 1793215546319,
+        "replyToId": "754f0373-34e2-4a86-9305-4fc8f4fd9e5f",
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 21,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "b1cda2c5-4c38-4a71-8aa1-73b4dbd5d696",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "lab",
+          "kind": "group",
+          "title": "Lab group"
+        },
+        "senderId": "bob",
+        "senderName": "bob",
+        "text": "/guard status",
+        "timestamp": 1793215551269,
+        "attachments": [],
+        "nativeCommand": {
+          "name": "guard"
+        },
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 22,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "e32f0b2f-179c-4ce1-a010-2f20ec59ad5b",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "lab",
+          "kind": "group",
+          "title": "Lab group"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "⚠️ This command requires gateway scope: operator.admin.",
+        "timestamp": 1793215551844,
+        "replyToId": "b1cda2c5-4c38-4a71-8aa1-73b4dbd5d696",
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 23,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "8cd97497-bce6-4c2f-a5a7-c1a4d3d755dd",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "lab",
+          "kind": "group",
+          "title": "Lab group"
+        },
+        "senderId": "alice",
+        "senderName": "alice",
+        "text": "/guard status",
+        "timestamp": 1793215557302,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 24,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "12136653-0001-4d61-9656-5b7023072faf",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "lab",
+          "kind": "group",
+          "title": "Lab group"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "guard probe ok: status",
+        "timestamp": 1793215558350,
+        "replyToId": "8cd97497-bce6-4c2f-a5a7-c1a4d3d755dd",
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 25,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "97403bd4-82e0-42d9-8a81-bf8c182a9635",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "lab",
+          "kind": "group",
+          "title": "Lab group"
+        },
+        "senderId": "alice",
+        "senderName": "alice",
+        "text": "/guardauth status",
+        "timestamp": 1793215563336,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 26,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "7d3b6bbd-5f59-482e-ab35-278109d67e01",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "lab",
+          "kind": "group",
+          "title": "Lab group"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "guardauth probe ok: status",
+        "timestamp": 1793215564320,
+        "replyToId": "97403bd4-82e0-42d9-8a81-bf8c182a9635",
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 27,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "63c0fabb-528d-402f-9316-d6e2942161c2",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "lab",
+          "kind": "group",
+          "title": "Lab group"
+        },
+        "senderId": "alice",
+        "senderName": "alice",
+        "text": "/guard status",
+        "timestamp": 1793215569368,
+        "attachments": [],
+        "nativeCommand": {
+          "name": "guard"
+        },
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 28,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "5334269d-6aa3-4b08-a2a8-9bb488378059",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "lab",
+          "kind": "group",
+          "title": "Lab group"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "guard probe ok: status",
+        "timestamp": 1793215569995,
+        "replyToId": "63c0fabb-528d-402f-9316-d6e2942161c2",
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 29,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "0259ef3f-003b-4d18-8c71-884b045152db",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "alice",
+        "senderName": "alice",
+        "text": "Approval probe. [scenario:approve-low]",
+        "timestamp": 1793215577406,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 30,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "df34dae0-73e4-400f-b430-f2f21b34f9df",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "🛡️ Plugin approval required\nTitle: pg-probe: approve exec?\nDescription: pg-probe test approval (low) for exec {\"command\":\"echo pg-approve-low ok\"}\nTool: exec\nPlugin: pg-probe\nAgent: main\nID: plugin:9a5c0ab9-382f-4c05-bb2f-6795e0fa66f3\nExpires in: 90s\nReply with: /approve plugin:9a5c0ab9-382f-4c05-bb2f-6795e0fa66f3 allow-once|allow-always|deny\n\n- Allow Once\n- Allow Always\n- Deny",
+        "timestamp": 1793215586753,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 31,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "bbc4c809-4977-4e7f-a4f2-e937b028f3cb",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "alice",
+        "senderName": "alice",
+        "text": "/approve plugin:9a5c0ab9-382f-4c05-bb2f-6795e0fa66f3 allow-once",
+        "timestamp": 1793215587121,
+        "attachments": [],
+        "nativeCommand": {
+          "name": "approve"
+        },
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 32,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "686065f4-eb0a-4b2b-b17f-86033272b6d0",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "✅ Approval allow-once submitted for plugin:9a5c0ab9-382f-4c05-bb2f-6795e0fa66f3.",
+        "timestamp": 1793215587946,
+        "replyToId": "bbc4c809-4977-4e7f-a4f2-e937b028f3cb",
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 33,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "f4c4b14b-6971-481b-ab4d-01681e87fca9",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "✅ Plugin approval allowed once. Resolved by Chat approval (qa-channel:alice). ID: plugin:9a5c0ab9-382f-4c05-bb2f-6795e0fa66f3",
+        "timestamp": 1793215588240,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 34,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "642ec9a8-dfbe-4bfd-bd6f-b7c447e7e474",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "[mock] approve-low done",
+        "timestamp": 1793215589032,
+        "replyToId": "0259ef3f-003b-4d18-8c71-884b045152db",
+        "attachments": [],
+        "toolCalls": [
+          {
+            "name": "exec",
+            "arguments": {
+              "command": "[redacted]"
+            }
+          }
+        ],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 35,
+      "kind": "message-deleted",
+      "accountId": "default",
+      "message": {
+        "id": "642ec9a8-dfbe-4bfd-bd6f-b7c447e7e474",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "[mock] approve-low done",
+        "timestamp": 1793215589032,
+        "replyToId": "0259ef3f-003b-4d18-8c71-884b045152db",
+        "attachments": [],
+        "toolCalls": [
+          {
+            "name": "exec",
+            "arguments": {
+              "command": "[redacted]"
+            }
+          }
+        ],
+        "reactions": [],
+        "deleted": true
+      }
+    },
+    {
+      "cursor": 36,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "96e035f2-d4bb-4f28-a2d3-899d234b0e9a",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "[mock] approve-low done",
+        "timestamp": 1793215590301,
+        "replyToId": "0259ef3f-003b-4d18-8c71-884b045152db",
+        "attachments": [],
+        "toolCalls": [
+          {
+            "name": "exec",
+            "arguments": {
+              "command": "[redacted]"
+            }
+          }
+        ],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 37,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "1f474199-09cf-4d06-b13b-9d83c943aa23",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "alice",
+        "senderName": "alice",
+        "text": "Approval probe. [scenario:approve-low]",
+        "timestamp": 1793215591261,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 38,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "7ae7dd92-95c3-4db9-9a4c-86cb26da6af1",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "🛡️ Plugin approval required\nTitle: pg-probe: approve exec?\nDescription: pg-probe test approval (low) for exec {\"command\":\"echo pg-approve-low ok\"}\nTool: exec\nPlugin: pg-probe\nAgent: main\nID: plugin:d25770fa-9655-4a55-a612-812c2671417f\nExpires in: 90s\nReply with: /approve plugin:d25770fa-9655-4a55-a612-812c2671417f allow-once|allow-always|deny\n\n- Allow Once\n- Allow Always\n- Deny",
+        "timestamp": 1793215597264,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 39,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "ad717bc5-30ae-428c-83f5-eee643ac23a5",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "bob",
+          "kind": "direct"
+        },
+        "senderId": "bob",
+        "senderName": "bob",
+        "text": "/approve plugin:d25770fa-9655-4a55-a612-812c2671417f allow-once",
+        "timestamp": 1793215597466,
+        "attachments": [],
+        "nativeCommand": {
+          "name": "approve"
+        },
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 40,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "36012dd3-768b-4c22-8f62-d650def12c63",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "bob",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "✅ Approval allow-once submitted for plugin:d25770fa-9655-4a55-a612-812c2671417f.",
+        "timestamp": 1793215598833,
+        "replyToId": "ad717bc5-30ae-428c-83f5-eee643ac23a5",
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 41,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "b7cf462d-d7ae-4062-a547-7a444929cc96",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "✅ Plugin approval allowed once. Resolved by Chat approval (qa-channel:bob). ID: plugin:d25770fa-9655-4a55-a612-812c2671417f",
+        "timestamp": 1793215599371,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 42,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "3171c769-d7cc-4f67-b27c-f8724fc47d14",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "[mock] approve-low done",
+        "timestamp": 1793215599694,
+        "replyToId": "1f474199-09cf-4d06-b13b-9d83c943aa23",
+        "attachments": [],
+        "toolCalls": [
+          {
+            "name": "exec",
+            "arguments": {
+              "command": "[redacted]"
+            }
+          }
+        ],
+        "reactions": []
+      }
+    }
+  ]
+}

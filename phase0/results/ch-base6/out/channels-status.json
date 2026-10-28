@@ -1,0 +1,81 @@
+{
+  "ts": 1793217228151,
+  "channelOrder": [
+    "qa-channel"
+  ],
+  "channelLabels": {
+    "qa-channel": "QA Channel"
+  },
+  "channelDetailLabels": {
+    "qa-channel": "QA Channel"
+  },
+  "channelSystemImages": {},
+  "channelMeta": [
+    {
+      "id": "qa-channel",
+      "label": "QA Channel",
+      "detailLabel": "QA Channel"
+    }
+  ],
+  "eventLoop": {
+    "degraded": false,
+    "degradedSinceMs": null,
+    "reasons": [],
+    "intervalMs": 1011.8725109999941,
+    "delayP99Ms": 22.7,
+    "delayMaxMs": 22.7,
+    "utilization": 0.021,
+    "cpuCoreRatio": 0.021,
+    "cpuBreakdown": {
+      "mainThreadCoreRatio": 0.021,
+      "hostUtilization": 0.266,
+      "hostCpuCount": 48,
+      "workerCoreRatio": 0.001,
+      "otherThreadsCoreRatio": 0
+    }
+  },
+  "channels": {
+    "qa-channel": {
+      "lastStartAt": 1793217144906,
+      "lastStopAt": null,
+      "restartPending": false,
+      "reconnectAttempts": 0,
+      "lastConnectedAt": 1793217146601,
+      "lifecycle": "ready",
+      "lastInboundAt": null,
+      "lastOutboundAt": null,
+      "accountId": "default",
+      "enabled": true,
+      "baseUrl": "http://127.0.0.1:25356",
+      "configured": true,
+      "running": true,
+      "connected": true,
+      "lastError": null
+    }
+  },
+  "channelAccounts": {
+    "qa-channel": [
+      {
+        "lastStartAt": 1793217144906,
+        "lastStopAt": null,
+        "restartPending": false,
+        "reconnectAttempts": 0,
+        "lastConnectedAt": 1793217146601,
+        "lifecycle": "ready",
+        "lastInboundAt": null,
+        "lastOutboundAt": null,
+        "accountId": "default",
+        "enabled": true,
+        "baseUrl": "http://127.0.0.1:25356",
+        "configured": true,
+        "running": true,
+        "connected": true,
+        "lastError": null
+      }
+    ]
+  },
+  "channelDefaultAccountId": {
+    "qa-channel": "default"
+  },
+  "statusIssues": []
+}

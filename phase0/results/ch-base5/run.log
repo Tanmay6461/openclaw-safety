@@ -1,0 +1,23 @@
+run=/pg/runs/ch-base5 gateway=24055 mock=24056 bus=24057 tests=c4c-operator-cli,c4d-cli-turn,d-send variant=base
+mock: mock-llm listening on http://127.0.0.1:24056 (scenarios: default, persist-order, parallel-tools, params-race, spawn, meta-fetch, meta-spawn, message-self, meta-exec, approve-low, approve-race, approve-both, message-approve, message-guard, exec-approve, spawn-exec, child-exec, send-exec, message-approve-meta, message-guard-meta, exec-approve-cli, spawn-exec-meta, send-exec-meta)
+bus: {"ready":true,"baseUrl":"http://127.0.0.1:24057"}
+gateway ready
+[driver] c4c-operator-cli start
+[driver] c4c-operator-cli inbound
+[driver] c4c-operator-cli approval-prompt id=plugin:b26c7565-64a0-4777-b6fc-ac6ef5daa98c
+[driver] c4c-operator-cli cli
+[driver] c4c-operator-cli resolution decision=allow-once
+[driver] c4c-operator-cli tool-result
+[driver] c4d-cli-turn start
+[driver] c4d-cli-turn inbound
+[driver] c4d-cli-turn approval-prompt id=plugin:4eb6cdb9-aeaa-4b4a-812f-bf4c6f8bb9c5
+[driver] c4d-cli-turn cli
+[driver] c4d-cli-turn after-cli-turn still pending
+[driver] c4d-cli-turn inbound
+[driver] c4d-cli-turn resolution decision=cancelled
+[driver] c4d-cli-turn tool-result
+[driver] d-send start
+[driver] d-send inbound
+[driver] d-send done
+[driver]  driver-done
+report: /pg/runs/ch-base5/report.md
