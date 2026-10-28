@@ -102,6 +102,14 @@ const config = {
   },
 };
 
+// Exec approval variants (plan §13 item 8): "execalways" is the legacy policy that asks on every exec;
+// "execask" is tools.exec.mode "ask" (asks on an allowlist miss). Both forward exec prompts to the chat.
+if (variant.includes("execalways") || variant.includes("execask")) {
+  const { mode: _mode, ...rest } = config.tools.exec;
+  config.tools.exec = variant.includes("execalways") ? { ...rest, security: "allowlist", ask: "always" } : { ...rest, mode: "ask" };
+  config.approvals = { ...(config.approvals ?? {}), exec: { enabled: true, mode: "session" } };
+}
+
 if (variant.includes("guard")) {
   config.plugins.load.paths.unshift("/pg/guard-plugin/provenance-guard");
   config.plugins.entries["provenance-guard"] = {

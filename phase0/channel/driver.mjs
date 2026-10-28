@@ -9,8 +9,8 @@ const [run, bus, testsCsv = "all"] = process.argv.slice(2);
 const OC = process.env.OC ?? "/pg/oc/node_modules/.bin/openclaw";
 const only = new Set(testsCsv.split(","));
 const selected = (t) => only.has("all") || only.has(t) || only.has(t.split("-")[0]);
-// The slash-session warm-up runs whenever an approval test (c*) is selected.
-const approvalTests = [...only].some((t) => /^c\d/.test(t)) || only.has("all");
+// The slash-session warm-up runs whenever an approval test (c*, e*) is selected.
+const approvalTests = [...only].some((t) => /^[ce]\d/.test(t)) || only.has("all");
 const want = (t) => (t === "w-slash" ? approvalTests : selected(t));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const out = (rec) => {
@@ -65,6 +65,15 @@ async function outbound(sinceTs, re) {
 }
 
 const probeSince = (t0, pred) => probe().filter((e) => e.t >= t0 && pred(e));
+
+/** The Provenance Guard's audit log (guard variants only). */
+const guardAudit = () => {
+  try {
+    return fs.readFileSync(`${run}/guard-state/audit.jsonl`, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
+  } catch {
+    return [];
+  }
+};
 
 /** Waits for an agent_end at or after t0 (optionally for a session key substring). */
 const agentEnd = (t0, keyPart, timeoutMs = 90000) =>
@@ -386,6 +395,57 @@ const tests = {
     await agentEnd(t0);
     await sleep(3000);
     out({ test, step: "summary", requests: probeSince(t0, (e) => e.hook === "__approval_request").map((e) => e.where), resolutions: probeSince(t0, (e) => e.hook === "__approval_resolution").map((e) => `${e.where}:${e.decision}`), prompts: (await outbound(t0, /approve/i)).map((m) => m.text) });
+  },
+
+  // (e1) Guard ask plus host exec approval (plan §13 item 8). A tainted, unattested exec: under the
+  // legacy tools.exec.ask "always" the Guard defers to the host prompt (expect 1 prompt); under
+  // tools.exec.mode "ask" both ask (expect 2: the Guard's plugin approval, then the host's on-miss).
+  // Every prompt is approved by alice.
+  async "e1-double"() {
+    const test = "e1-double";
+    const t0 = Date.now();
+    await send(test, "alice", DM("alice"), "Double prompt probe. [scenario:double-prompt]");
+    const seen = new Set();
+    const prompts = [];
+    const end = Date.now() + 180000;
+    while (Date.now() < end) {
+      for (const m of await outbound(t0, /approval required|\/approve /i)) {
+        const id = /\/approve\s+(\S+)/.exec(m.text ?? "")?.[1];
+        if (!id || seen.has(id)) continue;
+        seen.add(id);
+        prompts.push({ id, text: (m.text ?? "").slice(0, 400) });
+        out({ test, step: "prompt", note: id });
+        await approve(test, "alice", DM("alice"), id, "allow-once");
+      }
+      if (probeSince(t0, (e) => e.hook === "agent_end" && String(e.ctx?.sessionKey ?? "").includes("dm:alice"))[0]) break;
+      await sleep(700);
+    }
+    await sleep(2000);
+    const results = probeSince(t0, (e) => e.hook === "tool_result_persist").map((e) => String(e.event?.message?.content?.[0]?.text ?? "").slice(0, 200));
+    const guard = guardAudit().filter((a) => a.ts >= t0).map((a) => ({ kind: a.kind ?? "decision", tool: a.tool, verdict: a.verdict, action: a.action, reason: a.reasons?.[0] }));
+    out({ test, step: "summary", note: `prompts=${prompts.length} ran=${results.some((r) => r.includes("pg-double-prompt"))}`, prompts, results, guard });
+  },
+
+  // (r1) approval-emoji reactions through the message tool, with the Guard loaded: 👍 on the bot's own
+  // message (block), 👍 on alice's inbound message (ack, allow), 🎉 on the bot's message (allow), 👍 with
+  // no message id (allow: OpenClaw reacts to the current inbound message), 👍 with fromMe (block).
+  async "r1-react"() {
+    const test = "r1-react";
+    let t0 = Date.now();
+    const inMsg = await send(test, "alice", DM("alice"), "Hello there. [scenario:default]");
+    await agentEnd(t0, "dm:alice");
+    await sleep(1500);
+    const bot = (await outbound(t0)).at(-1);
+    t0 = Date.now();
+    await send(test, "alice", DM("alice"), `React probe. [scenario:react-test] BOT=${bot?.id} IN=${inMsg?.id}`);
+    await agentEnd(t0, "dm:alice", 120000);
+    await sleep(2000);
+    const decisions = guardAudit()
+      .filter((a) => a.ts >= t0 && a.tool === "message")
+      .map((a) => ({ callId: a.callId, verdict: a.verdict, action: a.action, reason: a.reasons?.[0] }));
+    const received = probeSince(t0 - 60000, (e) => e.hook === "message_received").map((e) => e.event?.messageId ?? e.ctx?.messageId);
+    await dumpBus(test);
+    out({ test, step: "summary", note: decisions.map((d) => d.verdict).join(","), botId: bot?.id, inId: inMsg?.id, received, decisions });
   },
 
   // (d) sub-agent and sessions_send identity.

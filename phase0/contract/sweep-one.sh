@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One sweep call in fresh sessions: clean owner, then tainted+private owner (after the setup run).
+# One sweep call in a fresh clean owner session (the tainted+private pass runs chunked in inner.sh).
 # Called by inner.sh through xargs -P, with the run's environment exported.
 set -uo pipefail
 i=$1
@@ -15,5 +15,3 @@ run_step() {
 }
 A=("$OC" agent --agent main --json --timeout 500)
 run_step "clean-$i" "${A[@]}" --session-key "pg-c-clean-$i" --message "Contract sweep. [contract:sweep] FROM=$i TO=$((i + 1)) PASS=clean"
-run_step "taint-$i" "${A[@]}" --session-key "pg-c-tainted-$i" --message "Setup. [contract:taint]"
-run_step "tainted-$i" "${A[@]}" --session-key "pg-c-tainted-$i" --message "Contract sweep. [contract:sweep] FROM=$i TO=$((i + 1)) PASS=tainted"

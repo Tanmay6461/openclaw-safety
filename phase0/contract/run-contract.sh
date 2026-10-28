@@ -6,5 +6,5 @@ set -euo pipefail
 PG=${PG:-/scratch/$USER/pg}
 exec apptainer exec --containall --cleanenv \
   --home "$PG/home:/home/pg" --workdir "$PG/apptainer-work" --bind "$PG":/pg --pwd /pg \
-  --env npm_config_cache=/pg/npm-cache ${RUN:+--env RUN="$RUN"} ${PAR:+--env PAR="$PAR"} \
+  --env npm_config_cache=/pg/npm-cache ${RUN:+--env RUN="$RUN"} ${PAR:+--env PAR="$PAR"} ${CONTRACT_SURFACE:+--env CONTRACT_SURFACE="$CONTRACT_SURFACE"} \
   "$PG/images/node24.sif" bash /pg/contract/inner.sh

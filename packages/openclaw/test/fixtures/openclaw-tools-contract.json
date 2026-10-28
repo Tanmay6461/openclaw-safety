@@ -1,0 +1,1162 @@
+{
+  "openclawVersion": "2026.10.8",
+  "runs": [
+    "contract-2"
+  ],
+  "tools": {
+    "agents_list": {
+      "leafPaths": [],
+      "enums": {}
+    },
+    "agents_wait": {
+      "leafPaths": [
+        "awaitResults",
+        "ids[]",
+        "timeoutSeconds"
+      ],
+      "enums": {}
+    },
+    "apply_patch": {
+      "leafPaths": [
+        "input"
+      ],
+      "enums": {}
+    },
+    "ask_user": {
+      "leafPaths": [
+        "questions[].header",
+        "questions[].id",
+        "questions[].multiSelect",
+        "questions[].options[].description",
+        "questions[].options[].label",
+        "questions[].options[].preview.arguments",
+        "questions[].options[].preview.description",
+        "questions[].options[].preview.mimeType",
+        "questions[].options[].preview.name",
+        "questions[].options[].preview.title",
+        "questions[].options[].preview.type",
+        "questions[].options[].preview.uri",
+        "questions[].options[].resourceUri",
+        "questions[].options[].thumbnail",
+        "questions[].options[].value",
+        "questions[].question",
+        "timeoutSeconds"
+      ],
+      "enums": {}
+    },
+    "browser": {
+      "leafPaths": [
+        "accept",
+        "action",
+        "actions[]",
+        "browser",
+        "button",
+        "clear",
+        "colorScheme",
+        "compact",
+        "dashboard",
+        "delayMs",
+        "depth",
+        "device",
+        "dialogId",
+        "domains[]",
+        "doubleClick",
+        "element",
+        "endRef",
+        "fields[]",
+        "filter",
+        "fn",
+        "frame",
+        "fullPage",
+        "height",
+        "inputRef",
+        "interactive",
+        "into",
+        "key",
+        "kind",
+        "label",
+        "labels",
+        "level",
+        "limit",
+        "loadState",
+        "locale",
+        "maxChars",
+        "mode",
+        "modifiers[]",
+        "node",
+        "path",
+        "paths[]",
+        "profile",
+        "promptText",
+        "query",
+        "ref",
+        "refs",
+        "request.actions[]",
+        "request.button",
+        "request.delayMs",
+        "request.doubleClick",
+        "request.endRef",
+        "request.fields[]",
+        "request.fn",
+        "request.height",
+        "request.key",
+        "request.kind",
+        "request.loadState",
+        "request.modifiers[]",
+        "request.ref",
+        "request.selector",
+        "request.slowly",
+        "request.startRef",
+        "request.stopOnError",
+        "request.submit",
+        "request.targetId",
+        "request.text",
+        "request.textGone",
+        "request.timeMs",
+        "request.timeoutMs",
+        "request.url",
+        "request.values[]",
+        "request.width",
+        "request.x",
+        "request.y",
+        "selector",
+        "slowly",
+        "snapshotFormat",
+        "startRef",
+        "stopOnError",
+        "submit",
+        "systemProfile",
+        "target",
+        "targetId",
+        "targetUrl",
+        "text",
+        "textGone",
+        "timeMs",
+        "timeoutMs",
+        "timezoneId",
+        "type",
+        "url",
+        "urls",
+        "values[]",
+        "width",
+        "x",
+        "y"
+      ],
+      "enums": {
+        "action": [
+          "act",
+          "close",
+          "console",
+          "dialog",
+          "doctor",
+          "download",
+          "emulate",
+          "errors",
+          "focus",
+          "importprofile",
+          "navigate",
+          "open",
+          "pdf",
+          "profiles",
+          "requests",
+          "screenshot",
+          "snapshot",
+          "start",
+          "status",
+          "stop",
+          "tabs",
+          "text",
+          "upload",
+          "waitfordownload"
+        ]
+      }
+    },
+    "canvas": {
+      "leafPaths": [
+        "action",
+        "gatewayToken",
+        "gatewayUrl",
+        "height",
+        "node",
+        "target",
+        "timeoutMs",
+        "url",
+        "width",
+        "x",
+        "y"
+      ],
+      "enums": {
+        "action": [
+          "hide",
+          "navigate",
+          "present"
+        ]
+      }
+    },
+    "conversations_list": {
+      "leafPaths": [
+        "channel",
+        "limit",
+        "query"
+      ],
+      "enums": {}
+    },
+    "conversations_send": {
+      "leafPaths": [
+        "conversationRef",
+        "message"
+      ],
+      "enums": {}
+    },
+    "conversations_turn": {
+      "leafPaths": [
+        "conversationRef",
+        "message",
+        "timeoutSeconds"
+      ],
+      "enums": {}
+    },
+    "create_goal": {
+      "leafPaths": [
+        "objective",
+        "token_budget"
+      ],
+      "enums": {}
+    },
+    "dashboard": {
+      "leafPaths": [
+        "action",
+        "after",
+        "name",
+        "pluginKind",
+        "position",
+        "presentation",
+        "props",
+        "size",
+        "sizeH",
+        "sizeW",
+        "tabId",
+        "tabIds[]",
+        "title"
+      ],
+      "enums": {
+        "action": [
+          "focus_tab",
+          "read",
+          "set_default_presentation",
+          "set_presentation",
+          "tab_create",
+          "tab_delete",
+          "tab_update",
+          "tabs_reorder",
+          "widget_move",
+          "widget_put",
+          "widget_remove",
+          "widget_resize"
+        ]
+      }
+    },
+    "dir_fetch": {
+      "leafPaths": [
+        "gatewayToken",
+        "gatewayUrl",
+        "maxBytes",
+        "node",
+        "path",
+        "timeoutMs"
+      ],
+      "enums": {}
+    },
+    "dir_list": {
+      "leafPaths": [
+        "gatewayToken",
+        "gatewayUrl",
+        "maxEntries",
+        "node",
+        "pageToken",
+        "path",
+        "timeoutMs"
+      ],
+      "enums": {}
+    },
+    "edit": {
+      "leafPaths": [
+        "edits[].newText",
+        "edits[].oldText",
+        "path"
+      ],
+      "enums": {}
+    },
+    "exec": {
+      "leafPaths": [
+        "ask",
+        "awaitResults",
+        "background",
+        "command",
+        "elevated",
+        "env",
+        "host",
+        "node",
+        "pty",
+        "timeoutSeconds",
+        "title",
+        "workdir",
+        "yieldMs"
+      ],
+      "enums": {}
+    },
+    "file_fetch": {
+      "leafPaths": [
+        "gatewayToken",
+        "gatewayUrl",
+        "maxBytes",
+        "node",
+        "path",
+        "timeoutMs"
+      ],
+      "enums": {}
+    },
+    "file_write": {
+      "leafPaths": [
+        "contentBase64",
+        "createParents",
+        "mimeType",
+        "node",
+        "overwrite",
+        "path",
+        "sourceMediaId"
+      ],
+      "enums": {}
+    },
+    "gateway": {
+      "leafPaths": [
+        "action",
+        "gatewayToken",
+        "gatewayUrl",
+        "note",
+        "path",
+        "timeoutMs"
+      ],
+      "enums": {
+        "action": [
+          "config.get",
+          "config.schema.lookup",
+          "update.run"
+        ]
+      }
+    },
+    "get_goal": {
+      "leafPaths": [],
+      "enums": {}
+    },
+    "github_identity_status": {
+      "leafPaths": [],
+      "enums": {}
+    },
+    "intent": {
+      "leafPaths": [
+        "action",
+        "cooldownSeconds",
+        "description",
+        "expiresAt",
+        "id",
+        "maxFires",
+        "scope",
+        "senderScope",
+        "status",
+        "triggerKeywords[]"
+      ],
+      "enums": {
+        "action": [
+          "cancel",
+          "create",
+          "list"
+        ]
+      }
+    },
+    "ls": {
+      "leafPaths": [
+        "after",
+        "limit",
+        "path"
+      ],
+      "enums": {}
+    },
+    "memory_get": {
+      "leafPaths": [
+        "corpus",
+        "from",
+        "lines",
+        "path"
+      ],
+      "enums": {}
+    },
+    "memory_search": {
+      "leafPaths": [
+        "corpus",
+        "maxResults",
+        "minScore",
+        "query"
+      ],
+      "enums": {}
+    },
+    "message": {
+      "leafPaths": [
+        "accountId",
+        "action",
+        "activityName",
+        "activityState",
+        "activityType",
+        "activityUrl",
+        "after",
+        "appliedTags[]",
+        "around",
+        "asDocument",
+        "asVoice",
+        "attachments[].media",
+        "attachments[].mimeType",
+        "attachments[].name",
+        "attachments[].type",
+        "authorId",
+        "authorIds[]",
+        "autoArchiveMin",
+        "before",
+        "buffer",
+        "caption",
+        "categoryId",
+        "channel",
+        "channelId",
+        "channelIds[]",
+        "channelType",
+        "chatId",
+        "clearParent",
+        "contentType",
+        "deleteDays",
+        "desc",
+        "dryRun",
+        "durationMin",
+        "effect",
+        "effectId",
+        "emoji",
+        "emojiName",
+        "endTime",
+        "eventName",
+        "eventType",
+        "fileId",
+        "filename",
+        "final",
+        "forceDocument",
+        "fromMe",
+        "gatewayToken",
+        "gatewayUrl",
+        "gifPlayback",
+        "groupId",
+        "guildId",
+        "image",
+        "includeArchived",
+        "includeMembers",
+        "kind",
+        "limit",
+        "location",
+        "media",
+        "memberId",
+        "memberIdType",
+        "members",
+        "message",
+        "messageId",
+        "message_id",
+        "mimeType",
+        "name",
+        "nsfw",
+        "openId",
+        "pageSize",
+        "pageToken",
+        "parentId",
+        "participant",
+        "pollDurationHours",
+        "pollId",
+        "pollMulti",
+        "pollOptionId",
+        "pollOptionIds[]",
+        "pollOptionIndex",
+        "pollOptionIndexes[]",
+        "pollOption[]",
+        "pollQuestion",
+        "position",
+        "query",
+        "quoteText",
+        "rateLimitPerUser",
+        "reason",
+        "remove",
+        "replyTo",
+        "roleId",
+        "roleIds[]",
+        "scope",
+        "silent",
+        "startTime",
+        "status",
+        "stickerDesc",
+        "stickerId[]",
+        "stickerName",
+        "stickerTags",
+        "target",
+        "targetAuthor",
+        "targetAuthorUuid",
+        "targets[]",
+        "threadId",
+        "threadName",
+        "timeoutMs",
+        "title",
+        "topic",
+        "trackToolCalls",
+        "track_tool_calls",
+        "unionId",
+        "until",
+        "userId",
+        "voiceId",
+        "voiceProvider",
+        "voiceText"
+      ],
+      "enums": {
+        "action": [
+          "broadcast",
+          "delete",
+          "edit",
+          "react",
+          "reactions",
+          "read",
+          "search",
+          "send",
+          "thread-create",
+          "thread-reply"
+        ]
+      }
+    },
+    "mobile_ui": {
+      "leafPaths": [
+        "action",
+        "confirmed",
+        "gatewayToken",
+        "gatewayUrl",
+        "mobileAction.direction",
+        "mobileAction.durationMs",
+        "mobileAction.ms",
+        "mobileAction.name",
+        "mobileAction.ref",
+        "mobileAction.text",
+        "mobileAction.type",
+        "mobileAction.x",
+        "mobileAction.x1",
+        "mobileAction.x2",
+        "mobileAction.y",
+        "mobileAction.y1",
+        "mobileAction.y2",
+        "node",
+        "snapshotId",
+        "timeoutMs"
+      ],
+      "enums": {
+        "action": [
+          "act",
+          "observe"
+        ]
+      }
+    },
+    "node_inference": {
+      "leafPaths": [
+        "action",
+        "maxTokens",
+        "model",
+        "node",
+        "prompt",
+        "system",
+        "temperature",
+        "timeoutMs"
+      ],
+      "enums": {
+        "action": [
+          "discover",
+          "run"
+        ]
+      }
+    },
+    "nodes": {
+      "leafPaths": [
+        "action",
+        "bins[]",
+        "body",
+        "delayMs",
+        "delivery",
+        "desiredAccuracy",
+        "deviceId",
+        "duration",
+        "durationMs",
+        "facing",
+        "fps",
+        "gatewayToken",
+        "gatewayUrl",
+        "includeAudio",
+        "invokeCommand",
+        "invokeParamsJson",
+        "invokeTimeoutMs",
+        "limit",
+        "locationTimeoutMs",
+        "maxAgeMs",
+        "maxWidth",
+        "node",
+        "notificationAction",
+        "notificationKey",
+        "notificationReplyText",
+        "outPath",
+        "panDegrees",
+        "priority",
+        "ptzOperation",
+        "quality",
+        "requestId",
+        "screenIndex",
+        "sound",
+        "tiltDegrees",
+        "timeoutMs",
+        "title",
+        "zoomPercent"
+      ],
+      "enums": {
+        "action": [
+          "approve",
+          "camera_clip",
+          "camera_list",
+          "camera_ptz",
+          "camera_snap",
+          "describe",
+          "device_health",
+          "device_info",
+          "device_permissions",
+          "device_status",
+          "invoke",
+          "location_get",
+          "notifications_action",
+          "notifications_list",
+          "notify",
+          "pending",
+          "photos_latest",
+          "reject",
+          "screen_record",
+          "screen_snapshot",
+          "status",
+          "which"
+        ]
+      }
+    },
+    "openclaw": {
+      "leafPaths": [
+        "message",
+        "sessionId"
+      ],
+      "enums": {}
+    },
+    "plugins": {
+      "leafPaths": [
+        "acknowledgeInstallPolicyWarning",
+        "action",
+        "packageName",
+        "pluginId",
+        "query",
+        "reviewToken",
+        "source",
+        "version"
+      ],
+      "enums": {
+        "action": [
+          "disable",
+          "enable",
+          "inspect",
+          "install",
+          "list",
+          "reload",
+          "reloadAndResume",
+          "search",
+          "uninstall"
+        ]
+      }
+    },
+    "portal": {
+      "leafPaths": [
+        "action",
+        "description",
+        "environmentId",
+        "id",
+        "path",
+        "port",
+        "title"
+      ],
+      "enums": {
+        "action": [
+          "close",
+          "list",
+          "open"
+        ]
+      }
+    },
+    "presence": {
+      "leafPaths": [
+        "action",
+        "deviceId",
+        "include[]",
+        "limit",
+        "person"
+      ],
+      "enums": {
+        "action": [
+          "device",
+          "list",
+          "person"
+        ]
+      }
+    },
+    "process": {
+      "leafPaths": [
+        "action",
+        "bracketed",
+        "data",
+        "eof",
+        "hex[]",
+        "keys[]",
+        "limit",
+        "literal",
+        "offset",
+        "sessionId",
+        "text",
+        "timeout"
+      ],
+      "enums": {
+        "action": [
+          "clear",
+          "kill",
+          "list",
+          "log",
+          "paste",
+          "poll",
+          "remove",
+          "send-keys",
+          "submit",
+          "write"
+        ]
+      }
+    },
+    "read": {
+      "leafPaths": [
+        "cursor",
+        "limit",
+        "offset",
+        "optional",
+        "path"
+      ],
+      "enums": {}
+    },
+    "secrets": {
+      "leafPaths": [
+        "action",
+        "allowedHosts[]",
+        "kind",
+        "name",
+        "reason",
+        "timeoutSeconds"
+      ],
+      "enums": {
+        "action": [
+          "delete",
+          "list",
+          "request"
+        ]
+      }
+    },
+    "session_status": {
+      "leafPaths": [
+        "changesSince",
+        "model",
+        "sessionKey",
+        "user"
+      ],
+      "enums": {}
+    },
+    "sessions": {
+      "leafPaths": [
+        "action",
+        "archived",
+        "attention",
+        "clearQueued",
+        "color",
+        "deleteTranscript",
+        "expectedSessionId",
+        "group",
+        "icon",
+        "label",
+        "model",
+        "name",
+        "names[]",
+        "offset",
+        "ownerId",
+        "ownerType",
+        "pinned",
+        "profileId",
+        "runId",
+        "sessionKey",
+        "statusNote",
+        "targets[].expectedSessionId",
+        "targets[].sessionKey",
+        "thinkingLevel",
+        "to",
+        "ttlMinutes",
+        "user"
+      ],
+      "enums": {
+        "action": [
+          "assign_owner",
+          "cloud_profiles",
+          "delete",
+          "group_delete",
+          "group_list",
+          "group_rename",
+          "group_set",
+          "patch",
+          "reset",
+          "stop"
+        ]
+      }
+    },
+    "sessions_history": {
+      "leafPaths": [
+        "includeTools",
+        "limit",
+        "messageId",
+        "offset",
+        "pendingBefore",
+        "sessionId",
+        "sessionKey",
+        "user"
+      ],
+      "enums": {}
+    },
+    "sessions_list": {
+      "leafPaths": [
+        "activeMinutes",
+        "activeOnly",
+        "agentId",
+        "archived",
+        "creatorId",
+        "excludeSubagents",
+        "group",
+        "includeDerivedTitles",
+        "includeLastMessage",
+        "kinds[]",
+        "label",
+        "limit",
+        "messageLimit",
+        "offset",
+        "ownerId",
+        "pinned",
+        "projectId",
+        "relationship",
+        "search",
+        "user",
+        "workspaceDir"
+      ],
+      "enums": {}
+    },
+    "sessions_search": {
+      "leafPaths": [
+        "limit",
+        "query",
+        "sessionKey",
+        "user"
+      ],
+      "enums": {}
+    },
+    "sessions_send": {
+      "leafPaths": [
+        "agentId",
+        "label",
+        "message",
+        "mode",
+        "sessionKey",
+        "timeoutSeconds",
+        "user",
+        "watch"
+      ],
+      "enums": {}
+    },
+    "sessions_spawn": {
+      "leafPaths": [
+        "agentId",
+        "attachAs.mountPath",
+        "attachments[].content",
+        "attachments[].encoding",
+        "attachments[].mimeType",
+        "attachments[].name",
+        "cleanup",
+        "collect",
+        "completionTarget",
+        "context",
+        "cwd",
+        "expectsCompletionMessage",
+        "fastMode",
+        "group",
+        "groupId",
+        "label",
+        "lightContext",
+        "mode",
+        "model",
+        "outputSchema",
+        "placement.kind",
+        "placement.machineClass",
+        "placement.os",
+        "placement.profileId",
+        "projectGitUrl",
+        "projectId",
+        "runTimeoutSeconds",
+        "runtime",
+        "sandbox",
+        "task",
+        "taskName",
+        "thinking",
+        "user",
+        "visible",
+        "worktree",
+        "worktreeBaseRef",
+        "worktreeName"
+      ],
+      "enums": {}
+    },
+    "sessions_yield": {
+      "leafPaths": [
+        "acknowledgment",
+        "message",
+        "waitFor"
+      ],
+      "enums": {}
+    },
+    "skill_workshop": {
+      "leafPaths": [
+        "absorbed_into",
+        "action",
+        "content",
+        "file_path",
+        "name",
+        "new_text",
+        "old_text",
+        "reason",
+        "version"
+      ],
+      "enums": {
+        "action": [
+          "archive",
+          "create",
+          "list",
+          "patch",
+          "remove_file",
+          "restore",
+          "view",
+          "write_file"
+        ]
+      }
+    },
+    "skills_read": {
+      "leafPaths": [
+        "name"
+      ],
+      "enums": {}
+    },
+    "skills_search": {
+      "leafPaths": [
+        "limit",
+        "query"
+      ],
+      "enums": {}
+    },
+    "subagents": {
+      "leafPaths": [
+        "action",
+        "recentMinutes",
+        "runId",
+        "runIds[]",
+        "timeoutSeconds"
+      ],
+      "enums": {
+        "action": [
+          "cancel",
+          "list",
+          "wait"
+        ]
+      }
+    },
+    "talk_voice": {
+      "leafPaths": [
+        "action",
+        "voice"
+      ],
+      "enums": {
+        "action": [
+          "list",
+          "set"
+        ]
+      }
+    },
+    "terminal": {
+      "leafPaths": [
+        "action",
+        "cols",
+        "data",
+        "rows",
+        "sessionId"
+      ],
+      "enums": {
+        "action": [
+          "close",
+          "input",
+          "list",
+          "read",
+          "resize"
+        ]
+      }
+    },
+    "theme": {
+      "leafPaths": [
+        "action",
+        "apply",
+        "definition.avatarHat",
+        "definition.brandIcon",
+        "definition.brandName",
+        "definition.communityLinks",
+        "definition.critters[]",
+        "definition.dark.accent",
+        "definition.dark.accent-foreground",
+        "definition.dark.background",
+        "definition.dark.border",
+        "definition.dark.card",
+        "definition.dark.card-foreground",
+        "definition.dark.destructive",
+        "definition.dark.destructive-foreground",
+        "definition.dark.font-mono",
+        "definition.dark.font-sans",
+        "definition.dark.foreground",
+        "definition.dark.input",
+        "definition.dark.muted",
+        "definition.dark.muted-foreground",
+        "definition.dark.popover",
+        "definition.dark.popover-foreground",
+        "definition.dark.primary",
+        "definition.dark.primary-foreground",
+        "definition.dark.ring",
+        "definition.dark.secondary",
+        "definition.dark.secondary-foreground",
+        "definition.description",
+        "definition.light.accent",
+        "definition.light.accent-foreground",
+        "definition.light.background",
+        "definition.light.border",
+        "definition.light.card",
+        "definition.light.card-foreground",
+        "definition.light.destructive",
+        "definition.light.destructive-foreground",
+        "definition.light.font-mono",
+        "definition.light.font-sans",
+        "definition.light.foreground",
+        "definition.light.input",
+        "definition.light.muted",
+        "definition.light.muted-foreground",
+        "definition.light.popover",
+        "definition.light.popover-foreground",
+        "definition.light.primary",
+        "definition.light.primary-foreground",
+        "definition.light.ring",
+        "definition.light.secondary",
+        "definition.light.secondary-foreground",
+        "definition.lobsterdex",
+        "definition.mascot",
+        "definition.name",
+        "definition.workingIndicator",
+        "definition.workingPhrases[]",
+        "id",
+        "mode",
+        "user"
+      ],
+      "enums": {
+        "action": [
+          "get",
+          "import",
+          "list",
+          "set"
+        ]
+      }
+    },
+    "tool_call": {
+      "leafPaths": [
+        "args",
+        "id"
+      ],
+      "enums": {}
+    },
+    "tool_describe": {
+      "leafPaths": [
+        "id"
+      ],
+      "enums": {}
+    },
+    "tool_search": {
+      "leafPaths": [
+        "limit",
+        "queries[].limit",
+        "queries[].query",
+        "query"
+      ],
+      "enums": {}
+    },
+    "transcripts": {
+      "leafPaths": [
+        "accountId",
+        "action",
+        "channelId",
+        "guildId",
+        "limit",
+        "meetingUrl",
+        "providerId",
+        "selector",
+        "sessionId",
+        "speakerLabel",
+        "title",
+        "transcript"
+      ],
+      "enums": {}
+    },
+    "tts": {
+      "leafPaths": [
+        "channel",
+        "text",
+        "timeoutMs"
+      ],
+      "enums": {}
+    },
+    "update_goal": {
+      "leafPaths": [
+        "note",
+        "status"
+      ],
+      "enums": {}
+    },
+    "web_fetch": {
+      "leafPaths": [
+        "extractMode",
+        "maxChars",
+        "url"
+      ],
+      "enums": {}
+    },
+    "write": {
+      "leafPaths": [
+        "content",
+        "path"
+      ],
+      "enums": {}
+    }
+  }
+}

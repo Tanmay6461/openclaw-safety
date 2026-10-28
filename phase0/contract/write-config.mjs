@@ -9,6 +9,9 @@ const base = JSON.parse(execFileSync("node", ["/pg/scripts/write-config.mjs", ru
 const ws = `${run}/state/workspace`;
 
 base.agents.defaults.timeoutSeconds = 900;
+// CONTRACT_SURFACE=full turns off the compact surface (source-notes-v2 Q6), so the request carries every
+// tool's full schema (tool_describe truncates large ones such as automations at ~32k chars).
+if (process.env.CONTRACT_SURFACE === "full") base.tools = { ...base.tools, toolSearch: false, codeMode: false };
 base.plugins.load.paths = ["/pg/guard-plugin/provenance-guard", "/pg/contract/plugin", "/pg/oc/fixtures/qa-channel"];
 base.session = { dmScope: "per-channel-peer" };
 base.commands = { ownerAllowFrom: ["qa-channel:alice"] };

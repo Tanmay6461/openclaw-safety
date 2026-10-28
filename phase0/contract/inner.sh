@@ -2,9 +2,9 @@
 # Contract sweep, inside the Node 24 container (see run-contract.sh). Same isolation as phase0/guard-smoke.
 #  1. dump: every tool's JSON schema (direct tools from the request, hidden ones through tool_describe)
 #  2. gen-calls.mjs: one schema-valid call per tool and per action, every parameter filled
-#  3. sweep every call in its own fresh sessions (sweep-one.sh, PAR at a time): clean owner, then
-#     tainted+private owner after a setup run. Up-front labels from earlier blocked calls would
-#     otherwise taint later ones.
+#  3. clean pass: every call in its own fresh owner session (sweep-one.sh, PAR at a time), since
+#     up-front labels from earlier blocked calls would otherwise taint later ones; tainted+private
+#     pass: one session labeled by a setup run, swept in chunks.
 # qa-channel is configured (with its QA bus) so the message tool exposes channel actions such as react.
 # The pg-contract sentinel blocks every sweep call after the Guard has decided, so nothing executes.
 set -uo pipefail
@@ -74,7 +74,12 @@ TOTAL=$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[
 echo "calls=$TOTAL"
 export RUN
 seq 0 $((TOTAL - 1)) | xargs -P "$PAR" -I{} bash "$C/sweep-one.sh" {}
-echo "sweep runs: $(grep -c . "$RUN/steps.jsonl")"
+echo "clean runs: $(grep -c '"clean-' "$RUN/steps.jsonl")"
+# Tainted+private pass: one session, labeled by the setup run, swept in chunks.
+step taint "${AGENT[@]}" --session-key pg-c-tainted --message "Setup. [contract:taint]"
+for ((from = 0; from < TOTAL; from += 60)); do
+  step "tainted-$from" "${AGENT[@]}" --session-key pg-c-tainted --message "Contract sweep. [contract:sweep] FROM=$from TO=$((from + 60)) PASS=tainted"
+done
 sleep 3
 kill "$GW_PID" "$MOCK_PID" "$BUS_PID" 2>/dev/null; wait 2>/dev/null; trap - EXIT
 echo "done: $RUN"

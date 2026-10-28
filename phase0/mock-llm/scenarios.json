@@ -517,5 +517,127 @@
         "content": "[mock] self-approve-background done"
       }
     ]
+  },
+  "double-prompt": {
+    "steps": [
+      {
+        "tool_calls": [
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "web_fetch",
+              "args": {
+                "url": "{{MOCK_URL}}/web/page1"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "tool_calls": [
+          {
+            "name": "exec",
+            "arguments": {
+              "command": "echo pg-double-prompt"
+            }
+          }
+        ]
+      },
+      {
+        "content": "[mock] double-prompt done"
+      }
+    ]
+  },
+  "react-test": {
+    "steps": [
+      {
+        "tool_calls": [
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "message",
+              "args": {
+                "action": "react",
+                "channel": "qa-channel",
+                "target": "dm:alice",
+                "messageId": "{{VAR:BOT}}",
+                "emoji": "👍"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "tool_calls": [
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "message",
+              "args": {
+                "action": "react",
+                "channel": "qa-channel",
+                "target": "dm:alice",
+                "messageId": "{{VAR:IN}}",
+                "emoji": "👍"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "tool_calls": [
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "message",
+              "args": {
+                "action": "react",
+                "channel": "qa-channel",
+                "target": "dm:alice",
+                "messageId": "{{VAR:BOT}}",
+                "emoji": "🎉"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "tool_calls": [
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "message",
+              "args": {
+                "action": "react",
+                "channel": "qa-channel",
+                "target": "dm:alice",
+                "emoji": "👍"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "tool_calls": [
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "message",
+              "args": {
+                "action": "react",
+                "channel": "qa-channel",
+                "target": "dm:alice",
+                "messageId": "{{VAR:IN}}",
+                "emoji": "👍",
+                "fromMe": true
+              }
+            }
+          }
+        ]
+      },
+      {
+        "content": "[mock] react-test done"
+      }
+    ]
   }
 }

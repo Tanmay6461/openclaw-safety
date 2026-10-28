@@ -105,6 +105,8 @@ function plan(messages, offered) {
   const { mode, after, step, from = 0, to } = window(messages);
   const res = results(after);
   if (mode === "dump") {
+    // With the compact surface off, every tool is in the request already.
+    if (!offered.has("tool_search")) return { mode, step, content: `[contract] dump done: ${offered.size} direct tool(s)` };
     const searchSteps = Math.ceil(SEARCH_WORDS.length / SEARCH_BATCH);
     if (step < searchSteps) {
       const words = SEARCH_WORDS.slice(step * SEARCH_BATCH, (step + 1) * SEARCH_BATCH);
