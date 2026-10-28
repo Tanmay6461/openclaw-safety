@@ -446,3 +446,21 @@ describe("owner actions on chat surfaces", () => {
     }
   });
 });
+
+describe("runtime follow-ups (ch-guard4)", () => {
+  it("records a block made at the tool_call wrapper", () => {
+    const h = harness();
+    const r = h.tool("tool_call", { id: "message", args: { action: "react", channel: "qa-channel", target: "dm:alice", messageId: "bot-msg-1", emoji: "👍" } });
+    expect(r.block).toBe(true);
+    expect(h.audit.some((a) => a.tool === "message" && a.action === "block" && a.hardSink === true)).toBe(true);
+  });
+
+  it("the owner's DM in channel target spellings counts as the owner", () => {
+    const h = harness();
+    h.tool("web_fetch", { url: "https://recipes.example/x" });
+    for (const target of ["dm:alice", "user:alice", "qa-channel:alice"]) {
+      expect(h.tool("message", { action: "send", target, message: "done" }).requireApproval).toBeUndefined();
+    }
+    expect(h.tool("message", { action: "send", target: "dm:mallory", message: "done" }).requireApproval).toBeDefined();
+  });
+});

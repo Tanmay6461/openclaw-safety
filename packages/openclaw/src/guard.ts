@@ -232,7 +232,9 @@ export class Guard {
     for (const o of Array.isArray(owners) ? owners : []) {
       if (typeof o !== "string") continue;
       this.ownerSenders.add(o.toLowerCase());
-      for (const [, v] of destinationForms(o, this.env)) ids.add(v);
+      // "channel:id" also names the owner's DM in the target spellings channels use ("dm:id", "user:id").
+      const id = o.includes(":") ? o.slice(o.indexOf(":") + 1) : o;
+      for (const form of [o, `dm:${id}`, `user:${id}`]) for (const [, v] of destinationForms(form, this.env)) ids.add(v);
     }
     this.env.ownerIdentities = ids;
     for (const p of this.config.trusted.commandPrefixes) {
@@ -338,6 +340,8 @@ export class Guard {
       if (inner) {
         const d = decide(inner.call, s, this.env);
         if (d.verdict === "block" && (this.enforcing() || d.hardSink || d.trifecta)) {
+          // The inner call never gets its own before_tool_call, so record the block here.
+          this.record(inner.call, { action: "block", decision: d, shadowed: false }, s);
           return { block: true, blockReason: `[Guard] ${d.reasons[0] ?? "blocked"}` };
         }
         return { params: event.params };

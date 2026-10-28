@@ -555,6 +555,19 @@
           {
             "name": "tool_call",
             "arguments": {
+              "id": "web_fetch",
+              "args": {
+                "url": "{{MOCK_URL}}/web/page1"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "tool_calls": [
+          {
+            "name": "tool_call",
+            "arguments": {
               "id": "message",
               "args": {
                 "action": "react",
