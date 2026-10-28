@@ -28,7 +28,8 @@
         "elevated": "none",
         "pty": "none",
         "timeoutSeconds": "none",
-        "yieldMs": "none"
+        "yieldMs": "none",
+        "cmd": "code"
       },
       "elevationParam": "elevated"
     },
@@ -125,7 +126,8 @@
       "category": "persistence_write",
       "args": {
         "input": "content",
-        "__derived.paths": "path"
+        "__derived.paths": "path",
+        "patch": "content"
       },
       "writeMode": "merge",
       "derive": [
@@ -454,7 +456,8 @@
         "unionId": "none",
         "until": "none",
         "voiceId": "none",
-        "voiceProvider": "none"
+        "voiceProvider": "none",
+        "chatJid": "destination"
       },
       "otherArgs": "content",
       "actionParam": "action",
@@ -527,7 +530,8 @@
               "messageId",
               "message_id"
             ],
-            "remove": "remove"
+            "remove": "remove",
+            "fromMe": "fromMe"
           }
         },
         "edit": {

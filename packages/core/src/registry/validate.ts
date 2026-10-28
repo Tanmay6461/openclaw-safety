@@ -38,7 +38,7 @@ function checkFields(where: string, s: Record<string, unknown>, override: boolea
     if (!isRecord(r) || !paths(r.emoji)) errs.push(`${where}.reaction: needs an emoji param path`);
     else {
       if (r.messageId !== undefined && !paths(r.messageId)) errs.push(`${where}.reaction.messageId: must be a path or a list of paths`);
-      if (r.remove !== undefined && typeof r.remove !== "string") errs.push(`${where}.reaction.remove: must be a string`);
+      for (const k of ["remove", "fromMe"]) if (r[k] !== undefined && typeof r[k] !== "string") errs.push(`${where}.reaction.${k}: must be a string`);
     }
   }
   if (s.args !== undefined || !override) {

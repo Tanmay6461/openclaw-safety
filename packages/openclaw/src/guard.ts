@@ -200,6 +200,17 @@ export class Guard {
     this.rebuildRules();
   }
 
+  /**
+   * Whether OpenClaw prompts on every exec. Mode-based policies (`tools.exec.mode`) never do: "ask"
+   * asks only on an allowlist miss. Only the legacy `tools.exec.ask: "always"` without a mode does
+   * (src/infra/exec-approvals-core.ts, resolveExecModePolicy).
+   */
+  hostExecAlwaysAsks(): boolean {
+    const exec = get(this.api.config, "tools", "exec");
+    if (get(exec, "mode") !== undefined) return false;
+    return get(exec, "ask") === "always" && get(exec, "security") !== "deny";
+  }
+
   doctor(): DoctorCheck[] {
     return doctorChecks(this.api.config, this.api.id);
   }
@@ -386,6 +397,12 @@ export class Guard {
     const finalParams = prepared.finalize(params);
     if (outcome.action === "allow") return { params: finalParams };
 
+    // Host exec approvals run after this hook and would prompt a second time (§5.9). When the host
+    // asks on every exec, the Guard defers to that prompt instead of asking too.
+    if (this.registry.canonical(prepared.call.tool) === "exec" && !decision.hardSink && this.hostExecAlwaysAsks()) {
+      this.log({ ts: this.now(), kind: "deferred-to-host-exec-approval", tool: prepared.call.tool, callId: prepared.call.id, sessionKey: s.sessionKey });
+      return { params: finalParams };
+    }
     const text = approvalText(prepared.call, decision, s, this.now());
     if (this.confirmVia === "command") {
       const p = this.pendingFor(s.sessionKey, prepared.call, decision, text.action);

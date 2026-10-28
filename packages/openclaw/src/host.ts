@@ -133,6 +133,12 @@ export interface CommandContext {
   isAuthorizedSender?: boolean;
   /** Sent to commands with requiredScopes (channel results §b). */
   senderIsOwner?: boolean;
+  /** Set (always an array) for Gateway clients such as the Control UI and TUI; absent for chat senders. */
+  gatewayClientScopes?: string[];
+  from?: string;
+  to?: string;
+  accountId?: string;
+  channelId?: string;
 }
 
 export interface CommandDefinition {

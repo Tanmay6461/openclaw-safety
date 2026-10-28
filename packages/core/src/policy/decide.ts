@@ -156,7 +156,11 @@ function findForgery(call: ToolCall, spec: ToolSpec, env: GuardEnv, execs: { arg
   return null;
 }
 
-/** The approval emoji this call would react with, unless it targets only messages the agent received. */
+/**
+ * The approval emoji this call would react with, unless it targets a message the agent received.
+ * Approval reactions only count on the prompt itself (an outbound message), so reacting to inbound
+ * messages is an ack. With no message id, OpenClaw reacts to the current inbound message.
+ */
 function approvalReaction(call: ToolCall, spec: ToolSpec, env: GuardEnv): string | null {
   const r = spec.reaction;
   if (!r) return null;
@@ -165,9 +169,12 @@ function approvalReaction(call: ToolCall, spec: ToolSpec, env: GuardEnv): string
     [paths ?? []].flat().flatMap((p) => valuesAtPath(call.params, p).flatMap((v) => collectStrings(v)));
   const emoji = at(r.emoji).find((e) => env.approvalReactions.has(normalizeReaction(e)));
   if (emoji === undefined) return null;
+  const ownMessage = r.fromMe !== undefined && valuesAtPath(call.params, r.fromMe).some((v) => v === true || v === "true");
+  if (ownMessage) return emoji;
   const targets = at(r.messageId);
+  if (targets.length === 0) return null;
   const known = env.isInboundMessage;
-  if (known && targets.length > 0 && targets.every((id) => known(id))) return null;
+  if (known && targets.every((id) => known(id))) return null;
   return emoji;
 }
 

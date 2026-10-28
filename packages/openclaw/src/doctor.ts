@@ -3,7 +3,7 @@
 // depends entirely on the host's command settings.
 
 export interface DoctorCheck {
-  id: "owner" | "approvers" | "forwarding" | "conversationAccess";
+  id: "owner" | "approvers" | "forwarding" | "conversationAccess" | "selfChat";
   ok: boolean;
   text: string;
 }
@@ -25,6 +25,8 @@ export function doctorChecks(hostConfig: unknown, pluginId: string): DoctorCheck
   const allowFrom = nonEmpty(get(hostConfig, "commands", "allowFrom"));
   const forwarding = get(hostConfig, "approvals", "plugin", "enabled") === true;
   const access = get(hostConfig, "plugins", "entries", pluginId, "hooks", "allowConversationAccess") === true;
+  const whatsapp = get(hostConfig, "channels", "whatsapp");
+  const selfChat = whatsapp !== undefined && get(whatsapp, "selfChatMode") !== false;
   return [
     {
       id: "owner",
@@ -54,10 +56,17 @@ export function doctorChecks(hostConfig: unknown, pluginId: string): DoctorCheck
         ? `plugins.entries.${pluginId}.hooks.allowConversationAccess is on.`
         : `Set plugins.entries.${pluginId}.hooks.allowConversationAccess: true. Without it, heartbeat and sub-agent runs can't be told apart from other non-owner runs.`,
     },
+    {
+      id: "selfChat",
+      ok: true,
+      text: selfChat
+        ? "WhatsApp may run in self-chat mode (channels.whatsapp.selfChatMode isn't false). There, loosening /guard commands only work from the Control UI or TUI, and the agent can't add approval reactions."
+        : "No WhatsApp self-chat setup.",
+    },
   ];
 }
 
 /** Plugin approvals are an owner-only, visible control only when all three hold. */
 export function approvalsOwnerOnly(checks: readonly DoctorCheck[]): boolean {
-  return checks.filter((c) => c.id !== "conversationAccess").every((c) => c.ok);
+  return checks.filter((c) => c.id === "owner" || c.id === "approvers" || c.id === "forwarding").every((c) => c.ok);
 }

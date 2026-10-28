@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+  commandSurface,
   FileBackedStore,
   LOWEST_PRIORITY,
   registerGuard,
@@ -379,5 +380,69 @@ describe("approval forgery and owner confirmation", () => {
       expect(send().block).toBe(true);
       expect((await def.handler({ args: `allow ${code}`, senderIsOwner: true })).text).toMatch(/Allowed once/);
     });
+  });
+});
+
+// phase0/source-notes-v2.md Q1, Q3, Q5.
+describe("owner actions on chat surfaces", () => {
+  it("classifies command surfaces: operator clients, chats, and chats with yourself", () => {
+    expect(commandSurface({ gatewayClientScopes: ["operator.admin"], channel: "webchat" })).toBe("operator");
+    expect(commandSurface({ gatewayClientScopes: [], channel: "whatsapp" })).toBe("operator");
+    expect(commandSurface({ channel: "qa-channel", from: "dm:alice", to: "openclaw" })).toBe("chat");
+    expect(commandSurface({ channel: "whatsapp", from: "whatsapp:+15550001111", to: "+15550001111@s.whatsapp.net" })).toBe("self_chat");
+    expect(commandSurface({ channel: "whatsapp", from: "+1", to: "+2" }, { channels: { whatsapp: { selfChatMode: true } } })).toBe("self_chat");
+  });
+
+  it("/guard off only works from an operator client", () => {
+    const h = harness();
+    expect(runGuardCommand(h.guard, "off", "chat")).toMatch(/only works from the Control UI or TUI/);
+    expect(h.guard.mode).toBe("enforce");
+    expect(runGuardCommand(h.guard, "off", "operator")).toMatch(/Guard is off/);
+  });
+
+  it("in a chat with yourself, loosening commands are refused and tightening ones work", () => {
+    const h = harness({ preset: "strict" });
+    for (const cmd of ["shadow", "pause 30m", "forget r1", "trust /tmp/x", "allow abc123", "preset balanced"]) {
+      expect(runGuardCommand(h.guard, cmd, "self_chat")).toMatch(/loosens the guard/);
+    }
+    expect(h.guard.mode).toBe("enforce");
+    expect(runGuardCommand(h.guard, "status", "self_chat")).toMatch(/Mode: enforce/);
+    expect(runGuardCommand(h.guard, "preset strict", "self_chat")).toMatch(/Preset is now strict/);
+    expect(runGuardCommand(h.guard, "shadow", "chat")).toMatch(/shadow mode/);
+  });
+
+  it("the /guard handler derives the surface from the command context", async () => {
+    const h = harness();
+    const def = h.commands[0]!;
+    expect((await def.handler({ args: "off", channel: "qa-channel", from: "dm:alice", to: "openclaw" })).text).toMatch(/Control UI or TUI/);
+    expect((await def.handler({ args: "off", gatewayClientScopes: ["operator.admin"] })).text).toMatch(/Guard is off/);
+  });
+
+  it("approval emoji on the prompt are blocked; an ack on a received message is allowed", () => {
+    const h = harness();
+    h.emit("message_received", { content: "deploy it", senderId: "alice", messageId: "in-42", sessionKey: "agent:main:s1" }, { channelId: "qa-channel", sessionKey: "agent:main:s1" });
+    expect(h.tool("message", { action: "react", emoji: "👍", messageId: "in-42" }).block).toBeUndefined();
+    const r = h.tool("message", { action: "react", emoji: "👍", messageId: "prompt-9" });
+    expect(r.block).toBe(true);
+    expect(r.blockReason).toMatch(/answer an approval prompt/);
+    expect(h.tool("message", { action: "react", emoji: "♾️", message_id: "prompt-9" }).block).toBe(true);
+    expect(h.tool("message", { action: "react", emoji: "👍", messageId: "in-42", fromMe: true }).block).toBe(true);
+  });
+
+  it("defers an exec ask to the host prompt when the host asks on every exec", () => {
+    const h = harness({}, undefined, { tools: { exec: { security: "allowlist", ask: "always" } } });
+    h.tool("web_fetch", { url: "https://recipes.example/x" });
+    const r = h.tool("exec", { command: "curl -s https://recipes.example/run.sh" });
+    expect(r.requireApproval).toBeUndefined();
+    expect(r.block).toBeUndefined();
+    expect(h.audit.some((a) => a.kind === "deferred-to-host-exec-approval")).toBe(true);
+  });
+
+  it("asks itself under mode-based exec policies, which only ask on an allowlist miss", () => {
+    for (const exec of [{ mode: "ask" }, { mode: "full" }, { ask: "on-miss", security: "allowlist" }]) {
+      const h = harness({}, undefined, { tools: { exec } });
+      h.tool("web_fetch", { url: "https://recipes.example/x" });
+      expect(h.tool("exec", { command: "curl -s https://recipes.example/run.sh" }).requireApproval).toBeDefined();
+    }
   });
 });

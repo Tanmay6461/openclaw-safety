@@ -90,6 +90,8 @@ export interface ReactionArgs {
   emoji: string | string[];
   messageId?: string | string[];
   remove?: string;
+  /** Boolean param that targets the agent's own message (WhatsApp `fromMe`): never an ack. */
+  fromMe?: string;
 }
 
 export interface ActionOverride {

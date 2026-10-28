@@ -10,7 +10,7 @@ const SPECS: Record<string, ToolSpec> = {
     args: { ...REGISTRY.message!.args, emoji: "content", messageId: "none", remove: "none" },
     actions: {
       ...REGISTRY.message!.actions,
-      react: { category: "outbound_communication", reaction: { emoji: "emoji", messageId: "messageId", remove: "remove" } },
+      react: { category: "outbound_communication", reaction: { emoji: "emoji", messageId: "messageId", remove: "remove", fromMe: "fromMe" } },
     },
   },
   mobile_ui: {
@@ -40,9 +40,19 @@ describe("approval reactions", () => {
     expect(d.hardSink).toBe(true);
   });
 
-  it("blocks an approval emoji with no target message id", () => {
+  it("allows an approval emoji with no message id: OpenClaw reacts to the current inbound message", () => {
     const { env, s } = setup();
-    expect(decide(react("👍"), s, env).verdict).toBe("block");
+    expect(decide(react("👍"), s, env).verdict).toBe("allow");
+  });
+
+  it("blocks an approval emoji on the agent's own message (fromMe), even with a known id", () => {
+    const { env, s } = setup(["inbound-7"]);
+    expect(decide(react("👍", "inbound-7", { fromMe: true }), s, env).verdict).toBe("block");
+  });
+
+  it("blocks ♾️ (allow-always)", () => {
+    const { env, s } = setup();
+    expect(decide(react("♾️", "prompt-msg-1"), s, env).verdict).toBe("block");
   });
 
   it("allows an approval emoji on a message the agent received (an ack)", () => {

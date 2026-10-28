@@ -1,6 +1,61 @@
 import { normalizePath } from "@provenance-guard/core";
 import type { Guard } from "./guard.js";
-import type { CommandDefinition } from "./host.js";
+import type { CommandContext, CommandDefinition, PluginApi } from "./host.js";
+
+/**
+ * Where a /guard command came from (phase0/source-notes-v2.md Q3). OpenClaw has no CLI path for
+ * plugin commands; the Control UI and TUI arrive as Gateway clients with `gatewayClientScopes` set.
+ * A self-chat is a chat with yourself (WhatsApp self-chat), where the agent's own sends can come
+ * back as owner input.
+ */
+export type CommandSurface = "operator" | "chat" | "self_chat";
+
+function get(obj: unknown, ...keys: string[]): unknown {
+  let cur = obj;
+  for (const k of keys) cur = cur && typeof cur === "object" ? (cur as Record<string, unknown>)[k] : undefined;
+  return cur;
+}
+
+const peer = (v: string) => v.trim().toLowerCase().replace(/^[a-z-]+:/, "").replace(/@.*$/, "").replace(/^\+/, "");
+
+export function commandSurface(ctx: CommandContext, hostConfig?: unknown): CommandSurface {
+  if (Array.isArray(ctx.gatewayClientScopes)) return "operator";
+  if (ctx.from && ctx.to && peer(ctx.from) !== "" && peer(ctx.from) === peer(ctx.to)) return "self_chat";
+  if (ctx.channel === "whatsapp") {
+    const mode = (ctx.accountId && get(hostConfig, "channels", "whatsapp", "accounts", ctx.accountId, "selfChatMode")) ?? get(hostConfig, "channels", "whatsapp", "selfChatMode");
+    if (mode === true) return "self_chat";
+  }
+  return "chat";
+}
+
+const PRESET_STRENGTH: Record<string, number> = { balanced: 1, strict: 2 };
+
+/** Subcommands that weaken protection. */
+export function isLoosening(guard: Guard, sub: string, rest: string[]): boolean {
+  switch (sub) {
+    case "shadow":
+    case "pause":
+    case "off":
+    case "forget":
+    case "trust":
+    case "allow":
+      return true;
+    case "preset":
+      return (PRESET_STRENGTH[rest[0]?.toLowerCase() ?? ""] ?? 0) < (PRESET_STRENGTH[guard.preset] ?? 0);
+    default:
+      return false;
+  }
+}
+
+function refusal(guard: Guard, sub: string, rest: string[], surface: CommandSurface): string | null {
+  if (sub === "off" && surface !== "operator") {
+    return "/guard off turns off every protection, so it only works from the Control UI or TUI, not from a chat. To log only, use /guard shadow.";
+  }
+  if (surface === "self_chat" && isLoosening(guard, sub, rest)) {
+    return "This loosens the guard. In a chat with yourself the agent's own messages can come back as yours, so loosening /guard commands only work from the Control UI or TUI.";
+  }
+  return null;
+}
 
 const HELP = [
   "/guard status · enforce · shadow · pause <30m|2h> · preset <balanced|strict>",
@@ -15,10 +70,13 @@ function duration(raw: string | undefined): number | null {
   return (m[2]?.toLowerCase().startsWith("m") ? n * 60 : n * 3600) * 1000;
 }
 
-export function runGuardCommand(guard: Guard, args: string): string {
-  const [sub = "status", ...rest] = args.trim().split(/\s+/).filter(Boolean);
+export function runGuardCommand(guard: Guard, args: string, surface: CommandSurface = "operator"): string {
+  const [rawSub = "status", ...rest] = args.trim().split(/\s+/).filter(Boolean);
+  const sub = rawSub.toLowerCase();
   const now = Date.now();
-  switch (sub.toLowerCase()) {
+  const refused = refusal(guard, sub, rest, surface);
+  if (refused) return refused;
+  switch (sub) {
     case "status": {
       const sessions = guard.sessionsList();
       const tainted = sessions.filter((s) => s.tainted).length;
@@ -96,7 +154,7 @@ export function runGuardCommand(guard: Guard, args: string): string {
 }
 
 /** Owner-only on chat surfaces through `requiredScopes` (§4.6); `requireAuth` alone isn't enough. */
-export function guardCommand(guard: Guard): CommandDefinition {
+export function guardCommand(guard: Guard, api: PluginApi): CommandDefinition {
   return {
     name: "guard",
     description: "Provenance Guard status and controls",
@@ -104,6 +162,8 @@ export function guardCommand(guard: Guard): CommandDefinition {
     requireAuth: true,
     requiredScopes: ["operator.admin"],
     // requiredScopes already limits channel senders to the owner; refuse if the host says otherwise.
-    handler: (ctx) => ({ text: ctx.senderIsOwner === false ? "Only the owner can use /guard." : runGuardCommand(guard, ctx.args ?? "") }),
+    handler: (ctx) => ({
+      text: ctx.senderIsOwner === false ? "Only the owner can use /guard." : runGuardCommand(guard, ctx.args ?? "", commandSurface(ctx, api.config)),
+    }),
   };
 }

@@ -132,11 +132,14 @@ export function gatewaySecretPaths(stateDir: string): string[] {
 export const DEFAULT_GATEWAY_PORT = 18789;
 
 /**
- * Emoji (and channel shortcode names) that approval-reaction surfaces treat as a decision, plus close
- * variants. Normalized: no variation selectors or skin tones, lowercase names without colons.
+ * Emoji that approval-reaction surfaces treat as a decision, plus close variants and shortcode names.
+ * OpenClaw v2026.10.8: 👍 allow-once, ♾️ allow-always, 👎 deny (WhatsApp, Signal, iMessage tapbacks);
+ * ✅ ♾️ ❌ on Matrix (phase0/source-notes-v2.md Q1). Normalized: no variation selectors or skin tones,
+ * lowercase names without colons.
  */
 export const DEFAULT_APPROVAL_REACTIONS: readonly string[] = [
-  "👍", "👎", "✅", "❌", "✔", "☑", "✖", "❎", "🆗", "👌", "🚫", "⛔",
+  "👍", "👎", "♾", "✅", "❌", "✔", "☑", "✖", "❎", "🆗", "👌", "🚫", "⛔",
+  "infinity", "liked", "disliked",
   "+1", "-1", "thumbsup", "thumbsdown", "thumbs_up", "thumbs_down", "like", "dislike",
   "white_check_mark", "heavy_check_mark", "ballot_box_with_check", "x", "heavy_multiplication_x",
   "negative_squared_cross_mark", "ok", "ok_hand", "no_entry", "no_entry_sign",

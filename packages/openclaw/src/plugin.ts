@@ -31,7 +31,7 @@ export function registerGuard(api: PluginApi, deps: Partial<Omit<GuardDeps, "api
   });
   on("subagent_spawned", (e: Parameters<Guard["subagentSpawned"]>[0], c: Parameters<Guard["subagentSpawned"]>[1]) => guard.subagentSpawned(e, c));
   on("session_end", (e: Parameters<Guard["sessionEnd"]>[0], c: Parameters<Guard["sessionEnd"]>[1]) => guard.sessionEnd(e, c));
-  api.registerCommand(guardCommand(guard));
+  api.registerCommand(guardCommand(guard, api));
   return guard;
 }
 
