@@ -557,31 +557,86 @@
     "automations": {
       "category": "autonomous_scheduling",
       "args": {
-        "job.payload.message": "deferred_instruction",
-        "job.payload.text": "deferred_instruction",
-        "job.payload.script": "deferred_instruction",
-        "job.payload.argv": "deferred_instruction",
+        "gatewayUrl": "egress_url",
+        "gatewayToken": "content",
+        "timeoutMs": "none",
+        "includeDisabled": "none",
+        "limit": "none",
+        "offset": "none",
+        "job.name": "content",
+        "job.declarationKey": "none",
+        "job.displayName": "content",
+        "job.description": "content",
+        "job.enabled": "none",
+        "job.deleteAfterRun": "none",
+        "job.owner.agentId": "none",
+        "job.owner.sessionKey": "none",
+        "job.sessionKey": "none",
+        "job.sessionTarget": "none",
+        "job.wakeMode": "none",
+        "job.schedule.kind": "none",
+        "job.schedule.at": "none",
+        "job.schedule.everyMs": "none",
+        "job.schedule.anchorMs": "none",
+        "job.schedule.expr": "none",
+        "job.schedule.tz": "none",
+        "job.schedule.staggerMs": "none",
+        "job.schedule.mode": "none",
+        "job.schedule.batchMs": "none",
+        "job.schedule.maxBatchBytes": "none",
+        "job.schedule.match": "none",
+        "job.schedule.command[]": "code",
+        "job.schedule.cwd": "path",
+        "job.pacing.min": "none",
+        "job.pacing.max": "none",
+        "job.trigger.once": "none",
         "job.trigger.script": "deferred_instruction",
-        "job.schedule.stream.command": "deferred_instruction",
-        "payload.message": "deferred_instruction",
-        "payload.text": "deferred_instruction",
-        "payload.script": "deferred_instruction",
-        "payload.argv": "deferred_instruction",
-        "trigger.script": "deferred_instruction",
-        "schedule.stream.command": "deferred_instruction",
-        "text": "deferred_instruction",
-        "message": "deferred_instruction",
+        "job.payload.kind": "none",
+        "job.payload.text": "deferred_instruction",
+        "job.payload.message": "deferred_instruction",
+        "job.payload.script": "deferred_instruction",
+        "job.payload.model": "none",
+        "job.payload.thinking": "none",
+        "job.payload.timeoutSeconds": "none",
+        "job.payload.toolBudget": "none",
+        "job.payload.lightContext": "none",
+        "job.payload.allowUnsafeExternalContent": "none",
+        "job.payload.fallbacks[]": "none",
+        "job.payload.toolsAllow[]": "none",
+        "job.delivery.mode": "none",
+        "job.delivery.channel": "none",
+        "job.delivery.threadId": "none",
+        "job.delivery.bestEffort": "none",
+        "job.delivery.accountId": "none",
+        "job.delivery.failureDestination.accountId": "none",
+        "job.delivery.failureDestination.channel": "none",
+        "job.delivery.failureDestination.mode": "none",
+        "job.delivery.completionDestination.mode": "none",
         "job.delivery.to": "destination",
-        "delivery.to": "destination",
+        "job.delivery.failureDestination.to": "destination",
         "job.delivery.completionDestination.to": "destination",
-        "delivery.completionDestination.to": "destination",
+        "job.failureAlert": "none",
+        "job.failureAlert.accountId": "none",
+        "job.failureAlert.after": "none",
+        "job.failureAlert.channel": "none",
+        "job.failureAlert.cooldownMs": "none",
+        "job.failureAlert.includeSkipped": "none",
+        "job.failureAlert.mode": "none",
         "job.failureAlert.to": "destination",
-        "failureAlert.to": "destination",
         "jobId": "none",
         "id": "none",
+        "in": "none",
+        "text": "deferred_instruction",
+        "mode": "none",
+        "runMode": "none",
+        "runId": "none",
+        "contextMessages": "none",
         "agentId": "none",
         "sessionKey": "none"
       },
+      "unsafeFlags": [
+        "job.payload.allowUnsafeExternalContent"
+      ],
       "actionParam": "action",
       "actions": {
         "status": {
@@ -598,6 +653,13 @@
         },
         "next_check": {
           "category": "read_only"
+        },
+        "add": {},
+        "update": {},
+        "run": {},
+        "wake": {},
+        "remove": {
+          "category": "persistence_write"
         }
       }
     },
@@ -1015,7 +1077,6 @@
       "category": "read_only",
       "args": {
         "query": "none",
-        "corpus": "none",
         "maxResults": "none",
         "minScore": "none"
       },
@@ -1029,7 +1090,9 @@
         "all": {
           "resultSource": "inter_session",
           "resultPrivate": "memory"
-        }
+        },
+        "memory": {},
+        "wiki": {}
       }
     },
     "memory_get": {
@@ -1037,10 +1100,15 @@
       "args": {
         "path": "none",
         "from": "none",
-        "lines": "none",
-        "corpus": "none"
+        "lines": "none"
       },
-      "resultSource": "memory"
+      "resultSource": "memory",
+      "actionParam": "corpus",
+      "actions": {
+        "memory": {},
+        "wiki": {},
+        "all": {}
+      }
     },
     "terminal": {
       "category": "privileged_execution",
@@ -1601,6 +1669,14 @@
       },
       "resultSource": "external_sender",
       "resultPrivate": "personal"
+    },
+    "progress_card": {
+      "category": "outbound_communication",
+      "args": {
+        "markdown": "content",
+        "plan[].step": "content",
+        "plan[].status": "none"
+      }
     }
   }
 }

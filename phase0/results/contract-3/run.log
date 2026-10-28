@@ -1,0 +1,18 @@
+run=/pg/runs/contract-3 gateway=20428 mock=20429 bus=20430 par=6
+gateway ready
+step plugin-inspect: exit 0 (18s)
+step dump: exit 0 (31s)
+gen-calls: 57 tool(s) (57 direct), 192 call(s), 0 unparsed describe result(s)
+calls=192
+gateway ready
+step plugin-inspect: exit 0 (18s)
+step dump: exit 0 (31s)
+gen-calls: 57 tool(s) (57 direct), 192 call(s), 0 unparsed describe result(s)
+calls=192
+clean runs: 192
+step taint: exit 0 (7s)
+step tainted-0: exit 0 (16s)
+step tainted-60: exit 0 (29s)
+step tainted-120: exit 0 (20s)
+step tainted-180: exit 0 (8s)
+done: /pg/runs/contract-3

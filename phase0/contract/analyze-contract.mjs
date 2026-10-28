@@ -59,7 +59,9 @@ const unswept = Object.keys(reg.tools).filter((n) => !manifest[n] && !Object.ent
 const mock = jsonl(`${run}/mock.jsonl`);
 const decisions = audit.filter((a) => a.verdict !== undefined && a.tool !== "tool_call");
 const sentinelById = new Map(sentinel.filter((r) => !r.pass).map((r) => [r.toolCallId, r]));
-const resultById = new Map(mock.filter((r) => r.kind === "toolResult").map((r) => [r.toolCallId, r.text]));
+// OpenClaw rewrites tool-call ids on the wire (non-alphanumerics dropped), so compare alphanumerics only.
+const wire = (id) => String(id ?? "").replace(/[^A-Za-z0-9]/g, "");
+const resultById = new Map(mock.filter((r) => r.kind === "toolResult").map((r) => [wire(r.toolCallId), r.text]));
 const emitted = new Map(); // `${pass}:${index}` -> outer call id
 for (const r of mock) {
   if (r.kind !== "chat" || r.mode !== "sweep" || !r.emitted?.length) continue;
@@ -75,7 +77,7 @@ const runtime = calls.map((c, i) => {
     }
     const a = decisions.find((d) => d.callId === outer || d.callId?.startsWith(`tool_call:${outer}:`));
     if (!a) {
-      row[pass] = { fired: false, note: (resultById.get(outer) ?? "no tool result").replace(/\s+/g, " ").slice(0, 160) };
+      row[pass] = { fired: false, note: (resultById.get(wire(outer)) ?? "no tool result").replace(/\s+/g, " ").slice(0, 160) };
       continue;
     }
     const ev = sentinelById.get(a.callId);

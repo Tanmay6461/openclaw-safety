@@ -82,6 +82,8 @@ export interface ToolSpec {
   actsAsOwner?: boolean;
   /** Boolean param that asks the host for elevated execution (exec `elevated`). */
   elevationParam?: string;
+  /** Boolean params that turn off one of OpenClaw's own protections when true (automations `allowUnsafeExternalContent`). */
+  unsafeFlags?: string[];
   inferred?: boolean;
 }
 

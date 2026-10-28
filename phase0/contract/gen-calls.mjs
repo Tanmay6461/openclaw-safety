@@ -77,7 +77,33 @@ function enumValues(p) {
   return (p.anyOf ?? p.oneOf ?? []).flatMap((b) => b?.enum ?? (b && "const" in b ? [b.const] : [])).filter((v) => v !== null);
 }
 
+// OpenClaw validates arguments (patterns included) before before_tool_call, so an invalid sample never
+// reaches the hook (contract-3). When the schema has a pattern, use the first candidate that matches.
+const PATTERN_CANDIDATES = [
+  "pg_sample", "pgsample", "PG_SAMPLE", "PGSAMPLE", "pg-sample", "pgsample:pg-sample", "pg:sample", "pg.sample",
+  "conversation:pg-sample", "agent:main:pg-contract-target", "conv_0123456789abcdef0123456789abcdef", "pg", "a", "A", "1",
+  "2026-10-29", "15m", "#a1b2c3",
+];
+
 function sampleString(name, s) {
+  if (typeof s.pattern === "string") {
+    let re;
+    try {
+      re = new RegExp(s.pattern, "u");
+    } catch {
+      re = null;
+    }
+    const preferred = sampleFor(name, s);
+    if (re && !re.test(preferred)) {
+      const hit = PATTERN_CANDIDATES.find((c) => re.test(c));
+      if (hit) return hit;
+    }
+    return preferred;
+  }
+  return sampleFor(name, s);
+}
+
+function sampleFor(name, s) {
   const n = name.toLowerCase();
   if (s.format === "uri" || s.format === "url") return "https://contract.example/pg-sample";
   if (s.format === "email") return "contract-recipient@example.com";
@@ -92,7 +118,7 @@ function sampleString(name, s) {
   if (/sessionkey/.test(n)) return "agent:main:pg-contract-target";
   if (/^(to|target|targets|recipient|recipients|email|address)$/.test(n)) return "contract-recipient@example.com";
   if (/(^|[a-z])id$/i.test(name) || /ids?$/.test(n)) return "pg-sample-id";
-  if (/(time|date|at|when)$/.test(n)) return "2026-10-29T09:00:00Z";
+  if (/(Time|Date|At)$/.test(name) || /^(at|when|time|date)$/.test(n)) return "2026-10-29T09:00:00Z";
   return "pg-sample";
 }
 

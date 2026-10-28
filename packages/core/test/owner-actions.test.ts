@@ -124,3 +124,26 @@ describe("spec validation", () => {
     expect(validateToolSpec("x", { category: "read_only", args: {}, actsAsOwner: "yes" })).toHaveLength(1);
   });
 });
+
+describe("flags that turn off OpenClaw protections", () => {
+  const SPEC: ToolSpec = {
+    name: "automations",
+    category: "autonomous_scheduling",
+    args: { "job.payload.message": "deferred_instruction", "job.payload.allowUnsafeExternalContent": "none" },
+    unsafeFlags: ["job.payload.allowUnsafeExternalContent"],
+  };
+  const env = () => testEnv({ registry: (n) => (n === "automations" ? SPEC : undefined) });
+  const add = (unsafe: boolean) => call("automations", { action: "add", job: { payload: { message: "summarize my inbox", allowUnsafeExternalContent: unsafe } } });
+
+  it("asks in a clean owner session and blocks when tainted", () => {
+    const e = env();
+    const s = session("owner");
+    expect(decide(add(false), s, e).verdict).toBe("allow");
+    const d = decide(add(true), s, e);
+    expect(d.verdict).toBe("ask");
+    expect(d.hardSink).toBe(true);
+    expect(d.reasons[0]).toMatch(/allowUnsafeExternalContent/);
+    taint(s);
+    expect(decide(add(true), s, e).verdict).toBe("block");
+  });
+});

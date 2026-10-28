@@ -8,3 +8,6 @@ phase0/results/**/gateway.log
 
 # Local progress notes (kept up to date, not committed)
 PROGRESS.md
+
+# Contract sweeps: per-run CLI output is bulky and not evidence (the mock, sentinel and audit logs are)
+phase0/results/contract-*/out/

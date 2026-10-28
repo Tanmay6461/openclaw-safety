@@ -1,7 +1,8 @@
 {
   "openclawVersion": "2026.10.8",
   "runs": [
-    "contract-2"
+    "contract-2",
+    "contract-3"
   ],
   "tools": {
     "agents_list": {
@@ -43,6 +44,109 @@
         "timeoutSeconds"
       ],
       "enums": {}
+    },
+    "automations": {
+      "leafPaths": [
+        "action",
+        "agentId",
+        "contextMessages",
+        "gatewayToken",
+        "gatewayUrl",
+        "id",
+        "in",
+        "includeDisabled",
+        "job.declarationKey",
+        "job.deleteAfterRun",
+        "job.delivery.accountId",
+        "job.delivery.bestEffort",
+        "job.delivery.channel",
+        "job.delivery.completionDestination.mode",
+        "job.delivery.completionDestination.to",
+        "job.delivery.failureDestination.accountId",
+        "job.delivery.failureDestination.channel",
+        "job.delivery.failureDestination.mode",
+        "job.delivery.failureDestination.to",
+        "job.delivery.mode",
+        "job.delivery.threadId",
+        "job.delivery.to",
+        "job.description",
+        "job.displayName",
+        "job.enabled",
+        "job.failureAlert",
+        "job.failureAlert.accountId",
+        "job.failureAlert.after",
+        "job.failureAlert.channel",
+        "job.failureAlert.cooldownMs",
+        "job.failureAlert.includeSkipped",
+        "job.failureAlert.mode",
+        "job.failureAlert.to",
+        "job.name",
+        "job.owner.agentId",
+        "job.owner.sessionKey",
+        "job.pacing.max",
+        "job.pacing.min",
+        "job.payload.allowUnsafeExternalContent",
+        "job.payload.fallbacks[]",
+        "job.payload.kind",
+        "job.payload.lightContext",
+        "job.payload.message",
+        "job.payload.model",
+        "job.payload.script",
+        "job.payload.text",
+        "job.payload.thinking",
+        "job.payload.timeoutSeconds",
+        "job.payload.toolBudget",
+        "job.payload.toolsAllow[]",
+        "job.schedule.anchorMs",
+        "job.schedule.at",
+        "job.schedule.batchMs",
+        "job.schedule.command[]",
+        "job.schedule.cwd",
+        "job.schedule.everyMs",
+        "job.schedule.expr",
+        "job.schedule.kind",
+        "job.schedule.match",
+        "job.schedule.maxBatchBytes",
+        "job.schedule.mode",
+        "job.schedule.staggerMs",
+        "job.schedule.tz",
+        "job.sessionKey",
+        "job.sessionTarget",
+        "job.trigger.once",
+        "job.trigger.script",
+        "job.wakeMode",
+        "jobId",
+        "limit",
+        "mode",
+        "offset",
+        "runId",
+        "runMode",
+        "sessionKey",
+        "text",
+        "timeoutMs"
+      ],
+      "enums": {
+        "action": [
+          "add",
+          "get",
+          "list",
+          "next_check",
+          "remove",
+          "run",
+          "runs",
+          "status",
+          "update",
+          "wake"
+        ],
+        "mode": [
+          "next-heartbeat",
+          "now"
+        ],
+        "runMode": [
+          "due",
+          "force"
+        ]
+      }
     },
     "browser": {
       "leafPaths": [
@@ -168,6 +272,48 @@
           "text",
           "upload",
           "waitfordownload"
+        ],
+        "target": [
+          "host",
+          "node",
+          "sandbox"
+        ],
+        "mode": [
+          "efficient"
+        ],
+        "snapshotFormat": [
+          "ai",
+          "aria"
+        ],
+        "refs": [
+          "aria",
+          "role"
+        ],
+        "type": [
+          "jpeg",
+          "png"
+        ],
+        "colorScheme": [
+          "dark",
+          "light",
+          "no-preference",
+          "none"
+        ],
+        "kind": [
+          "batch",
+          "click",
+          "clickCoords",
+          "close",
+          "drag",
+          "evaluate",
+          "fill",
+          "hover",
+          "press",
+          "resize",
+          "scrollIntoView",
+          "select",
+          "type",
+          "wait"
         ]
       }
     },
@@ -253,6 +399,17 @@
           "widget_put",
           "widget_remove",
           "widget_resize"
+        ],
+        "presentation": [
+          "expanded",
+          "split"
+        ],
+        "size": [
+          "full",
+          "lg",
+          "md",
+          "sm",
+          "xl"
         ]
       }
     },
@@ -303,7 +460,12 @@
         "workdir",
         "yieldMs"
       ],
-      "enums": {}
+      "enums": {
+        "host": [
+          "auto",
+          "gateway"
+        ]
+      }
     },
     "file_fetch": {
       "leafPaths": [
@@ -371,6 +533,23 @@
           "cancel",
           "create",
           "list"
+        ],
+        "scope": [
+          "anywhere",
+          "channel",
+          "conversation"
+        ],
+        "senderScope": [
+          "anyone",
+          "sender"
+        ],
+        "status": [
+          "armed",
+          "cancelled",
+          "done",
+          "expired",
+          "fired",
+          "pending"
         ]
       }
     },
@@ -389,7 +568,13 @@
         "lines",
         "path"
       ],
-      "enums": {}
+      "enums": {
+        "corpus": [
+          "all",
+          "memory",
+          "wiki"
+        ]
+      }
     },
     "memory_search": {
       "leafPaths": [
@@ -398,7 +583,14 @@
         "minScore",
         "query"
       ],
-      "enums": {}
+      "enums": {
+        "corpus": [
+          "all",
+          "memory",
+          "sessions",
+          "wiki"
+        ]
+      }
     },
     "message": {
       "leafPaths": [
@@ -644,6 +836,37 @@
           "screen_snapshot",
           "status",
           "which"
+        ],
+        "priority": [
+          "active",
+          "passive",
+          "timeSensitive"
+        ],
+        "delivery": [
+          "auto",
+          "overlay",
+          "system"
+        ],
+        "facing": [
+          "back",
+          "both",
+          "front"
+        ],
+        "ptzOperation": [
+          "home",
+          "move",
+          "set",
+          "status"
+        ],
+        "desiredAccuracy": [
+          "balanced",
+          "coarse",
+          "precise"
+        ],
+        "notificationAction": [
+          "dismiss",
+          "open",
+          "reply"
         ]
       }
     },
@@ -676,6 +899,10 @@
           "reloadAndResume",
           "search",
           "uninstall"
+        ],
+        "source": [
+          "clawhub",
+          "official"
         ]
       }
     },
@@ -743,6 +970,14 @@
         ]
       }
     },
+    "progress_card": {
+      "leafPaths": [
+        "markdown",
+        "plan[].status",
+        "plan[].step"
+      ],
+      "enums": {}
+    },
     "read": {
       "leafPaths": [
         "cursor",
@@ -767,6 +1002,9 @@
           "delete",
           "list",
           "request"
+        ],
+        "kind": [
+          "secret"
         ]
       }
     },
@@ -821,6 +1059,19 @@
           "patch",
           "reset",
           "stop"
+        ],
+        "attention": [
+          "alert",
+          "clear",
+          "flag",
+          "hand",
+          "hourglass",
+          "key",
+          "lock"
+        ],
+        "ownerType": [
+          "agent",
+          "human"
         ]
       }
     },
@@ -861,7 +1112,16 @@
         "user",
         "workspaceDir"
       ],
-      "enums": {}
+      "enums": {
+        "relationship": [
+          "created",
+          "involving",
+          "owned"
+        ],
+        "archived": [
+          "all"
+        ]
+      }
     },
     "sessions_search": {
       "leafPaths": [
@@ -883,7 +1143,14 @@
         "user",
         "watch"
       ],
-      "enums": {}
+      "enums": {
+        "mode": [
+          "followup",
+          "notify",
+          "resume",
+          "steer"
+        ]
+      }
     },
     "sessions_spawn": {
       "leafPaths": [
@@ -925,7 +1192,33 @@
         "worktreeBaseRef",
         "worktreeName"
       ],
-      "enums": {}
+      "enums": {
+        "runtime": [
+          "subagent"
+        ],
+        "mode": [
+          "run"
+        ],
+        "cleanup": [
+          "delete",
+          "keep"
+        ],
+        "completionTarget": [
+          "parent"
+        ],
+        "sandbox": [
+          "inherit",
+          "require"
+        ],
+        "context": [
+          "fork",
+          "isolated"
+        ],
+        "fastMode": [
+          "auto",
+          "ultrafast"
+        ]
+      }
     },
     "sessions_yield": {
       "leafPaths": [
@@ -1086,6 +1379,11 @@
           "import",
           "list",
           "set"
+        ],
+        "mode": [
+          "dark",
+          "light",
+          "system"
         ]
       }
     },
@@ -1141,7 +1439,12 @@
         "note",
         "status"
       ],
-      "enums": {}
+      "enums": {
+        "status": [
+          "blocked",
+          "complete"
+        ]
+      }
     },
     "web_fetch": {
       "leafPaths": [
@@ -1149,7 +1452,12 @@
         "maxChars",
         "url"
       ],
-      "enums": {}
+      "enums": {
+        "extractMode": [
+          "markdown",
+          "text"
+        ]
+      }
     },
     "write": {
       "leafPaths": [

@@ -59,6 +59,9 @@ export function validateToolSpec(name: string, spec: unknown): string[] {
   const errs = checkFields(name, spec, false);
   if (spec.actionParam !== undefined && typeof spec.actionParam !== "string") errs.push(`${name}.actionParam: must be a string`);
   if (spec.elevationParam !== undefined && typeof spec.elevationParam !== "string") errs.push(`${name}.elevationParam: must be a string`);
+  if (spec.unsafeFlags !== undefined && !(Array.isArray(spec.unsafeFlags) && spec.unsafeFlags.every((x) => typeof x === "string"))) {
+    errs.push(`${name}.unsafeFlags: must be a list of param paths`);
+  }
   if (spec.actions !== undefined) {
     if (!isRecord(spec.actions)) errs.push(`${name}.actions: must be an object`);
     else if (spec.actionParam === undefined) errs.push(`${name}.actions: needs actionParam`);

@@ -272,15 +272,21 @@ export function decide(call: ToolCall, session: SessionState, env: GuardEnv): De
     }
   }
 
-  // Config, policy, protected paths: hard sinks (§5.12).
+  // Config, policy, protected paths, and flags that turn off OpenClaw's own protections: hard sinks (§5.12).
+  const unsafeFlag = spec.unsafeFlags?.find((p) => valuesAtPath(call.params, p).some((v) => v === true || v === "true"));
   const configLike =
-    spec.category === "config" || argValues(call, spec, "config").length > 0 || execs.some((e) => e.info.guardCli);
+    spec.category === "config" ||
+    argValues(call, spec, "config").length > 0 ||
+    execs.some((e) => e.info.guardCli) ||
+    unsafeFlag !== undefined;
   if (configLike || protectedHits.length > 0) {
     b.hardSink = true;
     for (const h of protectedHits) b.findings.push({ arg: h.arg, role: "path", value: h.value, status: "protected" });
-    const what = configLike
-      ? "changes OpenClaw or guard configuration"
-      : `touches a protected path (${short(protectedHits[0]!.value)})`;
+    const what = unsafeFlag
+      ? `turns off one of OpenClaw's own protections (${unsafeFlag})`
+      : configLike
+        ? "changes OpenClaw or guard configuration"
+        : `touches a protected path (${short(protectedHits[0]!.value)})`;
     if (p.protectedWrite === "strict") b.raise("block", `This ${what}; under the Strict preset that's only possible through /guard commands.`);
     else if (tainted) b.raise("block", `This ${what}, and the session has read untrusted content.`);
     else b.raise("ask", `This ${what}.`);
