@@ -1,0 +1,8 @@
+# Bound over /etc/hosts in the Codex probe container (run-codex.sh). Real model APIs resolve to loopback,
+# where nothing listens on 443, so neither OpenClaw nor the Codex binary can reach them: the tests use
+# the mock only. The npm registry is left alone for the plugin install step.
+127.0.0.1 localhost
+::1 localhost
+127.0.0.1 api.openai.com openai.com www.openai.com auth.openai.com auth0.openai.com files.openai.com
+127.0.0.1 chatgpt.com www.chatgpt.com ab.chatgpt.com chat.openai.com
+127.0.0.1 api.anthropic.com generativelanguage.googleapis.com openrouter.ai api.x.ai

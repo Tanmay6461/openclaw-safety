@@ -1,0 +1,5736 @@
+{
+  "tools": {
+    "apply_patch": {
+      "name": "apply_patch",
+      "id": "apply_patch",
+      "direct": true,
+      "schema": {
+        "type": "object",
+        "required": [
+          "input"
+        ],
+        "properties": {
+          "input": {
+            "type": "string",
+            "description": "Patch content using the *** Begin Patch/End Patch format."
+          }
+        }
+      }
+    },
+    "edit": {
+      "name": "edit",
+      "id": "edit",
+      "direct": true,
+      "schema": {
+        "type": "object",
+        "required": [
+          "path",
+          "edits"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "File path; relative/absolute."
+          },
+          "edits": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "oldText",
+                "newText"
+              ],
+              "properties": {
+                "oldText": {
+                  "type": "string",
+                  "description": "Exact original text; unique and non-overlapping in this call."
+                },
+                "newText": {
+                  "type": "string",
+                  "description": "Replacement text."
+                }
+              }
+            },
+            "description": "Targeted replacements against original file; no overlap/nesting. Merge nearby changes."
+          }
+        }
+      }
+    },
+    "exec": {
+      "name": "exec",
+      "id": "exec",
+      "direct": true,
+      "schema": {
+        "type": "object",
+        "required": [
+          "command"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 120,
+            "description": "Every call: short purpose; never claim success. No secrets."
+          },
+          "command": {
+            "type": "string",
+            "description": "Shell command."
+          },
+          "workdir": {
+            "type": "string",
+            "description": "Omit/empty string: default; whitespace-only invalid."
+          },
+          "env": {
+            "type": "object",
+            "patternProperties": {
+              "^.*$": {
+                "type": "string"
+              }
+            },
+            "description": "Literal overrides; no expansion. Omit to inherit."
+          },
+          "yieldMs": {
+            "type": "number",
+            "description": "Milliseconds before returning an ordinary-command handle; default 10000."
+          },
+          "awaitResults": {
+            "type": "boolean",
+            "description": "Result required to finish the task; wait for terminal collection. Not for detached servers."
+          },
+          "background": {
+            "type": "boolean",
+            "description": "Start an independent service now; survives request Stop. Use yieldMs for ordinary work. timeoutSeconds applies."
+          },
+          "timeoutSeconds": {
+            "type": "number",
+            "description": "Process lifetime in seconds; 0 disables."
+          },
+          "pty": {
+            "type": "boolean",
+            "description": "PTY for TTY-required CLIs/coding agents."
+          },
+          "elevated": {
+            "type": "boolean",
+            "description": "Host elevation if allowed."
+          },
+          "host": {
+            "enum": [
+              "auto",
+              "gateway"
+            ],
+            "type": "string",
+            "description": "Omit/auto: inherit configured host (gateway)."
+          },
+          "ask": {
+            "type": "string",
+            "description": "Requests stricter approvals under tools.exec.mode and host policy; channel-origin calls cannot override host ask=off."
+          },
+          "node": {
+            "type": "string",
+            "description": "Node id/name for host=node."
+          }
+        }
+      }
+    },
+    "ls": {
+      "name": "ls",
+      "id": "ls",
+      "direct": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Directory; default cwd."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Max entries; default 500."
+          },
+          "after": {
+            "type": "string",
+            "description": "Filename cursor returned by the previous page."
+          }
+        }
+      }
+    },
+    "openclaw": {
+      "name": "openclaw",
+      "id": "openclaw",
+      "direct": true,
+      "schema": {
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "What system must do."
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "Continue prior OpenClaw talk."
+          }
+        }
+      }
+    },
+    "process": {
+      "name": "process",
+      "id": "process",
+      "direct": true,
+      "schema": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "list",
+              "poll",
+              "log",
+              "write",
+              "send-keys",
+              "submit",
+              "paste",
+              "kill",
+              "clear",
+              "remove"
+            ],
+            "description": "Process action (list|poll|log|write|send-keys|submit|paste|kill|clear|remove)"
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "Required for every action except list."
+          },
+          "data": {
+            "type": "string",
+            "description": "Data to write for write"
+          },
+          "keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Key tokens to send for send-keys"
+          },
+          "hex": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Hex bytes to send for send-keys"
+          },
+          "literal": {
+            "type": "string",
+            "description": "Literal string for send-keys"
+          },
+          "text": {
+            "type": "string",
+            "description": "Text to paste for paste"
+          },
+          "bracketed": {
+            "type": "boolean",
+            "description": "Wrap paste in bracketed mode"
+          },
+          "eof": {
+            "type": "boolean",
+            "description": "Close stdin after write"
+          },
+          "offset": {
+            "type": "number",
+            "description": "Log offset"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Log length"
+          },
+          "timeout": {
+            "type": "number",
+            "description": "For poll: wait up to this many milliseconds before returning; max 30000 ms, higher values are clamped to 30000",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "read": {
+      "name": "read",
+      "id": "read",
+      "direct": true,
+      "schema": {
+        "type": "object",
+        "required": [
+          "path"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "File path; relative/absolute."
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Start line; 1-based."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Max lines."
+          },
+          "cursor": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Character position within the start line; 0-based."
+          },
+          "optional": {
+            "type": "boolean",
+            "const": true,
+            "description": "Missing paths return structured not_found instead of failing."
+          }
+        }
+      }
+    },
+    "sessions_yield": {
+      "name": "sessions_yield",
+      "id": "sessions_yield",
+      "direct": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "waitFor": {
+            "type": "string",
+            "const": "message",
+            "description": "Explicitly pause an unfinished subagent until an incoming continuation message; its requester is notified once. Does not schedule a message or submit the final result."
+          },
+          "message": {
+            "type": "string",
+            "description": "Private context for the resumed turn; not sent to the user."
+          },
+          "acknowledgment": {
+            "type": "string",
+            "description": "Optional waiting reply for an otherwise-silent interactive parent turn; with waitFor, the pause notice for the requester."
+          }
+        }
+      }
+    },
+    "tool_call": {
+      "name": "tool_call",
+      "id": "tool_call",
+      "direct": true,
+      "schema": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Tool search result id or tool name."
+          },
+          "args": {
+            "type": "object",
+            "patternProperties": {
+              "^.*$": {}
+            },
+            "description": "Tool input."
+          }
+        }
+      }
+    },
+    "tool_describe": {
+      "name": "tool_describe",
+      "id": "tool_describe",
+      "direct": true,
+      "schema": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Tool search result id or tool name."
+          }
+        }
+      }
+    },
+    "tool_search": {
+      "name": "tool_search",
+      "id": "tool_search",
+      "direct": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Single search query, in English. A non-empty query joins a non-empty batch first. Null or blank is ignored beside a non-empty batch."
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Maximum number of single-search results. Omitted or null uses the default. With only batch queries, omit this or set it to null; set limits on each batch entry."
+          },
+          "queries": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "query"
+                  ],
+                  "properties": {
+                    "query": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 512,
+                      "description": "Search query, in English. Describe the capability you need."
+                    },
+                    "limit": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "description": "Maximum results for this query. Defaults to 8 when omitted."
+                    }
+                  }
+                },
+                "maxItems": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Independent searches. Prefer this alone for several searches; a non-empty query beside it runs as the first entry. Their effective limits may total at most 50; an omitted item limit counts as 8. The serialized query strings may use at most 512 UTF-8 bytes in total."
+          }
+        }
+      }
+    },
+    "write": {
+      "name": "write",
+      "id": "write",
+      "direct": true,
+      "schema": {
+        "type": "object",
+        "required": [
+          "path",
+          "content"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "File path; relative/absolute."
+          },
+          "content": {
+            "type": "string",
+            "description": "File content."
+          }
+        }
+      }
+    },
+    "web_fetch": {
+      "name": "web_fetch",
+      "id": "openclaw:core:web_fetch",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "HTTP(S) URL."
+          },
+          "extractMode": {
+            "enum": [
+              "markdown",
+              "text"
+            ],
+            "type": "string",
+            "description": "Extract as markdown/text.",
+            "default": "markdown"
+          },
+          "maxChars": {
+            "type": "integer",
+            "description": "Max chars returned; truncates.",
+            "minimum": 100
+          }
+        }
+      }
+    },
+    "intent": {
+      "name": "intent",
+      "id": "openclaw:memory-core:intent",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create",
+              "list",
+              "cancel"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "triggerKeywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "conversation",
+              "channel",
+              "anywhere"
+            ],
+            "default": "channel"
+          },
+          "senderScope": {
+            "type": "string",
+            "enum": [
+              "sender",
+              "anyone"
+            ],
+            "default": "sender"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "maxFires": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "cooldownSeconds": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "armed",
+              "fired",
+              "done",
+              "cancelled",
+              "expired"
+            ]
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "gateway": {
+      "name": "gateway",
+      "id": "openclaw:core:gateway",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "enum": [
+              "config.get",
+              "config.schema.lookup",
+              "update.run"
+            ],
+            "type": "string"
+          },
+          "gatewayUrl": {
+            "type": "string"
+          },
+          "gatewayToken": {
+            "type": "string"
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "note": {
+            "type": "string",
+            "description": "Short human note for the post-update restart notice."
+          },
+          "path": {
+            "type": "string",
+            "description": "Required for config.schema.lookup; optional for config.get."
+          }
+        }
+      }
+    },
+    "browser": {
+      "name": "browser",
+      "id": "openclaw:browser:browser",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "enum": [
+              "doctor",
+              "status",
+              "start",
+              "stop",
+              "profiles",
+              "importprofile",
+              "tabs",
+              "open",
+              "focus",
+              "close",
+              "snapshot",
+              "screenshot",
+              "navigate",
+              "console",
+              "requests",
+              "errors",
+              "text",
+              "emulate",
+              "pdf",
+              "download",
+              "waitfordownload",
+              "upload",
+              "dialog",
+              "act"
+            ],
+            "type": "string"
+          },
+          "target": {
+            "enum": [
+              "sandbox",
+              "host",
+              "node"
+            ],
+            "type": "string"
+          },
+          "dashboard": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+            "description": "browser:dashboard widget name."
+          },
+          "node": {
+            "type": "string"
+          },
+          "profile": {
+            "type": "string",
+            "description": "default if omitted."
+          },
+          "browser": {
+            "type": "string"
+          },
+          "systemProfile": {
+            "type": "string"
+          },
+          "into": {
+            "type": "string"
+          },
+          "domains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "targetUrl": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "maxChars": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "mode": {
+            "enum": [
+              "efficient"
+            ],
+            "type": "string"
+          },
+          "snapshotFormat": {
+            "enum": [
+              "aria",
+              "ai"
+            ],
+            "type": "string"
+          },
+          "refs": {
+            "enum": [
+              "role",
+              "aria"
+            ],
+            "type": "string"
+          },
+          "interactive": {
+            "type": "boolean"
+          },
+          "compact": {
+            "type": "boolean"
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "frame": {
+            "type": "string"
+          },
+          "labels": {
+            "type": "boolean",
+            "description": "Label snapshot/screenshot."
+          },
+          "fullPage": {
+            "type": "boolean"
+          },
+          "element": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "png",
+              "jpeg"
+            ],
+            "type": "string"
+          },
+          "urls": {
+            "type": "boolean"
+          },
+          "path": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string"
+          },
+          "filter": {
+            "type": "string"
+          },
+          "clear": {
+            "type": "boolean"
+          },
+          "query": {
+            "type": "string"
+          },
+          "device": {
+            "type": "string"
+          },
+          "colorScheme": {
+            "enum": [
+              "dark",
+              "light",
+              "no-preference",
+              "none"
+            ],
+            "type": "string"
+          },
+          "timezoneId": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "inputRef": {
+            "type": "string"
+          },
+          "dialogId": {
+            "type": "string"
+          },
+          "accept": {
+            "type": "boolean"
+          },
+          "promptText": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "batch",
+              "click",
+              "clickCoords",
+              "type",
+              "press",
+              "hover",
+              "scrollIntoView",
+              "drag",
+              "select",
+              "fill",
+              "resize",
+              "wait",
+              "evaluate",
+              "close"
+            ],
+            "type": "string",
+            "description": "batch uses actions."
+          },
+          "targetId": {
+            "type": "string",
+            "description": "Prefer suggestedTargetId/tabId/label; raw CDP targetId."
+          },
+          "ref": {
+            "type": "string",
+            "description": "snapshot ref."
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {},
+              "additionalProperties": true
+            },
+            "description": "batch actions."
+          },
+          "stopOnError": {
+            "type": "boolean",
+            "description": "Stop on error; default true."
+          },
+          "doubleClick": {
+            "type": "boolean",
+            "description": "Double-click/clickCoords."
+          },
+          "button": {
+            "type": "string"
+          },
+          "modifiers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          },
+          "text": {
+            "type": "string"
+          },
+          "submit": {
+            "type": "boolean"
+          },
+          "slowly": {
+            "type": "boolean"
+          },
+          "key": {
+            "type": "string",
+            "description": "Escape, Enter, Control+Shift+T; aliases Esc, Return, Del, Ctrl, Cmd."
+          },
+          "delayMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "startRef": {
+            "type": "string"
+          },
+          "endRef": {
+            "type": "string"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {},
+              "additionalProperties": true
+            }
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8192
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8192
+          },
+          "timeMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "selector": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "loadState": {
+            "type": "string"
+          },
+          "textGone": {
+            "type": "string"
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "fn": {
+            "type": "string"
+          },
+          "request": {
+            "type": "object",
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "batch",
+                  "click",
+                  "clickCoords",
+                  "type",
+                  "press",
+                  "hover",
+                  "scrollIntoView",
+                  "drag",
+                  "select",
+                  "fill",
+                  "resize",
+                  "wait",
+                  "evaluate",
+                  "close"
+                ],
+                "type": "string",
+                "description": "batch uses actions."
+              },
+              "targetId": {
+                "type": "string",
+                "description": "Prefer suggestedTargetId/tabId/label; raw CDP targetId."
+              },
+              "ref": {
+                "type": "string",
+                "description": "snapshot ref."
+              },
+              "actions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": true
+                },
+                "description": "batch actions."
+              },
+              "stopOnError": {
+                "type": "boolean",
+                "description": "Stop on error; default true."
+              },
+              "doubleClick": {
+                "type": "boolean",
+                "description": "Double-click/clickCoords."
+              },
+              "button": {
+                "type": "string"
+              },
+              "modifiers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "text": {
+                "type": "string"
+              },
+              "submit": {
+                "type": "boolean"
+              },
+              "slowly": {
+                "type": "boolean"
+              },
+              "key": {
+                "type": "string",
+                "description": "Escape, Enter, Control+Shift+T; aliases Esc, Return, Del, Ctrl, Cmd."
+              },
+              "delayMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "startRef": {
+                "type": "string"
+              },
+              "endRef": {
+                "type": "string"
+              },
+              "values": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": true
+                }
+              },
+              "width": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 8192
+              },
+              "height": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 8192
+              },
+              "timeMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "selector": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              },
+              "loadState": {
+                "type": "string"
+              },
+              "textGone": {
+                "type": "string"
+              },
+              "timeoutMs": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "fn": {
+                "type": "string"
+              }
+            },
+            "description": "act"
+          }
+        }
+      }
+    },
+    "plugins": {
+      "name": "plugins",
+      "id": "openclaw:core:plugins",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "enum": [
+              "list",
+              "inspect",
+              "search",
+              "install",
+              "enable",
+              "disable",
+              "uninstall",
+              "reload",
+              "reloadAndResume"
+            ],
+            "type": "string"
+          },
+          "pluginId": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string",
+            "description": "Filter the plugin inventory or search published plugins."
+          },
+          "source": {
+            "enum": [
+              "official",
+              "clawhub"
+            ],
+            "type": "string"
+          },
+          "packageName": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string",
+            "description": "ClawHub package version; omit for official catalog installs."
+          },
+          "reviewToken": {
+            "type": "string",
+            "description": "Capability review acknowledged by the operator."
+          },
+          "acknowledgeInstallPolicyWarning": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "skills_search": {
+      "name": "skills_search",
+      "id": "openclaw:core:skills_search",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          }
+        }
+      }
+    },
+    "skills_read": {
+      "name": "skills_read",
+      "id": "openclaw:core:skills_read",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "theme": {
+      "name": "theme",
+      "id": "openclaw:core:theme",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "list",
+              "get",
+              "set",
+              "import"
+            ]
+          },
+          "user": {
+            "type": "string",
+            "description": "The person's requester_profile.id, required when several people have steered this turn."
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Theme ID; import uses a personal slug. Set null to clear the override."
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "system",
+                  "light",
+                  "dark"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set/import appearance mode. Set null to clear the override."
+          },
+          "definition": {
+            "type": "object",
+            "required": [
+              "name",
+              "description"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 320
+              },
+              "mascot": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "const": "claw"
+                  },
+                  {
+                    "type": "string",
+                    "const": "none"
+                  }
+                ]
+              },
+              "brandName": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "brandIcon": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9_-]{0,31}$",
+                "maxLength": 32
+              },
+              "workingIndicator": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "const": "claw"
+                  },
+                  {
+                    "type": "string",
+                    "const": "dots"
+                  },
+                  {
+                    "type": "string",
+                    "const": "brand"
+                  },
+                  {
+                    "type": "string",
+                    "const": "none"
+                  }
+                ]
+              },
+              "lobsterdex": {
+                "type": "boolean"
+              },
+              "communityLinks": {
+                "type": "boolean"
+              },
+              "workingPhrases": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 24
+                },
+                "maxItems": 24
+              },
+              "critters": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9_-]{0,31}$",
+                  "maxLength": 32
+                },
+                "maxItems": 8
+              },
+              "avatarHat": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9_-]{0,31}$",
+                "maxLength": 32
+              },
+              "light": {
+                "type": "object",
+                "required": [
+                  "background",
+                  "foreground",
+                  "card",
+                  "card-foreground",
+                  "popover",
+                  "popover-foreground",
+                  "primary",
+                  "primary-foreground",
+                  "secondary",
+                  "secondary-foreground",
+                  "muted",
+                  "muted-foreground",
+                  "accent",
+                  "accent-foreground",
+                  "destructive",
+                  "destructive-foreground",
+                  "border",
+                  "input",
+                  "ring"
+                ],
+                "properties": {
+                  "background": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "foreground": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "card": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "card-foreground": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "popover": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "popover-foreground": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "primary": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "primary-foreground": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "secondary": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "secondary-foreground": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "muted": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "muted-foreground": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "accent": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "accent-foreground": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "destructive": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "destructive-foreground": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "border": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "input": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "ring": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "font-sans": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "font-mono": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                },
+                "additionalProperties": false
+              },
+              "dark": {
+                "type": "object",
+                "required": [
+                  "background",
+                  "foreground",
+                  "card",
+                  "card-foreground",
+                  "popover",
+                  "popover-foreground",
+                  "primary",
+                  "primary-foreground",
+                  "secondary",
+                  "secondary-foreground",
+                  "muted",
+                  "muted-foreground",
+                  "accent",
+                  "accent-foreground",
+                  "destructive",
+                  "destructive-foreground",
+                  "border",
+                  "input",
+                  "ring"
+                ],
+                "properties": {
+                  "background": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "foreground": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "card": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "card-foreground": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "popover": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "popover-foreground": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "primary": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "primary-foreground": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "secondary": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "secondary-foreground": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "muted": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "muted-foreground": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "accent": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "accent-foreground": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "destructive": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "destructive-foreground": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "border": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "input": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "ring": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "font-sans": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "font-mono": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "apply": {
+            "type": "boolean",
+            "description": "Import and activate in one call"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "dashboard": {
+      "name": "dashboard",
+      "id": "openclaw:core:dashboard",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "read",
+              "tab_create",
+              "tab_update",
+              "tab_delete",
+              "tabs_reorder",
+              "widget_put",
+              "widget_move",
+              "widget_resize",
+              "widget_remove",
+              "focus_tab",
+              "set_presentation",
+              "set_default_presentation"
+            ],
+            "description": "Dashboard action; widget_put creates or updates trusted plugin widgets only"
+          },
+          "tabId": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,40}$",
+            "description": "Stable tab slug"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "description": "Tab title"
+          },
+          "presentation": {
+            "type": "string",
+            "enum": [
+              "split",
+              "expanded"
+            ],
+            "description": "Dashboard panel presentation"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Zero-based position"
+          },
+          "tabIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{1,40}$"
+            },
+            "description": "Complete tab order"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+            "description": "Stable widget name"
+          },
+          "after": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+            "description": "Place after stable widget name"
+          },
+          "sizeW": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "sizeH": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "size": {
+            "type": "string",
+            "enum": [
+              "sm",
+              "md",
+              "lg",
+              "xl",
+              "full"
+            ]
+          },
+          "pluginKind": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,63}:[a-z0-9][a-z0-9._-]{0,63}$",
+            "description": "Registered widget kind; session:report renders data reports, session:progress renders live session progress, session:website embeds a live HTTPS website"
+          },
+          "props": {
+            "type": "object",
+            "patternProperties": {
+              "^.*$": {}
+            },
+            "description": "Widget JSON props (maximum 8KB encoded). For session:report: Report data: {blocks:[...]}. Blocks: text {text,title?}; metrics {items:[{label,value,detail?}]}; table {columns,rows,title?}; chart {points:[{label,value}],style?:\"bar\"|\"line\",title?}; links {items:[{label,url,detail?}],title?}. Every block needs its type. Metric values and table cells are strings; chart values are numbers. Maximum 8KB JSON, 24 blocks, 8 metrics or columns, 40 rows or chart points, 20 links per block. Links must be HTTP(S). No HTML, scripts, styles, network reads, or executable actions. For session:website: Website props: {url:\"https://...\"}. Opens the live website in an isolated browser frame without Gateway tools or credentials. Use a public HTTPS URL without embedded credentials; the website must allow embedding. Some sign-in flows and browser cookie policies require opening the website separately. Use size:\"full\", then action:\"set_presentation\" with presentation:\"expanded\" for a full-task website."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "node_inference": {
+      "name": "node_inference",
+      "id": "openclaw:ollama:node_inference",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "enum": [
+              "discover",
+              "run"
+            ],
+            "type": "string"
+          },
+          "node": {
+            "type": "string",
+            "description": "Connected node id or display name. Required when ambiguous."
+          },
+          "model": {
+            "type": "string",
+            "description": "Exact local model name returned by discover."
+          },
+          "prompt": {
+            "type": "string",
+            "description": "Prompt for action=run."
+          },
+          "system": {
+            "type": "string",
+            "description": "Optional system prompt for action=run."
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2
+          },
+          "maxTokens": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8192
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 600000
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "skill_workshop": {
+      "name": "skill_workshop",
+      "id": "openclaw:core:skill_workshop",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "enum": [
+              "list",
+              "view",
+              "create",
+              "patch",
+              "write_file",
+              "remove_file",
+              "archive",
+              "restore"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Skill name (lowercase-hyphenated)."
+          },
+          "file_path": {
+            "type": "string",
+            "description": "SKILL.md (default) or a file under references/, templates/, scripts/, assets/."
+          },
+          "content": {
+            "type": "string",
+            "description": "create: full SKILL.md. write_file: full file content."
+          },
+          "old_text": {
+            "type": "string",
+            "description": "patch: exact text to replace once."
+          },
+          "new_text": {
+            "type": "string",
+            "description": "patch: replacement text."
+          },
+          "absorbed_into": {
+            "type": "string",
+            "description": "archive: live skill that now covers this one."
+          },
+          "reason": {
+            "type": "string",
+            "description": "One short line saying what changed and why; shown to the user."
+          },
+          "version": {
+            "type": "string",
+            "description": "view/restore: version id; restore defaults to the newest."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "secrets": {
+      "name": "secrets",
+      "id": "openclaw:core:secrets",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "enum": [
+              "request",
+              "list",
+              "delete"
+            ],
+            "type": "string",
+            "description": "`request` a value from the human, `list` entry metadata, or `delete` an entry."
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 128,
+            "pattern": "^[A-Z][A-Z0-9_]{0,127}$",
+            "description": "Entry name in uppercase environment-variable form, also its SecretRef id (STRIPE_API_KEY). Required for request and delete."
+          },
+          "kind": {
+            "enum": [
+              "secret"
+            ],
+            "type": "string",
+            "description": "Only `secret` may be requested; requested values are never readable back."
+          },
+          "allowedHosts": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 253
+            },
+            "maxItems": 128,
+            "uniqueItems": true,
+            "description": "Exact hostnames allowed to receive a secret, without scheme or port (api.stripe.com). Leaving this empty prevents egress substitution; config SecretRefs remain usable."
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "One line shown to the human explaining why the credential is needed."
+          },
+          "timeoutSeconds": {
+            "type": "integer",
+            "description": "Maximum human wait in seconds on request; default 900, clamped 30-3600. Earlier run cancellation or overall run timeout still applies."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "github_identity_status": {
+      "name": "github_identity_status",
+      "id": "openclaw:core:github_identity_status",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    "message": {
+      "name": "message",
+      "id": "openclaw:core:message",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "enum": [
+              "broadcast",
+              "delete",
+              "edit",
+              "react",
+              "reactions",
+              "read",
+              "search",
+              "send",
+              "thread-create",
+              "thread-reply"
+            ],
+            "type": "string",
+            "description": "Select one action. For action=\"send\", provide message or another send payload; fields for other actions do not count as send content."
+          },
+          "channel": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string",
+            "description": "Recipient/channel: E.164 for WhatsApp/Signal, Telegram chat id/@username, Discord/Slack/Mattermost <channelId|user:ID|channel:ID>, or iMessage handle/chat_id"
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Recipient/channel targets (same format as --target); accepts ids or names when the directory is available."
+            }
+          },
+          "accountId": {
+            "type": "string"
+          },
+          "dryRun": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "description": "Text for action=\"send\". A send needs message or another send payload such as media, attachments, or presentation."
+          },
+          "effectId": {
+            "type": "string",
+            "description": "sendWithEffect id/name."
+          },
+          "effect": {
+            "type": "string",
+            "description": "Alias for effectId."
+          },
+          "media": {
+            "type": "string",
+            "description": "Media URL/path. data: use buffer."
+          },
+          "filename": {
+            "type": "string"
+          },
+          "buffer": {
+            "type": "string",
+            "description": "Base64/data-URL attachment."
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "caption": {
+            "type": "string"
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "enum": [
+                    "image",
+                    "audio",
+                    "video",
+                    "file"
+                  ],
+                  "type": "string"
+                },
+                "media": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "mimeType": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Attachments; each uses media."
+          },
+          "replyTo": {
+            "type": "string"
+          },
+          "threadId": {
+            "type": "string"
+          },
+          "asVoice": {
+            "type": "boolean",
+            "description": "Send audio as a voice note; combines with voiceText."
+          },
+          "voiceText": {
+            "type": "string",
+            "description": "Text to synthesize; message remains visible."
+          },
+          "voiceProvider": {
+            "type": "string",
+            "description": "Per-send speech provider override."
+          },
+          "voiceId": {
+            "type": "string",
+            "description": "Per-send speech voice override."
+          },
+          "silent": {
+            "type": "boolean"
+          },
+          "quoteText": {
+            "type": "string",
+            "description": "Telegram reply quote text."
+          },
+          "gifPlayback": {
+            "type": "boolean"
+          },
+          "forceDocument": {
+            "type": "boolean",
+            "description": "Send media as document; no compression."
+          },
+          "asDocument": {
+            "type": "boolean",
+            "description": "Alias for forceDocument."
+          },
+          "messageId": {
+            "type": "string"
+          },
+          "message_id": {
+            "type": "string",
+            "description": "snake_case alias of messageId; same defaults."
+          },
+          "emoji": {
+            "type": "string"
+          },
+          "remove": {
+            "type": "boolean"
+          },
+          "trackToolCalls": {
+            "type": "boolean",
+            "description": "Use the reacted message for this turn's status reaction lifecycle."
+          },
+          "track_tool_calls": {
+            "type": "boolean",
+            "description": "snake_case alias of trackToolCalls."
+          },
+          "targetAuthor": {
+            "type": "string"
+          },
+          "targetAuthorUuid": {
+            "type": "string"
+          },
+          "groupId": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Maximum number of results to return."
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "pageToken": {
+            "type": "string"
+          },
+          "before": {
+            "type": "string"
+          },
+          "after": {
+            "type": "string"
+          },
+          "around": {
+            "type": "string"
+          },
+          "fromMe": {
+            "type": "boolean"
+          },
+          "includeArchived": {
+            "type": "boolean"
+          },
+          "query": {
+            "type": "string"
+          },
+          "pollId": {
+            "type": "string"
+          },
+          "pollOptionId": {
+            "type": "string",
+            "description": "Poll answer id."
+          },
+          "pollOptionIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Poll answer ids for multiselect."
+            }
+          },
+          "pollOptionIndex": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "1-based poll option number."
+          },
+          "pollOptionIndexes": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "1-based poll option numbers for multiselect."
+            }
+          },
+          "pollQuestion": {
+            "type": "string"
+          },
+          "pollOption": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pollDurationHours": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "pollMulti": {
+            "type": "boolean"
+          },
+          "channelId": {
+            "type": "string"
+          },
+          "chatId": {
+            "type": "string",
+            "description": "Chat id for chat metadata."
+          },
+          "channelIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Channel id filter."
+            }
+          },
+          "memberId": {
+            "type": "string"
+          },
+          "memberIdType": {
+            "type": "string"
+          },
+          "guildId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string",
+            "description": "member-info/moderation/participant user id; member-info uses userId, not target."
+          },
+          "openId": {
+            "type": "string"
+          },
+          "unionId": {
+            "type": "string"
+          },
+          "authorId": {
+            "type": "string"
+          },
+          "authorIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "roleId": {
+            "type": "string"
+          },
+          "roleIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "participant": {
+            "type": "string"
+          },
+          "includeMembers": {
+            "type": "boolean"
+          },
+          "members": {
+            "type": "boolean"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "fileId": {
+            "type": "string"
+          },
+          "emojiName": {
+            "type": "string",
+            "description": "Name for an uploaded custom emoji."
+          },
+          "stickerId": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stickerName": {
+            "type": "string"
+          },
+          "stickerDesc": {
+            "type": "string"
+          },
+          "stickerTags": {
+            "type": "string"
+          },
+          "threadName": {
+            "type": "string"
+          },
+          "autoArchiveMin": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "appliedTags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "eventName": {
+            "type": "string"
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "endTime": {
+            "type": "string"
+          },
+          "desc": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string",
+            "description": "Event cover image URL/path."
+          },
+          "reason": {
+            "type": "string"
+          },
+          "deleteDays": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 7
+          },
+          "durationMin": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "until": {
+            "type": "string"
+          },
+          "gatewayUrl": {
+            "type": "string"
+          },
+          "gatewayToken": {
+            "type": "string"
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "channelType": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Numeric channel type; avoids schema type collision."
+          },
+          "parentId": {
+            "type": "string"
+          },
+          "topic": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "nsfw": {
+            "type": "boolean"
+          },
+          "rateLimitPerUser": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "clearParent": {
+            "type": "boolean",
+            "description": "Clear parent/category when supported."
+          },
+          "activityType": {
+            "type": "string",
+            "description": "Activity type: playing, streaming, listening, watching, competing, custom."
+          },
+          "activityName": {
+            "type": "string",
+            "description": "Activity name shown in sidebar; ignored for custom."
+          },
+          "activityUrl": {
+            "type": "string",
+            "description": "Streaming URL; streaming type only."
+          },
+          "activityState": {
+            "type": "string",
+            "description": "State text; custom type uses as status text."
+          },
+          "status": {
+            "type": "string",
+            "description": "Bot status: online, dnd, idle, invisible."
+          },
+          "title": {
+            "type": "string",
+            "description": "Deprecated alias for threadName."
+          },
+          "final": {
+            "type": "boolean",
+            "description": "For source replies, set false for progress; set true, or omit, for a completed send. For react, set true only when the user explicitly requested the reaction to the current source message as the complete response; omit or set false for acknowledgements or reactions followed by more work."
+          }
+        }
+      }
+    },
+    "file_write": {
+      "name": "file_write",
+      "id": "openclaw:file-transfer:file_write",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "node",
+          "path"
+        ],
+        "properties": {
+          "node": {
+            "type": "string",
+            "description": "Existing paired node id, display name, or IP shown by nodes status. Do not use local, host, gateway, or auto; use local file/exec tools for local workspace paths."
+          },
+          "path": {
+            "type": "string",
+            "description": "Absolute path on the node to write. Canonicalized server-side."
+          },
+          "contentBase64": {
+            "type": "string",
+            "description": "Base64-encoded bytes to write. Maximum 16 MB after decode."
+          },
+          "sourceMediaId": {
+            "type": "string",
+            "description": "mediaId of a previously fetched file in the file-transfer media store. Reuses saved bytes for binary copies. Not a local path or an ID from another media store."
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "Content type hint. Not validated against the content."
+          },
+          "overwrite": {
+            "type": "boolean",
+            "description": "Allow overwriting an existing file. Default false.",
+            "default": false
+          },
+          "createParents": {
+            "type": "boolean",
+            "description": "Create missing parent directories (mkdir -p). Default false.",
+            "default": false
+          }
+        }
+      }
+    },
+    "file_fetch": {
+      "name": "file_fetch",
+      "id": "openclaw:file-transfer:file_fetch",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "node",
+          "path"
+        ],
+        "properties": {
+          "node": {
+            "type": "string",
+            "description": "Existing paired node id, display name, or IP shown by nodes status. Do not use local, host, gateway, or auto; use local file/exec tools for local workspace paths."
+          },
+          "path": {
+            "type": "string",
+            "description": "Absolute path to the file on the node. Canonicalized server-side."
+          },
+          "maxBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Max bytes to fetch. Default 8 MB, hard ceiling 16 MB (single round-trip)."
+          },
+          "gatewayUrl": {
+            "type": "string"
+          },
+          "gatewayToken": {
+            "type": "string"
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "dir_fetch": {
+      "name": "dir_fetch",
+      "id": "openclaw:file-transfer:dir_fetch",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "node",
+          "path"
+        ],
+        "properties": {
+          "node": {
+            "type": "string",
+            "description": "Existing paired node id, display name, or IP shown by nodes status. Do not use local, host, gateway, or auto; use local file/exec tools for local workspace paths."
+          },
+          "path": {
+            "type": "string",
+            "description": "Absolute path to the directory on the node to fetch. Canonicalized server-side."
+          },
+          "maxBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Max gzipped tarball bytes to fetch. Default 8 MB, hard ceiling 16 MB (single round-trip)."
+          },
+          "gatewayUrl": {
+            "type": "string"
+          },
+          "gatewayToken": {
+            "type": "string"
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "dir_list": {
+      "name": "dir_list",
+      "id": "openclaw:file-transfer:dir_list",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "node",
+          "path"
+        ],
+        "properties": {
+          "node": {
+            "type": "string",
+            "description": "Existing paired node id, display name, or IP shown by nodes status. Do not use local, host, gateway, or auto; use local file/exec tools for local workspace paths."
+          },
+          "path": {
+            "type": "string",
+            "description": "Absolute path to the directory on the node. Canonicalized server-side."
+          },
+          "pageToken": {
+            "type": "string",
+            "description": "Pagination token from a previous dir_list call. Omit to start from the beginning."
+          },
+          "maxEntries": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Max entries per page. Default 200, hard ceiling 5000."
+          },
+          "gatewayUrl": {
+            "type": "string"
+          },
+          "gatewayToken": {
+            "type": "string"
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "nodes": {
+      "name": "nodes",
+      "id": "openclaw:core:nodes",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "enum": [
+              "status",
+              "describe",
+              "pending",
+              "approve",
+              "reject",
+              "notify",
+              "camera_snap",
+              "camera_list",
+              "camera_clip",
+              "camera_ptz",
+              "photos_latest",
+              "screen_record",
+              "screen_snapshot",
+              "location_get",
+              "notifications_list",
+              "notifications_action",
+              "device_status",
+              "device_info",
+              "device_permissions",
+              "device_health",
+              "which",
+              "invoke"
+            ],
+            "type": "string"
+          },
+          "gatewayUrl": {
+            "type": "string"
+          },
+          "gatewayToken": {
+            "type": "string"
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "node": {
+            "type": "string",
+            "description": "Node ID, name, or IP. Required for describe and node-targeted actions; use status to discover nodes."
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "sound": {
+            "type": "string"
+          },
+          "priority": {
+            "enum": [
+              "passive",
+              "active",
+              "timeSensitive"
+            ],
+            "type": "string"
+          },
+          "delivery": {
+            "enum": [
+              "system",
+              "overlay",
+              "auto"
+            ],
+            "type": "string"
+          },
+          "facing": {
+            "enum": [
+              "front",
+              "back",
+              "both"
+            ],
+            "type": "string",
+            "description": "camera_snap: front/back/both; camera_clip: front/back only."
+          },
+          "maxWidth": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "quality": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "delayMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "deviceId": {
+            "type": "string",
+            "description": "For camera_ptz, use a camera_list devices[].id value as deviceId; it is required and must not be guessed."
+          },
+          "ptzOperation": {
+            "enum": [
+              "status",
+              "set",
+              "move",
+              "home"
+            ],
+            "type": "string",
+            "description": "camera_ptz operation. Call status before any control operation. status and home accept no axes; set uses absolute axes; move uses axis deltas. Never guess unsupported axes."
+          },
+          "panDegrees": {
+            "type": "number",
+            "description": "camera_ptz pan: set uses absolute degrees; move uses a degree delta. Omit when unsupported."
+          },
+          "tiltDegrees": {
+            "type": "number",
+            "description": "camera_ptz tilt: set uses absolute degrees; move uses a degree delta. Omit when unsupported."
+          },
+          "zoomPercent": {
+            "type": "number",
+            "description": "camera_ptz zoom: set uses absolute percent; move uses a percentage-point delta. Omit when unsupported."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "duration": {
+            "type": "string"
+          },
+          "durationMs": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 300000
+          },
+          "includeAudio": {
+            "type": "boolean"
+          },
+          "fps": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "screenIndex": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "outPath": {
+            "type": "string"
+          },
+          "maxAgeMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "locationTimeoutMs": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "desiredAccuracy": {
+            "enum": [
+              "coarse",
+              "balanced",
+              "precise"
+            ],
+            "type": "string"
+          },
+          "notificationAction": {
+            "enum": [
+              "open",
+              "dismiss",
+              "reply"
+            ],
+            "type": "string"
+          },
+          "notificationKey": {
+            "type": "string"
+          },
+          "notificationReplyText": {
+            "type": "string"
+          },
+          "bins": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "maxItems": 64,
+            "description": "which: executable names to resolve on the selected node."
+          },
+          "invokeCommand": {
+            "type": "string"
+          },
+          "invokeParamsJson": {
+            "type": "string"
+          },
+          "invokeTimeoutMs": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "tts": {
+      "name": "tts",
+      "id": "openclaw:core:tts",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Text to speak."
+          },
+          "channel": {
+            "type": "string",
+            "description": "Channel id; output-format hint."
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "description": "Provider timeout ms.",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "create_goal": {
+      "name": "create_goal",
+      "id": "openclaw:core:create_goal",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "objective"
+        ],
+        "properties": {
+          "objective": {
+            "type": "string",
+            "description": "Concrete objective; explicit request only."
+          },
+          "token_budget": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Positive token budget. Omit or pass null unless explicitly requested."
+          }
+        }
+      }
+    },
+    "mobile_ui": {
+      "name": "mobile_ui",
+      "id": "openclaw:core:mobile_ui",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "enum": [
+              "observe",
+              "act"
+            ],
+            "type": "string"
+          },
+          "gatewayUrl": {
+            "type": "string"
+          },
+          "gatewayToken": {
+            "type": "string"
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "node": {
+            "type": "string",
+            "description": "Paired Android node id or display name. Omit when exactly one connected mobileUI-capable node exists."
+          },
+          "snapshotId": {
+            "type": "string",
+            "description": "act: exact snapshotId returned by the latest observation."
+          },
+          "mobileAction": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "type",
+                  "ref"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "activate"
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type",
+                  "ref",
+                  "text"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "set_text"
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type",
+                  "ref",
+                  "direction"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "scroll"
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "direction": {
+                    "enum": [
+                      "forward",
+                      "backward"
+                    ],
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type",
+                  "x",
+                  "y"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "tap"
+                  },
+                  "x": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "y": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type",
+                  "x1",
+                  "y1",
+                  "x2",
+                  "y2",
+                  "durationMs"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "swipe"
+                  },
+                  "x1": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "y1": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "x2": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "y2": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "durationMs": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 60000
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type",
+                  "name"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "global_action"
+                  },
+                  "name": {
+                    "enum": [
+                      "back",
+                      "home",
+                      "recents",
+                      "notifications"
+                    ],
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type",
+                  "ms"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "wait"
+                  },
+                  "ms": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100000
+                  }
+                }
+              }
+            ],
+            "description": "act: exactly one semantic mobile UI action."
+          },
+          "confirmed": {
+            "type": "boolean",
+            "description": "State-changing acts: set true only after reviewing and confirming the proposed effect."
+          }
+        }
+      }
+    },
+    "sessions": {
+      "name": "sessions",
+      "id": "openclaw:core:sessions",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "user": {
+            "type": "string",
+            "description": "The person's requester_profile.id, required when several people have steered this turn."
+          },
+          "action": {
+            "enum": [
+              "cloud_profiles",
+              "patch",
+              "stop",
+              "reset",
+              "delete",
+              "assign_owner",
+              "group_list",
+              "group_set",
+              "group_rename",
+              "group_delete"
+            ],
+            "type": "string",
+            "description": "Action"
+          },
+          "profileId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^\\S(?:.*\\S)?$",
+            "description": "cloud_profiles: return OS and machine choices for this configured profile.",
+            "~optional": true
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "cloud_profiles: nextOffset from the previous profile-list page."
+          },
+          "sessionKey": {
+            "type": "string",
+            "description": "Target session. Default: current"
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "sessionKey"
+              ],
+              "properties": {
+                "sessionKey": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "expectedSessionId": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 100,
+            "description": "patch: apply the same settings to these sessions. Cannot combine with top-level sessionKey/expectedSessionId. Archive/restore requires each target's expectedSessionId. Current-session archive uses a single patch. Results use zero-based succeeded/failed indexes; valid targets continue after item errors."
+          },
+          "expectedSessionId": {
+            "type": "string",
+            "description": "Durable identity returned by sessions_list; rejects a replaced session. Required to archive, restore, or delete another session, and for non-owner rename of another session."
+          },
+          "runId": {
+            "type": "string",
+            "description": "stop: cancel this exact active run, if specified."
+          },
+          "clearQueued": {
+            "type": "boolean",
+            "description": "stop: also clear queued follow-ups for session-wide stop. Default true; unavailable with runId."
+          },
+          "deleteTranscript": {
+            "type": "boolean",
+            "description": "Archive the deleted session transcript. Default: true."
+          },
+          "label": {
+            "type": "string",
+            "description": "Sidebar title override. Empty string clears it."
+          },
+          "icon": {
+            "type": "string",
+            "description": "Persistent sidebar icon: a single emoji, or a named icon: braces, book, monitor, bot, kanban, coins, or custom SVG markup/data:image/svg+xml URL (max 16 KiB decoded; self-contained, no scripts or external references). Include xmlns=\"http://www.w3.org/2000/svg\" and viewBox on SVGs. Empty string clears it. Distinct from temporary attention."
+          },
+          "color": {
+            "type": "string",
+            "description": "Persistent sidebar color tint, one of: red, blue, green, yellow, purple, orange, pink, cyan. Empty string clears it."
+          },
+          "group": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "patch: custom sidebar group for this session. Null or an empty string clears it back to ungrouped; assigning a new name creates the group."
+          },
+          "statusNote": {
+            "type": "string",
+            "maxLength": 120,
+            "description": "Short sidebar status line. Empty string clears it and declared attention. Clears automatically when the user reads or replies, or when its TTL expires."
+          },
+          "attention": {
+            "enum": [
+              "clear",
+              "hand",
+              "key",
+              "alert",
+              "flag",
+              "lock",
+              "hourglass"
+            ],
+            "type": "string",
+            "description": "Request user attention with a curated icon; requires an active statusNote. 'clear' clears both attention and statusNote."
+          },
+          "ttlMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 120,
+            "description": "Status/attention lifetime in minutes. Default 30; maximum 120."
+          },
+          "pinned": {
+            "type": "boolean",
+            "description": "Pin session (root and Home-linked sessions only; spawned, subagent, and nested-child sessions cannot be pinned)"
+          },
+          "archived": {
+            "type": "boolean",
+            "description": "True archives without deleting; false restores the session."
+          },
+          "model": {
+            "type": "string",
+            "description": "Model override"
+          },
+          "thinkingLevel": {
+            "type": "string",
+            "description": "Thinking override"
+          },
+          "ownerType": {
+            "enum": [
+              "human",
+              "agent"
+            ],
+            "type": "string",
+            "description": "New owner kind for assign_owner"
+          },
+          "ownerId": {
+            "type": "string",
+            "description": "New owner id for assign_owner"
+          },
+          "names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "group_set: full replacement of the ordered group catalog. Array order becomes sidebar order; new names are created; empty groups left out are deleted. Dropping a group that still has member sessions is rejected — remove it with group_delete first. Never moves sessions. To reorder, pass the complete current list in the new order."
+          },
+          "name": {
+            "type": "string",
+            "description": "group_rename and group_delete: the group to act on."
+          },
+          "to": {
+            "type": "string",
+            "description": "group_rename: the new group name."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "presence": {
+      "name": "presence",
+      "id": "openclaw:core:presence",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "list"
+              },
+              {
+                "type": "string",
+                "const": "person"
+              },
+              {
+                "type": "string",
+                "const": "device"
+              }
+            ],
+            "description": "List connected people (default), inspect a person, or inspect a connected device."
+          },
+          "person": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 320,
+            "description": "For person: me, a returned person/profile ID, or an exact unambiguous display name."
+          },
+          "deviceId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "For device: the exact presence device ID returned by this tool."
+          },
+          "include": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "const": "devices"
+                },
+                {
+                  "type": "string",
+                  "const": "network"
+                },
+                {
+                  "type": "string",
+                  "const": "location"
+                }
+              ]
+            },
+            "uniqueItems": true,
+            "maxItems": 3,
+            "description": "Optional device details. Network includes IP; location includes approximate IP location without requesting GPS. Each option includes devices."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "Maximum people returned (default 50, maximum 100); truncation is reported."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "sessions_spawn": {
+      "name": "sessions_spawn",
+      "id": "openclaw:core:sessions_spawn",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "task"
+        ],
+        "properties": {
+          "task": {
+            "type": "string"
+          },
+          "user": {
+            "type": "string",
+            "description": "The person's requester_profile.id, required when several people have steered this turn."
+          },
+          "taskName": {
+            "type": "string",
+            "description": "Stable later-target alias; starts lowercase letter; then lowercase/digit/_/-."
+          },
+          "label": {
+            "type": "string",
+            "description": "Short task title shown in UI lists; name the work, not the agent."
+          },
+          "runtime": {
+            "enum": [
+              "subagent"
+            ],
+            "type": "string",
+            "description": "Runtime; visible=true and managed worktrees require \"subagent\"."
+          },
+          "agentId": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "runTimeoutSeconds": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Child run timeout in seconds; overrides the configured subagent default and is preserved on native continuations. Zero disables the timeout; requester wake turns use their own budget."
+          },
+          "thinking": {
+            "type": "string",
+            "description": "Thinking override; unavailable with visible=true."
+          },
+          "cwd": {
+            "type": "string",
+            "description": "Child working directory. Visible paths outside configured agent workspaces require operator.admin. Mutually exclusive with projectId/projectGitUrl. With no source selector and worktree=true: inherit the same-agent parent managed repository; otherwise use the target agent workspace."
+          },
+          "mode": {
+            "enum": [
+              "run"
+            ],
+            "type": "string",
+            "description": "\"run\" one-shot. Visible sessions accept omitted/default \"run\" and remain persistent."
+          },
+          "cleanup": {
+            "enum": [
+              "delete",
+              "keep"
+            ],
+            "type": "string",
+            "description": "Hidden session cleanup; delete snapshots and removes its managed worktree through session cleanup. visible=true always keeps the session."
+          },
+          "expectsCompletionMessage": {
+            "type": "boolean",
+            "description": "false: fire-and-forget; requester gets no completion handoff when the child finishes."
+          },
+          "completionTarget": {
+            "enum": [
+              "parent"
+            ],
+            "type": "string",
+            "description": "parent: return results in a private requester turn; no automatic channel delivery. After sessions_yield, answer under the conversation's normal reply rules (NO_REPLY stays silent). Native hidden run only; unavailable with ACP, collect, visible, thread, session mode, or expectsCompletionMessage=false."
+          },
+          "sandbox": {
+            "enum": [
+              "inherit",
+              "require"
+            ],
+            "type": "string",
+            "description": "\"inherit\" parent sandbox policy; \"require\" fails unless child is sandboxed."
+          },
+          "context": {
+            "enum": [
+              "isolated",
+              "fork"
+            ],
+            "type": "string",
+            "description": "Native: explicit context=\"isolated\" starts clean; context=\"fork\" copies requester transcript and requires the same agent. Omitted context is isolated."
+          },
+          "lightContext": {
+            "type": "boolean",
+            "description": "Light bootstrap; subagent only; unavailable with visible=true."
+          },
+          "fastMode": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string",
+                "const": "auto"
+              },
+              {
+                "type": "string",
+                "const": "ultrafast"
+              }
+            ]
+          },
+          "placement": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "kind"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "local"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "profileId"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "profile"
+                  },
+                  "profileId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256,
+                    "pattern": "^\\S(?:.*\\S)?$"
+                  },
+                  "machineClass": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "os": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  }
+                },
+                "additionalProperties": false
+              }
+            ],
+            "description": "Execution placement: omitted or {kind: \"local\"} uses local execution for native and ACP runs. {kind: \"profile\", profileId, os?, machineClass?} selects a configured cloud profile and requires visible=true and worktree=true. Never supply placeholder selectors. Omitted cloud selectors use profile defaults; the first task starts only after cloud dispatch.",
+            "~optional": true
+          },
+          "visible": {
+            "type": "boolean",
+            "description": "Persistent sidebar session only when the user requests a separate session or needs to revisit and steer it independently. Internal QA/coding/review/test workers: omit or false. Subagent runtime only; default run mode and empty attachments accepted; no thread/thinking/lightContext or attachment staging."
+          },
+          "group": {
+            "type": "string",
+            "description": "Custom sidebar group; requires visible=true when nonempty. A new name creates the group. Omit or pass an empty string to leave it ungrouped."
+          },
+          "projectId": {
+            "type": "string",
+            "description": "Registered project for a native subagent; hidden children require worktree=true. Mutually exclusive with projectGitUrl and cwd."
+          },
+          "projectGitUrl": {
+            "type": "string",
+            "description": "GitHub HTTPS or git@github.com repository URL for a visible session's managed clone; mutually exclusive with projectId and cwd. Local paths and file URLs are not accepted.",
+            "maxLength": 2048
+          },
+          "worktree": {
+            "type": "boolean",
+            "description": "Managed checkout for hidden or visible runtime=\"subagent\"; first turn waits for preparation. ACP unsupported."
+          },
+          "worktreeName": {
+            "type": "string",
+            "description": "Managed worktree name; requires worktree=true."
+          },
+          "worktreeBaseRef": {
+            "type": "string",
+            "description": "Managed worktree base ref; requires worktree=true."
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "content"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "content": {
+                  "type": "string"
+                },
+                "encoding": {
+                  "enum": [
+                    "utf8",
+                    "base64"
+                  ],
+                  "type": "string"
+                },
+                "mimeType": {
+                  "type": "string"
+                }
+              }
+            },
+            "maxItems": 50,
+            "description": "Inline snapshots; visible=true accepts only an empty array."
+          },
+          "attachAs": {
+            "type": "object",
+            "properties": {
+              "mountPath": {
+                "type": "string"
+              }
+            },
+            "description": "Attachment mount hint; visible=true accepts only an omitted or blank mountPath."
+          },
+          "collect": {
+            "type": "boolean",
+            "description": "Swarm collector child for large parallel fan-out, not one or a few children; no completion notification."
+          },
+          "outputSchema": {
+            "type": "object",
+            "patternProperties": {
+              "^.*$": {}
+            },
+            "description": "JSON Schema for the child's structured result; requires collect=true."
+          },
+          "groupId": {
+            "type": "string",
+            "description": "Groups parallel collector children; requires collect=true."
+          }
+        }
+      }
+    },
+    "session_status": {
+      "name": "session_status",
+      "id": "openclaw:core:session_status",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "string",
+            "description": "The person's requester_profile.id, required when several people have steered this turn."
+          },
+          "sessionKey": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "changesSince": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "sessions_search": {
+      "name": "sessions_search",
+      "id": "openclaw:core:sessions_search",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "user": {
+            "type": "string",
+            "description": "The person's requester_profile.id, required when several people have steered this turn."
+          },
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "description": "Required non-empty keywords to match in past user and assistant text."
+          },
+          "sessionKey": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 25,
+            "description": "Maximum search results: 25. Defaults to 10."
+          }
+        }
+      }
+    },
+    "sessions_history": {
+      "name": "sessions_history",
+      "id": "openclaw:core:sessions_history",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "sessionKey"
+        ],
+        "properties": {
+          "user": {
+            "type": "string",
+            "description": "The person's requester_profile.id, required when several people have steered this turn."
+          },
+          "sessionKey": {
+            "type": "string",
+            "minLength": 1
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Plain-pagination offset. Ignored when messageId is set; limit still bounds anchored history."
+          },
+          "pendingBefore": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "messageId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Return history around this message id. Ignores offset; limit bounds the window."
+          },
+          "sessionId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Transcript session id that owns messageId. Requires messageId; omit for the latest tail."
+          },
+          "includeTools": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "conversations_send": {
+      "name": "conversations_send",
+      "id": "openclaw:core:conversations_send",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "conversationRef",
+          "message"
+        ],
+        "properties": {
+          "conversationRef": {
+            "type": "string",
+            "pattern": "^conv_[a-f0-9]{32}$"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "conversations_list": {
+      "name": "conversations_list",
+      "id": "openclaw:core:conversations_list",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "minLength": 1
+          },
+          "query": {
+            "type": "string",
+            "minLength": 1
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "conversations_turn": {
+      "name": "conversations_turn",
+      "id": "openclaw:core:conversations_turn",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "conversationRef",
+          "message"
+        ],
+        "properties": {
+          "conversationRef": {
+            "type": "string",
+            "pattern": "^conv_[a-f0-9]{32}$"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "timeoutSeconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 300
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "talk_voice": {
+      "name": "talk_voice",
+      "id": "openclaw:talk-voice:talk_voice",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "list",
+              "set"
+            ]
+          },
+          "voice": {
+            "type": "string",
+            "description": "Voice ID from list; required for set."
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "portal": {
+      "name": "portal",
+      "id": "openclaw:core:portal",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "open",
+              "list",
+              "close"
+            ],
+            "description": "Portal action"
+          },
+          "port": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^/"
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "environmentId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Conversation-attached environment returned by the environment tool; omit for the current execution host."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "sessions_send": {
+      "name": "sessions_send",
+      "id": "openclaw:core:sessions_send",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "user": {
+            "type": "string",
+            "description": "The person's requester_profile.id, required when several people have steered this turn."
+          },
+          "sessionKey": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "agentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "message": {
+            "type": "string"
+          },
+          "timeoutSeconds": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "watch": {
+            "type": "boolean"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "notify"
+              },
+              {
+                "type": "string",
+                "const": "steer"
+              },
+              {
+                "type": "string",
+                "const": "followup"
+              },
+              {
+                "type": "string",
+                "const": "resume"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "sessions_list": {
+      "name": "sessions_list",
+      "id": "openclaw:core:sessions_list",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "string",
+            "description": "The person's requester_profile.id, required when several people have steered this turn."
+          },
+          "kinds": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "main",
+                "group",
+                "cron",
+                "hook",
+                "node",
+                "other"
+              ],
+              "type": "string"
+            }
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "activeMinutes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "activeOnly": {
+            "type": "boolean"
+          },
+          "excludeSubagents": {
+            "type": "boolean"
+          },
+          "relationship": {
+            "enum": [
+              "owned",
+              "created",
+              "involving"
+            ],
+            "type": "string",
+            "description": "Relation to the authenticated requesting user; unavailable without a trusted user identity."
+          },
+          "ownerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "creatorId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "projectId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "workspaceDir": {
+            "type": "string",
+            "minLength": 1
+          },
+          "group": {
+            "type": "string"
+          },
+          "pinned": {
+            "type": "boolean"
+          },
+          "messageLimit": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "agentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "search": {
+            "type": "string",
+            "minLength": 1
+          },
+          "archived": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string",
+                "const": "all"
+              }
+            ]
+          },
+          "includeDerivedTitles": {
+            "type": "boolean"
+          },
+          "includeLastMessage": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "agents_list": {
+      "name": "agents_list",
+      "id": "openclaw:core:agents_list",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    "get_goal": {
+      "name": "get_goal",
+      "id": "openclaw:core:get_goal",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    "memory_get": {
+      "name": "memory_get",
+      "id": "openclaw:memory-core:memory_get",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "from": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "lines": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "corpus": {
+            "type": "string",
+            "enum": [
+              "memory",
+              "wiki",
+              "all"
+            ]
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "update_goal": {
+      "name": "update_goal",
+      "id": "openclaw:core:update_goal",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "enum": [
+              "complete",
+              "blocked"
+            ],
+            "type": "string",
+            "description": "complete | blocked."
+          },
+          "note": {
+            "type": "string",
+            "description": "Short status note."
+          }
+        }
+      }
+    },
+    "transcripts": {
+      "name": "transcripts",
+      "id": "openclaw:core:transcripts",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "start, stop, status, import, summarize, list, or show."
+          },
+          "sessionId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Raw ID for start/import. Legacy stop/summarize/show handle; prefer selector for an exact capture. Cannot be combined with selector."
+          },
+          "selector": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Exact dated capture selector returned by start/import/status. Only for stop/summarize/show; supply this or sessionId, never both. No raw-ID fallback."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 20
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "providerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "accountId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "guildId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "channelId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "meetingUrl": {
+            "type": "string",
+            "minLength": 1
+          },
+          "transcript": {
+            "type": "string",
+            "minLength": 1
+          },
+          "speakerLabel": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "agents_wait": {
+      "name": "agents_wait",
+      "id": "openclaw:core:agents_wait",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "ids"
+        ],
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          },
+          "timeoutSeconds": {
+            "type": "number",
+            "minimum": 0
+          },
+          "awaitResults": {
+            "type": "boolean",
+            "description": "Join required collector results until settlement or cancellation, without polling; mutually exclusive with timeoutSeconds. Child and agent budgets still apply."
+          }
+        }
+      }
+    },
+    "subagents": {
+      "name": "subagents",
+      "id": "openclaw:core:subagents",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "enum": [
+              "list",
+              "wait",
+              "cancel"
+            ],
+            "type": "string"
+          },
+          "recentMinutes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "runId": {
+            "type": "string"
+          },
+          "runIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "maxItems": 32
+          },
+          "timeoutSeconds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60,
+            "description": "Wait duration in integer seconds, 0–60 (default: 30). Use 0 for a snapshot."
+          }
+        }
+      }
+    },
+    "canvas": {
+      "name": "canvas",
+      "id": "openclaw:canvas:canvas",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "enum": [
+              "present",
+              "hide",
+              "navigate"
+            ],
+            "type": "string"
+          },
+          "gatewayUrl": {
+            "type": "string"
+          },
+          "gatewayToken": {
+            "type": "string"
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "node": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          },
+          "width": {
+            "type": "number"
+          },
+          "height": {
+            "type": "number"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ask_user": {
+      "name": "ask_user",
+      "id": "openclaw:core:ask_user",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "questions"
+        ],
+        "properties": {
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "header",
+                "question",
+                "options"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$",
+                  "description": "Unique snake_case answer key."
+                },
+                "header": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Short chip label; longer input is truncated to 12 characters."
+                },
+                "question": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Single-sentence question only. Put all selectable choices in options."
+                },
+                "options": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "label"
+                    ],
+                    "properties": {
+                      "label": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 4096,
+                        "x-openclaw-since": "2026.9"
+                      },
+                      "thumbnail": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 65536
+                      },
+                      "resourceUri": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2048
+                      },
+                      "preview": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "required": [
+                              "type",
+                              "name"
+                            ],
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "const": "mcp_app_tool"
+                              },
+                              "name": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "arguments": {
+                                "type": "object",
+                                "patternProperties": {
+                                  "^.*$": {}
+                                }
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "required": [
+                              "type",
+                              "uri",
+                              "name"
+                            ],
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "const": "resource_link"
+                              },
+                              "uri": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "name": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "title": {
+                                "type": "string"
+                              },
+                              "description": {
+                                "type": "string"
+                              },
+                              "mimeType": {
+                                "type": "string"
+                              }
+                            },
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "minItems": 2,
+                  "maxItems": 4,
+                  "description": "Every selectable choice. Put the recommended choice first; do not repeat choices only in the question text."
+                },
+                "multiSelect": {
+                  "type": "boolean",
+                  "description": "True only when the user may choose several options at once.",
+                  "~optional": true
+                }
+              },
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 3
+          },
+          "timeoutSeconds": {
+            "type": "integer",
+            "description": "Maximum human wait in seconds; default 900, clamped 30-3600. Earlier run cancellation or overall run timeout still applies."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "memory_search": {
+      "name": "memory_search",
+      "id": "openclaw:memory-core:memory_search",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "maxResults": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "minScore": {
+            "type": "number"
+          },
+          "corpus": {
+            "type": "string",
+            "enum": [
+              "memory",
+              "wiki",
+              "all",
+              "sessions"
+            ]
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "terminal": {
+      "name": "terminal",
+      "id": "openclaw:core:terminal",
+      "direct": false,
+      "schema": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "read",
+              "list",
+              "resize",
+              "close",
+              "input"
+            ],
+            "description": "Action"
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "Shared terminal session"
+          },
+          "data": {
+            "type": "string",
+            "description": "Exact terminal input"
+          },
+          "cols": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2000
+          },
+          "rows": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2000
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "manifest": {
+    "agents_list": {
+      "id": "openclaw:core:agents_list",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": []
+    },
+    "agents_wait": {
+      "id": "openclaw:core:agents_wait",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "awaitResults",
+        "ids[]",
+        "timeoutSeconds"
+      ]
+    },
+    "apply_patch": {
+      "id": "apply_patch",
+      "direct": true,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "input"
+      ]
+    },
+    "ask_user": {
+      "id": "openclaw:core:ask_user",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "questions[].header",
+        "questions[].id",
+        "questions[].multiSelect",
+        "questions[].options[].description",
+        "questions[].options[].label",
+        "questions[].options[].preview.arguments",
+        "questions[].options[].preview.description",
+        "questions[].options[].preview.mimeType",
+        "questions[].options[].preview.name",
+        "questions[].options[].preview.title",
+        "questions[].options[].preview.type",
+        "questions[].options[].preview.uri",
+        "questions[].options[].resourceUri",
+        "questions[].options[].thumbnail",
+        "questions[].options[].value",
+        "questions[].question",
+        "timeoutSeconds"
+      ]
+    },
+    "browser": {
+      "id": "openclaw:browser:browser",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "doctor",
+        "status",
+        "start",
+        "stop",
+        "profiles",
+        "importprofile",
+        "tabs",
+        "open",
+        "focus",
+        "close",
+        "snapshot",
+        "screenshot",
+        "navigate",
+        "console",
+        "requests",
+        "errors",
+        "text",
+        "emulate",
+        "pdf",
+        "download",
+        "waitfordownload",
+        "upload",
+        "dialog",
+        "act"
+      ],
+      "leafPaths": [
+        "accept",
+        "action",
+        "actions[]",
+        "browser",
+        "button",
+        "clear",
+        "colorScheme",
+        "compact",
+        "dashboard",
+        "delayMs",
+        "depth",
+        "device",
+        "dialogId",
+        "domains[]",
+        "doubleClick",
+        "element",
+        "endRef",
+        "fields[]",
+        "filter",
+        "fn",
+        "frame",
+        "fullPage",
+        "height",
+        "inputRef",
+        "interactive",
+        "into",
+        "key",
+        "kind",
+        "label",
+        "labels",
+        "level",
+        "limit",
+        "loadState",
+        "locale",
+        "maxChars",
+        "mode",
+        "modifiers[]",
+        "node",
+        "path",
+        "paths[]",
+        "profile",
+        "promptText",
+        "query",
+        "ref",
+        "refs",
+        "request.actions[]",
+        "request.button",
+        "request.delayMs",
+        "request.doubleClick",
+        "request.endRef",
+        "request.fields[]",
+        "request.fn",
+        "request.height",
+        "request.key",
+        "request.kind",
+        "request.loadState",
+        "request.modifiers[]",
+        "request.ref",
+        "request.selector",
+        "request.slowly",
+        "request.startRef",
+        "request.stopOnError",
+        "request.submit",
+        "request.targetId",
+        "request.text",
+        "request.textGone",
+        "request.timeMs",
+        "request.timeoutMs",
+        "request.url",
+        "request.values[]",
+        "request.width",
+        "request.x",
+        "request.y",
+        "selector",
+        "slowly",
+        "snapshotFormat",
+        "startRef",
+        "stopOnError",
+        "submit",
+        "systemProfile",
+        "target",
+        "targetId",
+        "targetUrl",
+        "text",
+        "textGone",
+        "timeMs",
+        "timeoutMs",
+        "timezoneId",
+        "type",
+        "url",
+        "urls",
+        "values[]",
+        "width",
+        "x",
+        "y"
+      ]
+    },
+    "canvas": {
+      "id": "openclaw:canvas:canvas",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "present",
+        "hide",
+        "navigate"
+      ],
+      "leafPaths": [
+        "action",
+        "gatewayToken",
+        "gatewayUrl",
+        "height",
+        "node",
+        "target",
+        "timeoutMs",
+        "url",
+        "width",
+        "x",
+        "y"
+      ]
+    },
+    "conversations_list": {
+      "id": "openclaw:core:conversations_list",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "channel",
+        "limit",
+        "query"
+      ]
+    },
+    "conversations_send": {
+      "id": "openclaw:core:conversations_send",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "conversationRef",
+        "message"
+      ]
+    },
+    "conversations_turn": {
+      "id": "openclaw:core:conversations_turn",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "conversationRef",
+        "message",
+        "timeoutSeconds"
+      ]
+    },
+    "create_goal": {
+      "id": "openclaw:core:create_goal",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "objective",
+        "token_budget"
+      ]
+    },
+    "dashboard": {
+      "id": "openclaw:core:dashboard",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "read",
+        "tab_create",
+        "tab_update",
+        "tab_delete",
+        "tabs_reorder",
+        "widget_put",
+        "widget_move",
+        "widget_resize",
+        "widget_remove",
+        "focus_tab",
+        "set_presentation",
+        "set_default_presentation"
+      ],
+      "leafPaths": [
+        "action",
+        "after",
+        "name",
+        "pluginKind",
+        "position",
+        "presentation",
+        "props",
+        "size",
+        "sizeH",
+        "sizeW",
+        "tabId",
+        "tabIds[]",
+        "title"
+      ]
+    },
+    "dir_fetch": {
+      "id": "openclaw:file-transfer:dir_fetch",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "gatewayToken",
+        "gatewayUrl",
+        "maxBytes",
+        "node",
+        "path",
+        "timeoutMs"
+      ]
+    },
+    "dir_list": {
+      "id": "openclaw:file-transfer:dir_list",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "gatewayToken",
+        "gatewayUrl",
+        "maxEntries",
+        "node",
+        "pageToken",
+        "path",
+        "timeoutMs"
+      ]
+    },
+    "edit": {
+      "id": "edit",
+      "direct": true,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "edits[].newText",
+        "edits[].oldText",
+        "path"
+      ]
+    },
+    "exec": {
+      "id": "exec",
+      "direct": true,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "ask",
+        "awaitResults",
+        "background",
+        "command",
+        "elevated",
+        "env",
+        "host",
+        "node",
+        "pty",
+        "timeoutSeconds",
+        "title",
+        "workdir",
+        "yieldMs"
+      ]
+    },
+    "file_fetch": {
+      "id": "openclaw:file-transfer:file_fetch",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "gatewayToken",
+        "gatewayUrl",
+        "maxBytes",
+        "node",
+        "path",
+        "timeoutMs"
+      ]
+    },
+    "file_write": {
+      "id": "openclaw:file-transfer:file_write",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "contentBase64",
+        "createParents",
+        "mimeType",
+        "node",
+        "overwrite",
+        "path",
+        "sourceMediaId"
+      ]
+    },
+    "gateway": {
+      "id": "openclaw:core:gateway",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "config.get",
+        "config.schema.lookup",
+        "update.run"
+      ],
+      "leafPaths": [
+        "action",
+        "gatewayToken",
+        "gatewayUrl",
+        "note",
+        "path",
+        "timeoutMs"
+      ]
+    },
+    "get_goal": {
+      "id": "openclaw:core:get_goal",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": []
+    },
+    "github_identity_status": {
+      "id": "openclaw:core:github_identity_status",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": []
+    },
+    "intent": {
+      "id": "openclaw:memory-core:intent",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "create",
+        "list",
+        "cancel"
+      ],
+      "leafPaths": [
+        "action",
+        "cooldownSeconds",
+        "description",
+        "expiresAt",
+        "id",
+        "maxFires",
+        "scope",
+        "senderScope",
+        "status",
+        "triggerKeywords[]"
+      ]
+    },
+    "ls": {
+      "id": "ls",
+      "direct": true,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "after",
+        "limit",
+        "path"
+      ]
+    },
+    "memory_get": {
+      "id": "openclaw:memory-core:memory_get",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "corpus",
+        "from",
+        "lines",
+        "path"
+      ]
+    },
+    "memory_search": {
+      "id": "openclaw:memory-core:memory_search",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "corpus",
+        "maxResults",
+        "minScore",
+        "query"
+      ]
+    },
+    "message": {
+      "id": "openclaw:core:message",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "broadcast",
+        "delete",
+        "edit",
+        "react",
+        "reactions",
+        "read",
+        "search",
+        "send",
+        "thread-create",
+        "thread-reply"
+      ],
+      "leafPaths": [
+        "accountId",
+        "action",
+        "activityName",
+        "activityState",
+        "activityType",
+        "activityUrl",
+        "after",
+        "appliedTags[]",
+        "around",
+        "asDocument",
+        "asVoice",
+        "attachments[].media",
+        "attachments[].mimeType",
+        "attachments[].name",
+        "attachments[].type",
+        "authorId",
+        "authorIds[]",
+        "autoArchiveMin",
+        "before",
+        "buffer",
+        "caption",
+        "categoryId",
+        "channel",
+        "channelId",
+        "channelIds[]",
+        "channelType",
+        "chatId",
+        "clearParent",
+        "contentType",
+        "deleteDays",
+        "desc",
+        "dryRun",
+        "durationMin",
+        "effect",
+        "effectId",
+        "emoji",
+        "emojiName",
+        "endTime",
+        "eventName",
+        "eventType",
+        "fileId",
+        "filename",
+        "final",
+        "forceDocument",
+        "fromMe",
+        "gatewayToken",
+        "gatewayUrl",
+        "gifPlayback",
+        "groupId",
+        "guildId",
+        "image",
+        "includeArchived",
+        "includeMembers",
+        "kind",
+        "limit",
+        "location",
+        "media",
+        "memberId",
+        "memberIdType",
+        "members",
+        "message",
+        "messageId",
+        "message_id",
+        "mimeType",
+        "name",
+        "nsfw",
+        "openId",
+        "pageSize",
+        "pageToken",
+        "parentId",
+        "participant",
+        "pollDurationHours",
+        "pollId",
+        "pollMulti",
+        "pollOptionId",
+        "pollOptionIds[]",
+        "pollOptionIndex",
+        "pollOptionIndexes[]",
+        "pollOption[]",
+        "pollQuestion",
+        "position",
+        "query",
+        "quoteText",
+        "rateLimitPerUser",
+        "reason",
+        "remove",
+        "replyTo",
+        "roleId",
+        "roleIds[]",
+        "scope",
+        "silent",
+        "startTime",
+        "status",
+        "stickerDesc",
+        "stickerId[]",
+        "stickerName",
+        "stickerTags",
+        "target",
+        "targetAuthor",
+        "targetAuthorUuid",
+        "targets[]",
+        "threadId",
+        "threadName",
+        "timeoutMs",
+        "title",
+        "topic",
+        "trackToolCalls",
+        "track_tool_calls",
+        "unionId",
+        "until",
+        "userId",
+        "voiceId",
+        "voiceProvider",
+        "voiceText"
+      ]
+    },
+    "mobile_ui": {
+      "id": "openclaw:core:mobile_ui",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "observe",
+        "act"
+      ],
+      "leafPaths": [
+        "action",
+        "confirmed",
+        "gatewayToken",
+        "gatewayUrl",
+        "mobileAction.direction",
+        "mobileAction.durationMs",
+        "mobileAction.ms",
+        "mobileAction.name",
+        "mobileAction.ref",
+        "mobileAction.text",
+        "mobileAction.type",
+        "mobileAction.x",
+        "mobileAction.x1",
+        "mobileAction.x2",
+        "mobileAction.y",
+        "mobileAction.y1",
+        "mobileAction.y2",
+        "node",
+        "snapshotId",
+        "timeoutMs"
+      ]
+    },
+    "node_inference": {
+      "id": "openclaw:ollama:node_inference",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "discover",
+        "run"
+      ],
+      "leafPaths": [
+        "action",
+        "maxTokens",
+        "model",
+        "node",
+        "prompt",
+        "system",
+        "temperature",
+        "timeoutMs"
+      ]
+    },
+    "nodes": {
+      "id": "openclaw:core:nodes",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "status",
+        "describe",
+        "pending",
+        "approve",
+        "reject",
+        "notify",
+        "camera_snap",
+        "camera_list",
+        "camera_clip",
+        "camera_ptz",
+        "photos_latest",
+        "screen_record",
+        "screen_snapshot",
+        "location_get",
+        "notifications_list",
+        "notifications_action",
+        "device_status",
+        "device_info",
+        "device_permissions",
+        "device_health",
+        "which",
+        "invoke"
+      ],
+      "leafPaths": [
+        "action",
+        "bins[]",
+        "body",
+        "delayMs",
+        "delivery",
+        "desiredAccuracy",
+        "deviceId",
+        "duration",
+        "durationMs",
+        "facing",
+        "fps",
+        "gatewayToken",
+        "gatewayUrl",
+        "includeAudio",
+        "invokeCommand",
+        "invokeParamsJson",
+        "invokeTimeoutMs",
+        "limit",
+        "locationTimeoutMs",
+        "maxAgeMs",
+        "maxWidth",
+        "node",
+        "notificationAction",
+        "notificationKey",
+        "notificationReplyText",
+        "outPath",
+        "panDegrees",
+        "priority",
+        "ptzOperation",
+        "quality",
+        "requestId",
+        "screenIndex",
+        "sound",
+        "tiltDegrees",
+        "timeoutMs",
+        "title",
+        "zoomPercent"
+      ]
+    },
+    "openclaw": {
+      "id": "openclaw",
+      "direct": true,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "message",
+        "sessionId"
+      ]
+    },
+    "plugins": {
+      "id": "openclaw:core:plugins",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "list",
+        "inspect",
+        "search",
+        "install",
+        "enable",
+        "disable",
+        "uninstall",
+        "reload",
+        "reloadAndResume"
+      ],
+      "leafPaths": [
+        "acknowledgeInstallPolicyWarning",
+        "action",
+        "packageName",
+        "pluginId",
+        "query",
+        "reviewToken",
+        "source",
+        "version"
+      ]
+    },
+    "portal": {
+      "id": "openclaw:core:portal",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "open",
+        "list",
+        "close"
+      ],
+      "leafPaths": [
+        "action",
+        "description",
+        "environmentId",
+        "id",
+        "path",
+        "port",
+        "title"
+      ]
+    },
+    "presence": {
+      "id": "openclaw:core:presence",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "list",
+        "person",
+        "device"
+      ],
+      "leafPaths": [
+        "action",
+        "deviceId",
+        "include[]",
+        "limit",
+        "person"
+      ]
+    },
+    "process": {
+      "id": "process",
+      "direct": true,
+      "actionKey": "action",
+      "actions": [
+        "list",
+        "poll",
+        "log",
+        "write",
+        "send-keys",
+        "submit",
+        "paste",
+        "kill",
+        "clear",
+        "remove"
+      ],
+      "leafPaths": [
+        "action",
+        "bracketed",
+        "data",
+        "eof",
+        "hex[]",
+        "keys[]",
+        "limit",
+        "literal",
+        "offset",
+        "sessionId",
+        "text",
+        "timeout"
+      ]
+    },
+    "read": {
+      "id": "read",
+      "direct": true,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "cursor",
+        "limit",
+        "offset",
+        "optional",
+        "path"
+      ]
+    },
+    "secrets": {
+      "id": "openclaw:core:secrets",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "request",
+        "list",
+        "delete"
+      ],
+      "leafPaths": [
+        "action",
+        "allowedHosts[]",
+        "kind",
+        "name",
+        "reason",
+        "timeoutSeconds"
+      ]
+    },
+    "session_status": {
+      "id": "openclaw:core:session_status",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "changesSince",
+        "model",
+        "sessionKey",
+        "user"
+      ]
+    },
+    "sessions": {
+      "id": "openclaw:core:sessions",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "cloud_profiles",
+        "patch",
+        "stop",
+        "reset",
+        "delete",
+        "assign_owner",
+        "group_list",
+        "group_set",
+        "group_rename",
+        "group_delete"
+      ],
+      "leafPaths": [
+        "action",
+        "archived",
+        "attention",
+        "clearQueued",
+        "color",
+        "deleteTranscript",
+        "expectedSessionId",
+        "group",
+        "icon",
+        "label",
+        "model",
+        "name",
+        "names[]",
+        "offset",
+        "ownerId",
+        "ownerType",
+        "pinned",
+        "profileId",
+        "runId",
+        "sessionKey",
+        "statusNote",
+        "targets[].expectedSessionId",
+        "targets[].sessionKey",
+        "thinkingLevel",
+        "to",
+        "ttlMinutes",
+        "user"
+      ]
+    },
+    "sessions_history": {
+      "id": "openclaw:core:sessions_history",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "includeTools",
+        "limit",
+        "messageId",
+        "offset",
+        "pendingBefore",
+        "sessionId",
+        "sessionKey",
+        "user"
+      ]
+    },
+    "sessions_list": {
+      "id": "openclaw:core:sessions_list",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "activeMinutes",
+        "activeOnly",
+        "agentId",
+        "archived",
+        "creatorId",
+        "excludeSubagents",
+        "group",
+        "includeDerivedTitles",
+        "includeLastMessage",
+        "kinds[]",
+        "label",
+        "limit",
+        "messageLimit",
+        "offset",
+        "ownerId",
+        "pinned",
+        "projectId",
+        "relationship",
+        "search",
+        "user",
+        "workspaceDir"
+      ]
+    },
+    "sessions_search": {
+      "id": "openclaw:core:sessions_search",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "limit",
+        "query",
+        "sessionKey",
+        "user"
+      ]
+    },
+    "sessions_send": {
+      "id": "openclaw:core:sessions_send",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "agentId",
+        "label",
+        "message",
+        "mode",
+        "sessionKey",
+        "timeoutSeconds",
+        "user",
+        "watch"
+      ]
+    },
+    "sessions_spawn": {
+      "id": "openclaw:core:sessions_spawn",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "agentId",
+        "attachAs.mountPath",
+        "attachments[].content",
+        "attachments[].encoding",
+        "attachments[].mimeType",
+        "attachments[].name",
+        "cleanup",
+        "collect",
+        "completionTarget",
+        "context",
+        "cwd",
+        "expectsCompletionMessage",
+        "fastMode",
+        "group",
+        "groupId",
+        "label",
+        "lightContext",
+        "mode",
+        "model",
+        "outputSchema",
+        "placement.kind",
+        "placement.machineClass",
+        "placement.os",
+        "placement.profileId",
+        "projectGitUrl",
+        "projectId",
+        "runTimeoutSeconds",
+        "runtime",
+        "sandbox",
+        "task",
+        "taskName",
+        "thinking",
+        "user",
+        "visible",
+        "worktree",
+        "worktreeBaseRef",
+        "worktreeName"
+      ]
+    },
+    "sessions_yield": {
+      "id": "sessions_yield",
+      "direct": true,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "acknowledgment",
+        "message",
+        "waitFor"
+      ]
+    },
+    "skill_workshop": {
+      "id": "openclaw:core:skill_workshop",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "list",
+        "view",
+        "create",
+        "patch",
+        "write_file",
+        "remove_file",
+        "archive",
+        "restore"
+      ],
+      "leafPaths": [
+        "absorbed_into",
+        "action",
+        "content",
+        "file_path",
+        "name",
+        "new_text",
+        "old_text",
+        "reason",
+        "version"
+      ]
+    },
+    "skills_read": {
+      "id": "openclaw:core:skills_read",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "name"
+      ]
+    },
+    "skills_search": {
+      "id": "openclaw:core:skills_search",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "limit",
+        "query"
+      ]
+    },
+    "subagents": {
+      "id": "openclaw:core:subagents",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "list",
+        "wait",
+        "cancel"
+      ],
+      "leafPaths": [
+        "action",
+        "recentMinutes",
+        "runId",
+        "runIds[]",
+        "timeoutSeconds"
+      ]
+    },
+    "talk_voice": {
+      "id": "openclaw:talk-voice:talk_voice",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "list",
+        "set"
+      ],
+      "leafPaths": [
+        "action",
+        "voice"
+      ]
+    },
+    "terminal": {
+      "id": "openclaw:core:terminal",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "read",
+        "list",
+        "resize",
+        "close",
+        "input"
+      ],
+      "leafPaths": [
+        "action",
+        "cols",
+        "data",
+        "rows",
+        "sessionId"
+      ]
+    },
+    "theme": {
+      "id": "openclaw:core:theme",
+      "direct": false,
+      "actionKey": "action",
+      "actions": [
+        "list",
+        "get",
+        "set",
+        "import"
+      ],
+      "leafPaths": [
+        "action",
+        "apply",
+        "definition.avatarHat",
+        "definition.brandIcon",
+        "definition.brandName",
+        "definition.communityLinks",
+        "definition.critters[]",
+        "definition.dark.accent",
+        "definition.dark.accent-foreground",
+        "definition.dark.background",
+        "definition.dark.border",
+        "definition.dark.card",
+        "definition.dark.card-foreground",
+        "definition.dark.destructive",
+        "definition.dark.destructive-foreground",
+        "definition.dark.font-mono",
+        "definition.dark.font-sans",
+        "definition.dark.foreground",
+        "definition.dark.input",
+        "definition.dark.muted",
+        "definition.dark.muted-foreground",
+        "definition.dark.popover",
+        "definition.dark.popover-foreground",
+        "definition.dark.primary",
+        "definition.dark.primary-foreground",
+        "definition.dark.ring",
+        "definition.dark.secondary",
+        "definition.dark.secondary-foreground",
+        "definition.description",
+        "definition.light.accent",
+        "definition.light.accent-foreground",
+        "definition.light.background",
+        "definition.light.border",
+        "definition.light.card",
+        "definition.light.card-foreground",
+        "definition.light.destructive",
+        "definition.light.destructive-foreground",
+        "definition.light.font-mono",
+        "definition.light.font-sans",
+        "definition.light.foreground",
+        "definition.light.input",
+        "definition.light.muted",
+        "definition.light.muted-foreground",
+        "definition.light.popover",
+        "definition.light.popover-foreground",
+        "definition.light.primary",
+        "definition.light.primary-foreground",
+        "definition.light.ring",
+        "definition.light.secondary",
+        "definition.light.secondary-foreground",
+        "definition.lobsterdex",
+        "definition.mascot",
+        "definition.name",
+        "definition.workingIndicator",
+        "definition.workingPhrases[]",
+        "id",
+        "mode",
+        "user"
+      ]
+    },
+    "tool_call": {
+      "id": "tool_call",
+      "direct": true,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "args",
+        "id"
+      ]
+    },
+    "tool_describe": {
+      "id": "tool_describe",
+      "direct": true,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "id"
+      ]
+    },
+    "tool_search": {
+      "id": "tool_search",
+      "direct": true,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "limit",
+        "queries[].limit",
+        "queries[].query",
+        "query"
+      ]
+    },
+    "transcripts": {
+      "id": "openclaw:core:transcripts",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "accountId",
+        "action",
+        "channelId",
+        "guildId",
+        "limit",
+        "meetingUrl",
+        "providerId",
+        "selector",
+        "sessionId",
+        "speakerLabel",
+        "title",
+        "transcript"
+      ]
+    },
+    "tts": {
+      "id": "openclaw:core:tts",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "channel",
+        "text",
+        "timeoutMs"
+      ]
+    },
+    "update_goal": {
+      "id": "openclaw:core:update_goal",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "note",
+        "status"
+      ]
+    },
+    "web_fetch": {
+      "id": "openclaw:core:web_fetch",
+      "direct": false,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "extractMode",
+        "maxChars",
+        "url"
+      ]
+    },
+    "write": {
+      "id": "write",
+      "direct": true,
+      "actionKey": null,
+      "actions": [],
+      "leafPaths": [
+        "content",
+        "path"
+      ]
+    }
+  },
+  "unparsed": [
+    {
+      "askedId": "openclaw:core:automations",
+      "text": "{\n  \"id\": \"openclaw:core:automations\",\n  \"source\": \"openclaw\",\n  \"sourceName\": \"core\",\n  \"name\": \"automations\",\n  \"label\": \"Automations\",\n  \"description\": \"Gateway scheduler: reminders, delayed self-wakeups, loops, recurring work, event watchers. Never exec sleep/poll as timer.\\n\\nACTIONS: status | "
+    },
+    {
+      "askedId": "Agent",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: Agent. Did you mean: agents_list, agents_wait, subagents? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "Bash",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: Bash. Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "Edit",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: Edit. Did you mean: edit, message, automations? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "Write",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: Write. Did you mean: write, file_write, file_fetch? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "apply-patch",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: apply-patch. Did you mean: apply_patch, skill_workshop, sessions? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "automations",
+      "text": "{\n  \"id\": \"openclaw:core:automations\",\n  \"source\": \"openclaw\",\n  \"sourceName\": \"core\",\n  \"name\": \"automations\",\n  \"label\": \"Automations\",\n  \"description\": \"Gateway scheduler: reminders, delayed self-wakeups, loops, recurring work, event watchers. Never exec sleep/poll as timer.\\n\\nACTIONS: status | "
+    },
+    {
+      "askedId": "bash",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: bash. Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "code_execution",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: code_execution. Did you mean: exec, automations, ask_user? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "codex_agent",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: codex_agent. Did you mean: agents_list, automations, browser? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "codex_bash",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: codex_bash. Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "codex_write",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: codex_write. Did you mean: write, file_fetch, file_write? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "computer",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: computer. Did you mean: nodes? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "cron",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: cron. Did you mean: automations? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "exec_command",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: exec_command. Did you mean: exec, automations, process? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "github_publish",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: github_publish. Did you mean: github_identity_status, sessions_spawn? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "image_generate",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: image_generate. Did you mean: file_fetch, read? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "music_generate",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: music_generate. Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "personal_instructions",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: personal_instructions. Did you mean: automations, create_goal, dashboard? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "screen",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: screen. Did you mean: nodes, browser, file_fetch? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "spawn_agent",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: spawn_agent. Did you mean: agents_list, sessions_spawn, agents_wait? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "video_generate",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: video_generate. Did you mean: nodes? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "voice_call",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: voice_call. Did you mean: talk_voice, ask_user, automations? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "web_search",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: web_search. Did you mean: memory_search, message, plugins? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    },
+    {
+      "askedId": "x_search",
+      "text": "{\n  \"status\": \"error\",\n  \"tool\": \"tool_describe\",\n  \"error\": \"Unknown tool id: x_search. Did you mean: memory_search, message, plugins? Use tool_search to find a tool, tool_describe to inspect it, then tool_call with the exact id or name.\"\n}"
+    }
+  ]
+}

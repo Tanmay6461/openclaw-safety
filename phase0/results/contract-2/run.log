@@ -1,0 +1,8 @@
+run=/pg/runs/contract-2 gateway=26716 mock=26717 bus=26718 par=6
+gateway ready
+step plugin-inspect: exit 0 (22s)
+step dump: exit 0 (88s)
+gen-calls: 58 tool(s) (12 direct), 176 call(s), 25 unparsed describe result(s)
+calls=176
+/pg/contract/inner.sh: error reading input file: Stale file handle
+srun: error: c0219: task 0: Exited with exit code 2
