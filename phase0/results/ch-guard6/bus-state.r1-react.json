@@ -1,0 +1,843 @@
+{
+  "cursor": 8,
+  "conversations": [
+    {
+      "id": "alice",
+      "kind": "direct",
+      "accountId": "default"
+    }
+  ],
+  "threads": [],
+  "messages": [
+    {
+      "id": "4d150eaf-c2a9-4422-b360-e37749235ebb",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "alice",
+      "senderName": "alice",
+      "text": "Hello there. [scenario:default]",
+      "timestamp": 1793227980196,
+      "attachments": [],
+      "reactions": [
+        {
+          "emoji": "👍",
+          "senderId": "openclaw",
+          "timestamp": 1793228008585
+        }
+      ]
+    },
+    {
+      "id": "4f7c5cd3-1422-4b10-b95a-7f0279b0142d",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "[mock] hello from the default scenario",
+      "timestamp": 1793228001801,
+      "replyToId": "4d150eaf-c2a9-4422-b360-e37749235ebb",
+      "attachments": [],
+      "reactions": [
+        {
+          "emoji": "🎉",
+          "senderId": "openclaw",
+          "timestamp": 1793228009208
+        }
+      ]
+    },
+    {
+      "id": "bdb01b35-4fdf-4452-8229-e2bae119df4a",
+      "accountId": "default",
+      "direction": "inbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "alice",
+      "senderName": "alice",
+      "text": "React probe. [scenario:react-test] BOT=4f7c5cd3-1422-4b10-b95a-7f0279b0142d IN=4d150eaf-c2a9-4422-b360-e37749235ebb",
+      "timestamp": 1793228003843,
+      "attachments": [],
+      "reactions": []
+    },
+    {
+      "id": "5cef1a61-eba3-4247-b7cb-95c62adba682",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "[mock] react-test done",
+      "timestamp": 1793228011278,
+      "replyToId": "bdb01b35-4fdf-4452-8229-e2bae119df4a",
+      "attachments": [],
+      "toolCalls": [
+        {
+          "name": "tool_call",
+          "arguments": {
+            "id": "[redacted]",
+            "args": {
+              "url": "[redacted]"
+            }
+          }
+        },
+        {
+          "name": "web_fetch",
+          "arguments": {
+            "url": "[redacted]"
+          }
+        },
+        {
+          "name": "tool_call",
+          "arguments": {
+            "id": "[redacted]",
+            "args": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "messageId": "[redacted]",
+              "emoji": "[redacted]"
+            }
+          }
+        },
+        {
+          "name": "tool_call",
+          "arguments": {
+            "id": "[redacted]",
+            "args": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "messageId": "[redacted]",
+              "emoji": "[redacted]"
+            }
+          }
+        },
+        {
+          "name": "message",
+          "arguments": {
+            "action": "[redacted]",
+            "channel": "[redacted]",
+            "target": "[redacted]",
+            "messageId": "[redacted]",
+            "emoji": "[redacted]"
+          }
+        },
+        {
+          "name": "tool_call",
+          "arguments": {
+            "id": "[redacted]",
+            "args": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "messageId": "[redacted]",
+              "emoji": "[redacted]"
+            }
+          }
+        },
+        {
+          "name": "message",
+          "arguments": {
+            "action": "[redacted]",
+            "channel": "[redacted]",
+            "target": "[redacted]",
+            "messageId": "[redacted]",
+            "emoji": "[redacted]"
+          }
+        },
+        {
+          "name": "tool_call",
+          "arguments": {
+            "id": "[redacted]",
+            "args": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "emoji": "[redacted]"
+            }
+          }
+        },
+        {
+          "name": "message",
+          "arguments": {
+            "action": "[redacted]",
+            "channel": "[redacted]",
+            "target": "[redacted]",
+            "emoji": "[redacted]"
+          }
+        },
+        {
+          "name": "tool_call",
+          "arguments": {
+            "id": "[redacted]",
+            "args": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "messageId": "[redacted]",
+              "emoji": "[redacted]",
+              "fromMe": true
+            }
+          }
+        }
+      ],
+      "reactions": [],
+      "deleted": true
+    },
+    {
+      "id": "e7d49a9a-57e6-4f34-9a81-131f3dcd0ca8",
+      "accountId": "default",
+      "direction": "outbound",
+      "conversation": {
+        "id": "alice",
+        "kind": "direct"
+      },
+      "senderId": "openclaw",
+      "senderName": "OpenClaw QA",
+      "text": "[mock] react-test done",
+      "timestamp": 1793228012298,
+      "replyToId": "bdb01b35-4fdf-4452-8229-e2bae119df4a",
+      "attachments": [],
+      "toolCalls": [
+        {
+          "name": "tool_call",
+          "arguments": {
+            "id": "[redacted]",
+            "args": {
+              "url": "[redacted]"
+            }
+          }
+        },
+        {
+          "name": "web_fetch",
+          "arguments": {
+            "url": "[redacted]"
+          }
+        },
+        {
+          "name": "tool_call",
+          "arguments": {
+            "id": "[redacted]",
+            "args": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "messageId": "[redacted]",
+              "emoji": "[redacted]"
+            }
+          }
+        },
+        {
+          "name": "tool_call",
+          "arguments": {
+            "id": "[redacted]",
+            "args": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "messageId": "[redacted]",
+              "emoji": "[redacted]"
+            }
+          }
+        },
+        {
+          "name": "message",
+          "arguments": {
+            "action": "[redacted]",
+            "channel": "[redacted]",
+            "target": "[redacted]",
+            "messageId": "[redacted]",
+            "emoji": "[redacted]"
+          }
+        },
+        {
+          "name": "tool_call",
+          "arguments": {
+            "id": "[redacted]",
+            "args": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "messageId": "[redacted]",
+              "emoji": "[redacted]"
+            }
+          }
+        },
+        {
+          "name": "message",
+          "arguments": {
+            "action": "[redacted]",
+            "channel": "[redacted]",
+            "target": "[redacted]",
+            "messageId": "[redacted]",
+            "emoji": "[redacted]"
+          }
+        },
+        {
+          "name": "tool_call",
+          "arguments": {
+            "id": "[redacted]",
+            "args": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "emoji": "[redacted]"
+            }
+          }
+        },
+        {
+          "name": "message",
+          "arguments": {
+            "action": "[redacted]",
+            "channel": "[redacted]",
+            "target": "[redacted]",
+            "emoji": "[redacted]"
+          }
+        },
+        {
+          "name": "tool_call",
+          "arguments": {
+            "id": "[redacted]",
+            "args": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "messageId": "[redacted]",
+              "emoji": "[redacted]",
+              "fromMe": true
+            }
+          }
+        }
+      ],
+      "reactions": []
+    }
+  ],
+  "events": [
+    {
+      "cursor": 1,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "4d150eaf-c2a9-4422-b360-e37749235ebb",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "alice",
+        "senderName": "alice",
+        "text": "Hello there. [scenario:default]",
+        "timestamp": 1793227980196,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 2,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "4f7c5cd3-1422-4b10-b95a-7f0279b0142d",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "[mock] hello from the default scenario",
+        "timestamp": 1793228001801,
+        "replyToId": "4d150eaf-c2a9-4422-b360-e37749235ebb",
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 3,
+      "kind": "inbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "bdb01b35-4fdf-4452-8229-e2bae119df4a",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "alice",
+        "senderName": "alice",
+        "text": "React probe. [scenario:react-test] BOT=4f7c5cd3-1422-4b10-b95a-7f0279b0142d IN=4d150eaf-c2a9-4422-b360-e37749235ebb",
+        "timestamp": 1793228003843,
+        "attachments": [],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 4,
+      "kind": "reaction-added",
+      "accountId": "default",
+      "message": {
+        "id": "4d150eaf-c2a9-4422-b360-e37749235ebb",
+        "accountId": "default",
+        "direction": "inbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "alice",
+        "senderName": "alice",
+        "text": "Hello there. [scenario:default]",
+        "timestamp": 1793227980196,
+        "attachments": [],
+        "reactions": [
+          {
+            "emoji": "👍",
+            "senderId": "openclaw",
+            "timestamp": 1793228008585
+          }
+        ]
+      },
+      "emoji": "👍",
+      "senderId": "openclaw"
+    },
+    {
+      "cursor": 5,
+      "kind": "reaction-added",
+      "accountId": "default",
+      "message": {
+        "id": "4f7c5cd3-1422-4b10-b95a-7f0279b0142d",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "[mock] hello from the default scenario",
+        "timestamp": 1793228001801,
+        "replyToId": "4d150eaf-c2a9-4422-b360-e37749235ebb",
+        "attachments": [],
+        "reactions": [
+          {
+            "emoji": "🎉",
+            "senderId": "openclaw",
+            "timestamp": 1793228009208
+          }
+        ]
+      },
+      "emoji": "🎉",
+      "senderId": "openclaw"
+    },
+    {
+      "cursor": 6,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "5cef1a61-eba3-4247-b7cb-95c62adba682",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "[mock] react-test done",
+        "timestamp": 1793228011278,
+        "replyToId": "bdb01b35-4fdf-4452-8229-e2bae119df4a",
+        "attachments": [],
+        "toolCalls": [
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "url": "[redacted]"
+              }
+            }
+          },
+          {
+            "name": "web_fetch",
+            "arguments": {
+              "url": "[redacted]"
+            }
+          },
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "action": "[redacted]",
+                "channel": "[redacted]",
+                "target": "[redacted]",
+                "messageId": "[redacted]",
+                "emoji": "[redacted]"
+              }
+            }
+          },
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "action": "[redacted]",
+                "channel": "[redacted]",
+                "target": "[redacted]",
+                "messageId": "[redacted]",
+                "emoji": "[redacted]"
+              }
+            }
+          },
+          {
+            "name": "message",
+            "arguments": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "messageId": "[redacted]",
+              "emoji": "[redacted]"
+            }
+          },
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "action": "[redacted]",
+                "channel": "[redacted]",
+                "target": "[redacted]",
+                "messageId": "[redacted]",
+                "emoji": "[redacted]"
+              }
+            }
+          },
+          {
+            "name": "message",
+            "arguments": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "messageId": "[redacted]",
+              "emoji": "[redacted]"
+            }
+          },
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "action": "[redacted]",
+                "channel": "[redacted]",
+                "target": "[redacted]",
+                "emoji": "[redacted]"
+              }
+            }
+          },
+          {
+            "name": "message",
+            "arguments": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "emoji": "[redacted]"
+            }
+          },
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "action": "[redacted]",
+                "channel": "[redacted]",
+                "target": "[redacted]",
+                "messageId": "[redacted]",
+                "emoji": "[redacted]",
+                "fromMe": true
+              }
+            }
+          }
+        ],
+        "reactions": []
+      }
+    },
+    {
+      "cursor": 7,
+      "kind": "message-deleted",
+      "accountId": "default",
+      "message": {
+        "id": "5cef1a61-eba3-4247-b7cb-95c62adba682",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "[mock] react-test done",
+        "timestamp": 1793228011278,
+        "replyToId": "bdb01b35-4fdf-4452-8229-e2bae119df4a",
+        "attachments": [],
+        "toolCalls": [
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "url": "[redacted]"
+              }
+            }
+          },
+          {
+            "name": "web_fetch",
+            "arguments": {
+              "url": "[redacted]"
+            }
+          },
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "action": "[redacted]",
+                "channel": "[redacted]",
+                "target": "[redacted]",
+                "messageId": "[redacted]",
+                "emoji": "[redacted]"
+              }
+            }
+          },
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "action": "[redacted]",
+                "channel": "[redacted]",
+                "target": "[redacted]",
+                "messageId": "[redacted]",
+                "emoji": "[redacted]"
+              }
+            }
+          },
+          {
+            "name": "message",
+            "arguments": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "messageId": "[redacted]",
+              "emoji": "[redacted]"
+            }
+          },
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "action": "[redacted]",
+                "channel": "[redacted]",
+                "target": "[redacted]",
+                "messageId": "[redacted]",
+                "emoji": "[redacted]"
+              }
+            }
+          },
+          {
+            "name": "message",
+            "arguments": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "messageId": "[redacted]",
+              "emoji": "[redacted]"
+            }
+          },
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "action": "[redacted]",
+                "channel": "[redacted]",
+                "target": "[redacted]",
+                "emoji": "[redacted]"
+              }
+            }
+          },
+          {
+            "name": "message",
+            "arguments": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "emoji": "[redacted]"
+            }
+          },
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "action": "[redacted]",
+                "channel": "[redacted]",
+                "target": "[redacted]",
+                "messageId": "[redacted]",
+                "emoji": "[redacted]",
+                "fromMe": true
+              }
+            }
+          }
+        ],
+        "reactions": [],
+        "deleted": true
+      }
+    },
+    {
+      "cursor": 8,
+      "kind": "outbound-message",
+      "accountId": "default",
+      "message": {
+        "id": "e7d49a9a-57e6-4f34-9a81-131f3dcd0ca8",
+        "accountId": "default",
+        "direction": "outbound",
+        "conversation": {
+          "id": "alice",
+          "kind": "direct"
+        },
+        "senderId": "openclaw",
+        "senderName": "OpenClaw QA",
+        "text": "[mock] react-test done",
+        "timestamp": 1793228012298,
+        "replyToId": "bdb01b35-4fdf-4452-8229-e2bae119df4a",
+        "attachments": [],
+        "toolCalls": [
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "url": "[redacted]"
+              }
+            }
+          },
+          {
+            "name": "web_fetch",
+            "arguments": {
+              "url": "[redacted]"
+            }
+          },
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "action": "[redacted]",
+                "channel": "[redacted]",
+                "target": "[redacted]",
+                "messageId": "[redacted]",
+                "emoji": "[redacted]"
+              }
+            }
+          },
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "action": "[redacted]",
+                "channel": "[redacted]",
+                "target": "[redacted]",
+                "messageId": "[redacted]",
+                "emoji": "[redacted]"
+              }
+            }
+          },
+          {
+            "name": "message",
+            "arguments": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "messageId": "[redacted]",
+              "emoji": "[redacted]"
+            }
+          },
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "action": "[redacted]",
+                "channel": "[redacted]",
+                "target": "[redacted]",
+                "messageId": "[redacted]",
+                "emoji": "[redacted]"
+              }
+            }
+          },
+          {
+            "name": "message",
+            "arguments": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "messageId": "[redacted]",
+              "emoji": "[redacted]"
+            }
+          },
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "action": "[redacted]",
+                "channel": "[redacted]",
+                "target": "[redacted]",
+                "emoji": "[redacted]"
+              }
+            }
+          },
+          {
+            "name": "message",
+            "arguments": {
+              "action": "[redacted]",
+              "channel": "[redacted]",
+              "target": "[redacted]",
+              "emoji": "[redacted]"
+            }
+          },
+          {
+            "name": "tool_call",
+            "arguments": {
+              "id": "[redacted]",
+              "args": {
+                "action": "[redacted]",
+                "channel": "[redacted]",
+                "target": "[redacted]",
+                "messageId": "[redacted]",
+                "emoji": "[redacted]",
+                "fromMe": true
+              }
+            }
+          }
+        ],
+        "reactions": []
+      }
+    }
+  ]
+}

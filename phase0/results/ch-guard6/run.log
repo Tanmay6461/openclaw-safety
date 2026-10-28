@@ -1,0 +1,10 @@
+run=/pg/runs/ch-guard6 gateway=35229 mock=35230 bus=35231 tests=r1-react variant=guard
+mock: mock-llm listening on http://127.0.0.1:35230 (scenarios: default, persist-order, parallel-tools, params-race, spawn, meta-fetch, meta-spawn, message-self, meta-exec, approve-low, approve-race, approve-both, message-approve, message-guard, exec-approve, spawn-exec, child-exec, send-exec, message-approve-meta, message-guard-meta, exec-approve-cli, spawn-exec-meta, send-exec-meta, self-approve-parallel, self-approve-background, double-prompt, react-test)
+bus: {"ready":true,"baseUrl":"http://127.0.0.1:35231"}
+gateway ready
+[driver] r1-react start
+[driver] r1-react inbound
+[driver] r1-react inbound
+[driver] r1-react summary block,allow,allow,allow,block
+[driver]  driver-done
+report: /pg/runs/ch-guard6/report.md

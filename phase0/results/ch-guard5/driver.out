@@ -1,0 +1,13 @@
+[driver] w-slash start
+[driver] w-slash-alice inbound
+[driver] w-slash-alice result replies=0
+[driver] w-slash-bob inbound
+[driver] w-slash-bob result replies=0
+[driver] e1-double start
+[driver] e1-double inbound
+[driver] e1-double prompt plugin:afe7cce0-47bc-4922-9f6e-d6341ba89706
+[driver] e1-double inbound
+[driver] e1-double prompt 88ffc7ed-a246-4e40-9caa-ab951dea4760
+[driver] e1-double inbound
+[driver] e1-double summary prompts=2 ran=true
+[driver]  driver-done

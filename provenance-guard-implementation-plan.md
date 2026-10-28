@@ -1,7 +1,7 @@
 # Provenance Guard for OpenClaw: Implementation Plan
 
 > **Working name.** Check npm and ClawHub for name collisions before publishing.
-> **Status:** draft v2.3 (2026-10-28). Items marked **(verify)** still need a runtime test on the test cluster (§13). Static Phase 0 research against OpenClaw `v2026.10.8` is in `phase0/docs-findings.md`; implementation status is in `PROGRESS.md`. §15 lists what changed in each version.
+> **Status:** draft v2.4 (2026-10-28). Items marked **(verify)** still need a runtime test on the test cluster (§13). Static Phase 0 research against OpenClaw `v2026.10.8` is in `phase0/docs-findings.md`; implementation status is in `PROGRESS.md`. §15 lists what changed in each version.
 
 ---
 
@@ -155,7 +155,9 @@ Options: allow once · always allow · deny   (expires in 10 min)
 
 ### 4.6 Owner commands (owner identity only)
 
-Commands are registered with `api.registerCommand`, so the agent never sees them. `requireAuth: true` alone only checks the channel allowlist, which can include people other than the owner. So every `/guard` command also sets `requiredScopes: ["operator.admin"]`: on chat surfaces that admits only the owner (confirmed on qa-channel, by a channel-agnostic code path; **verify on WhatsApp and Telegram**), and gateway clients need the real scope. Commands with `requiredScopes` also receive `ctx.senderIsOwner`, and the handler refuses when it is `false`. On WhatsApp self-chat setups, commands that loosen policy (`shadow`, `pause`, `off`, `preset` to a weaker preset, `forget`, `trust`) are accepted only from the local CLI.
+Commands are registered with `api.registerCommand`, so the agent never sees them. `requireAuth: true` alone only checks the channel allowlist, which can include people other than the owner. So every `/guard` command also sets `requiredScopes: ["operator.admin"]`: on chat surfaces that admits only the owner (confirmed on qa-channel, by a channel-agnostic code path; **verify on WhatsApp and Telegram**), and gateway clients need the real scope. Commands with `requiredScopes` also receive `ctx.senderIsOwner`, and the handler refuses when it is `false`. OpenClaw has no CLI path for plugin commands (`openclaw agent --message` doesn't run slash commands); the Control UI and TUI arrive as Gateway clients with `gatewayClientScopes` set, which the Guard calls *operator surfaces*. So:
+- `/guard off` works only from an operator surface.
+- In a chat with yourself (`from === to`, or WhatsApp `selfChatMode: true`), loosening subcommands are refused: `shadow`, `pause`, `forget`, `trust`, `allow`, and `preset` to a weaker preset. There, the agent's own sends can come back as owner input. Tightening subcommands work everywhere.
 
 | Command | Effect |
 |---|---|
@@ -168,7 +170,7 @@ Commands are registered with `api.registerCommand`, so the agent never sees them
 | `/guard report` | Redacted summary for sharing false positives |
 | `/guard doctor` | Checks the host settings that make approvals owner-only (§4.4) and shows the confirmation mode |
 | `/guard pending` / `/guard allow <code> [always]` / `/guard deny <code>` | Owner confirmation in `confirm: command` mode (§4.4) |
-| `/guard off` | Local CLI only: kill switch that stops all enforcement, including hard sinks, until `/guard enforce` (§5.12) |
+| `/guard off` | Control UI or TUI only: kill switch that stops all enforcement, including hard sinks, until `/guard enforce` (§5.12) |
 
 ### 4.7 Optional config for power users
 Stored under `plugins.entries.provenance-guard.config` in `~/.openclaw/openclaw.json`. Nobody has to touch it.
@@ -377,7 +379,7 @@ interface Decision {
 
 ### 5.5 Tool registry (OpenClaw `v2026.10.8`)
 
-The full data is `packages/openclaw/src/registry/openclaw-tools.json`, built from `phase0/docs-findings.md` §4. Names are as `before_tool_call` sees them, after OpenClaw normalizes aliases (`bash` → `exec`, `apply-patch` → `apply_patch`, `cron` → `automations`).
+The full data is `packages/openclaw/src/registry/openclaw-tools.json`, first built from `phase0/docs-findings.md` §4 and then rebuilt from the live schemas a Gateway sends (contract sweep, `phase0/contract-results.md`): every parameter and action of the 58 tools in that install is listed explicitly, so a new parameter in a later OpenClaw version is caught. `packages/openclaw/test/contract.test.ts` checks the registry against the dumped fixture; regenerate it with `phase0/contract/make-fixture.mjs` after a sweep on a new version. Names are as `before_tool_call` sees them, after OpenClaw normalizes aliases (`bash` → `exec`, `apply-patch` → `apply_patch`, `cron` → `automations`; Codex-native `Bash`/`exec_command` → `exec` and `Write`/`Edit` → `apply_patch`). The table below is the original summary; the JSON is authoritative.
 
 | Tool | Category | Argument roles | Result label |
 |---|---|---|---|
@@ -539,11 +541,11 @@ Blocked calls return a short, structured reason that tells the agent to stop ret
 
 - **Delivery:** in `confirm: command` mode the ask is a block with a code, confirmed by `/guard allow` (§4.4). Otherwise `before_tool_call` returns `requireApproval`, the run pauses, and the host asks through plugin approvals. `onResolution` receives `allow-once`, `allow-always`, `deny`, `timeout`, or `cancelled`. `allow-once` lets this call through, `allow-always` also creates a rule, and the other three block. The paused call itself resumes, so there's no retry and no grant to match. Approved calls still go through the rewriter and secret scan. Fields and surfaces are in §4.4.
 - **No one to ask.** OpenClaw rejects plugin approvals for runs whose trigger isn't a user (cron, heartbeat) and for non-interactive CLI runs. When `ctx.requester` is missing, the Guard treats the run as unable to answer: an ask becomes a block with a clear reason, listed in the owner's next digest.
-- **Double prompts.** Host exec approvals (`tools.exec.mode: ask`) run after the Guard. When the host will prompt the owner for this exec anyway, a Guard ask defers to that prompt: the Guard allows the call and records in the audit log why it would have asked. In other exec modes the Guard asks itself.
+- **Double prompts (confirmed at runtime, runs ch-guard4/5).** Host exec approvals run after `before_tool_call`, and nothing merges prompts. Only the legacy `tools.exec.ask: "always"` (no `mode`) prompts on every exec; there the Guard defers to the host prompt and records `deferred-to-host-exec-approval` in its audit log, so the owner sees **one** prompt. Mode-based policies (`tools.exec.mode: ask | auto`) prompt only on an allowlist miss, so the Guard still asks itself, and an allowlist miss means **two** prompts in a row (Guard, then host). The default mode is `full`, which never prompts.
 - **No relay fallback.** v1 had the agent relay an approval ID for the owner to echo back. That gave the agent a way to approve itself, so it's gone. If native approvals aren't available on a surface, the call is blocked with a structured reason, and the owner can add a rule with `/guard` instead.
 - **Self-approval through echoes.** On WhatsApp self-chat setups, DMs from the linked number to itself are admitted as agent input. OpenClaw drops its own gateway sends by message ID (20-minute window) before it parses `/approve` or resolves approval reactions, so a plain `message`-tool echo should be filtered **(verify on the cluster, §13)**. The remaining paths are sends that bypass the gateway socket and 👍/👎 reactions on an approval prompt. So, on every channel:
   - Host and `/guard` commands in outgoing text (`message`, `sessions_send`, `automations` payloads, presentation buttons) are neutralized: `/approve` becomes `[/]approve`. This is a hard sink, applied even in shadow mode. Rewriting instead of blocking keeps legitimate messages that mention a command.
-  - `message` `react` actions with approval emoji (👍, 👎, ✅, ❌) are blocked in chats where plugin approvals are routed.
+  - `message` `react` with an approval emoji (👍 allow-once, ♾️ allow-always, 👎 deny; ✅/❌ on Matrix; skin tones and shortcode names normalized) is a hard block unless every target is a message the agent received (`message_received` ids, so acks work). Approval reactions only count on the prompt, which is outbound. A missing message id means the current inbound message and is allowed; `fromMe: true` always blocks. Confirmed at runtime on qa-channel (ch-guard6). Source shows WhatsApp's live path resolves reactions *before* its echo filter, so without this rule a 👍 the agent sends could approve as the owner.
   - Browsing to messaging web clients (web.whatsapp.com, web.telegram.org, and similar) is a hard sink.
 
   Bot-account channels are safer because they have their own bot identity.
@@ -555,7 +557,7 @@ Blocked calls return a short, structured reason that tells the agent to stop ret
 
 ### 5.10 Rewriter
 
-- **Where:** rewrites happen in `before_tool_call`, on the `message` params. `reply_payload_sending` (normal assistant replies) and `message_sending` are backstops; both fail open, so they are never the only check.
+- **Where:** rewrites happen in `before_tool_call`, on the `message` params. `reply_payload_sending` (normal assistant replies) and `message_sending` are backstops; both fail open, so they are never the only check. `message_sending` doesn't fire at all for sends a channel plugin handles itself (qa-channel `send`, WhatsApp `react` and `upload-file`; runtime and source, §13).
 - **Defang constructed URLs** in outbound content (`https://evil.com/x` → `hxxps://evil[.]com/x`). Many messaging apps fetch link previews automatically, which would leak data in the URL without a click. Plugins have no per-message preview control, so the setup docs recommend turning previews off in channel config (Discord and Slack already default to off).
 - **Leave attested and link-following URLs alone.** A link copied verbatim from a page was written before its author saw any private data, so a preview of it leaks at most the fact that a message was sent. Defanging every link in a research summary would make it hard to use.
 - **Strip markdown images** with constructed URLs, since some clients load them automatically.
@@ -944,15 +946,27 @@ Details and evidence: `phase0/channel-results.md`. qa-channel was built from a `
 | Self-approval with the Guard loaded (c4b, c4f, c4g) | **Blocked.** Every agent exec running `openclaw approvals ...` was a hard-sink block, and the gated calls expired unapproved | §5.12 confirmed at runtime |
 | Why do some owner approvals fail closed? | Any session change event bumps the Gateway access revision, and a bump revokes pending approvals ("Approval requester authority changed"). A sender's first native `/approve` creates their slash session, so their first-ever approval fails closed; so does one pending while another run starts | Not a Guard issue; report upstream. Tests warm the slash sessions first |
 
+### Source and sweep results (2026-10-28)
+Evidence: `phase0/source-notes-v2.md` (static, file:line), `phase0/contract-results.md` (sweep), `phase0/channel-results.md` (ch-guard4–6).
+
+| Question | Result | Plan change |
+|---|---|---|
+| Codex-native names (was 4) | Normalized before `before_tool_call`: `Bash`/`exec_command`/`exec` → `exec` (`exec_command` adds `cmd`), `Write`/`Edit`/`apply_patch` → `apply_patch` (`{patch}`), `Agent` → `spawn_agent`. Rewrites still block | Registry: `exec.cmd`, `apply_patch.patch` (§5.5) |
+| `message_sending` for plugin-handled sends (was 5) | **No.** Runtime (qa-channel): `message`-tool sends were delivered without `message_sending`/`message_sent`. Source: a channel's own `handleAction` path calls no hooks; on WhatsApp, `react` and `upload-file` also skip them | `before_tool_call` is the only enforcement point for `message`; delivery hooks stay a backstop (§5.10) |
+| Parameter names (was 7) | Live schemas of all 58 tools (qa-channel configured) compared with the registry: 24 tools were missing, several read-only tools had state-changing actions, and egress params (`gatewayUrl`, `canvas.url`, `projectGitUrl`, `ask_user` thumbnails) and code params (`process` `literal`, `terminal` `data`) were unmapped | Registry rewritten with every param and action listed; `test/contract.test.ts` checks it against the dump fixture (§5.5) |
+| Exactly one prompt when the Guard defers? (was 8) | Yes under `ask: "always"` (1 prompt); two under `mode: "ask"` on an allowlist miss | §5.9 |
+| Command surfaces | No CLI path for plugin commands; Control UI/TUI carry `gatewayClientScopes`; self-chat via `from === to` or `selfChatMode` | §4.6 |
+| Approval reactions | 👍/♾️/👎 on the exact prompt message only; allowlisted actors; off unless `approvals.*.enabled` | §5.9 |
+
 ### Still open (runtime tests on the cluster)
 1. ~~`tool_result_persist` ordering~~ (answered above).
 2. ~~Channel turns: owner flag~~ (answered on qa-channel, above). Still open: the same check on a real channel.
-3. Self-chat echo on **WhatsApp**: does an `/approve <id>`, a `/guard` command, or a 👍 reaction sent through the `message` tool resolve anything? qa-channel can't show this, because it never reads the bot's own messages back. Do Telegram, Slack, and Discord native approvals bind the resolver to their approver lists? (go/no-go)
-4. Do Codex-native tool names reach `before_tool_call` normalized (`exec`) or native (`Bash`)?
-5. Does `message_sending` fire for `message` sends that a channel plugin handles itself?
+3. Self-chat echo on **WhatsApp**: does an `/approve <id>` or a `/guard` command sent through the `message` tool resolve anything, and does the live-path reaction hole reproduce (the Guard already blocks the agent's approval reactions)? qa-channel can't show this. Do Telegram, Slack, and Discord native approvals bind the resolver to their approver lists? Needs real accounts. (go/no-go)
+4. ~~Codex-native names~~ (answered from source: normalized, see below). A runtime check on the Codex lane is in progress.
+5. ~~`message_sending` for plugin-handled sends~~ (answered below).
 6. ~~Lowest-priority params win; another plugin's `requireApproval`~~ (both answered above).
-7. Confirm the exact parameter names of the less common tools in the registry (`nodes`, `secrets`, `terminal`, `github_publish`, `voice_call`, ...) with contract tests.
-8. Host exec `ask` plus a Guard ask: confirm exactly one prompt when the Guard defers.
+7. ~~Parameter names~~ (answered by the contract sweep, below).
+8. ~~Host exec ask plus a Guard ask~~ (answered below).
 9. Benchmark cost: run count × tokens per run × price (§9).
 
 ---
@@ -990,6 +1004,14 @@ Details and evidence: `phase0/channel-results.md`. qa-channel was built from a `
 ---
 
 ## 15. Changelog
+
+### v2.4: source research, contract sweep, owner actions
+- **Approval reactions** are a hard block unless they target a received message (§5.9); confirmed at runtime.
+- **Phone UI control** (`mobile_ui` `act`) is blocked once tainted, asked in automatic runs; **host elevation** (`exec elevated`) asks in automatic runs and blocks unattested commands in tainted sessions (§5.9).
+- **`/guard` surfaces:** `/guard off` only from the Control UI or TUI; loosening subcommands refused in a chat with yourself (§4.6).
+- **Exec double prompts:** the Guard defers to the host prompt when the host asks on every exec (§5.9); confirmed at runtime.
+- **Registry** rebuilt from the live schemas of all 58 tools and covered by a contract test; Codex-native params added (§5.5, §13).
+- §13: items 4, 5, 7, 8 answered.
 
 ### v2.3: channel results
 - **Approval forgery is a hard block** in every mode but `off`: Gateway secrets (config, state, identity, credentials), the `openclaw` CLI, and the Gateway port on loopback (§5.12). The agent resolved its own approval at runtime (c4g).

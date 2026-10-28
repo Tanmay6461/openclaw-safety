@@ -1,0 +1,305 @@
+{
+  "workspaceDir": "/pg/runs/ch-guard4/state/workspace",
+  "plugin": {
+    "id": "pg-probe",
+    "name": "Provenance Guard Probe",
+    "description": "Phase 0 hook probe",
+    "packageVersion": "0.0.1",
+    "version": "0.0.1",
+    "packageName": "pg-probe",
+    "format": "openclaw",
+    "source": "/pg/probe-plugin/index.js",
+    "rootDir": "/pg/probe-plugin",
+    "origin": "config",
+    "workspaceDir": "/pg/runs/ch-guard4/state/workspace",
+    "trust": {
+      "reason": "record-missing",
+      "registryPath": "/pg/runs/ch-guard4/state/state/openclaw.sqlite",
+      "origin": "config"
+    },
+    "enabled": true,
+    "compat": [],
+    "explicitlyEnabled": true,
+    "activated": true,
+    "activationSource": "explicit",
+    "activationReason": "enabled in config",
+    "syntheticAuthRefs": [],
+    "status": "loaded",
+    "toolNames": [],
+    "hookNames": [],
+    "channelIds": [],
+    "cliBackendIds": [],
+    "providerIds": [],
+    "embeddingProviderIds": [],
+    "speechProviderIds": [],
+    "realtimeTranscriptionProviderIds": [],
+    "realtimeVoiceProviderIds": [],
+    "mediaUnderstandingProviderIds": [],
+    "transcriptSourceProviderIds": [],
+    "imageGenerationProviderIds": [],
+    "videoGenerationProviderIds": [],
+    "musicGenerationProviderIds": [],
+    "webFetchProviderIds": [],
+    "webSearchProviderIds": [],
+    "migrationProviderIds": [],
+    "contextEngineIds": [],
+    "agentHarnessIds": [],
+    "cliCommands": [],
+    "services": [],
+    "gatewayDiscoveryServiceIds": [],
+    "commands": [
+      "guard",
+      "guardauth"
+    ],
+    "httpRoutes": 0,
+    "hookCount": 41,
+    "configSchema": true,
+    "configJsonSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "logPath": {
+          "type": "string"
+        },
+        "stampPersist": {
+          "type": "boolean"
+        },
+        "raceTest": {
+          "type": "boolean"
+        },
+        "approveTools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "approveHighTools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "approveMatch": {
+          "type": "string"
+        },
+        "approveHighMatch": {
+          "type": "string"
+        },
+        "approvalTimeoutMs": {
+          "type": "number"
+        }
+      }
+    },
+    "imported": true,
+    "dependencyStatus": {
+      "hasDependencies": false,
+      "installed": true,
+      "requiredInstalled": true,
+      "optionalInstalled": true,
+      "missing": [],
+      "missingOptional": [],
+      "dependencies": [],
+      "optionalDependencies": []
+    }
+  },
+  "shape": "non-capability",
+  "capabilityMode": "none",
+  "capabilityCount": 0,
+  "capabilities": [],
+  "typedHooks": [
+    {
+      "name": "after_compaction",
+      "priority": -1000
+    },
+    {
+      "name": "after_tool_call",
+      "priority": -1000
+    },
+    {
+      "name": "agent_end",
+      "priority": -1000
+    },
+    {
+      "name": "agent_turn_prepare",
+      "priority": -1000
+    },
+    {
+      "name": "before_agent_finalize",
+      "priority": -1000
+    },
+    {
+      "name": "before_agent_reply",
+      "priority": -1000
+    },
+    {
+      "name": "before_agent_run",
+      "priority": -1000
+    },
+    {
+      "name": "before_compaction",
+      "priority": -1000
+    },
+    {
+      "name": "before_dispatch",
+      "priority": -1000
+    },
+    {
+      "name": "before_install",
+      "priority": -1000
+    },
+    {
+      "name": "before_message_write",
+      "priority": -1000
+    },
+    {
+      "name": "before_model_resolve",
+      "priority": -1000
+    },
+    {
+      "name": "before_prompt_build",
+      "priority": -1000
+    },
+    {
+      "name": "before_reset",
+      "priority": -1000
+    },
+    {
+      "name": "before_tool_call",
+      "priority": 1000
+    },
+    {
+      "name": "before_tool_call",
+      "priority": -1000
+    },
+    {
+      "name": "channel_pairing_requested",
+      "priority": -1000
+    },
+    {
+      "name": "cron_changed",
+      "priority": -1000
+    },
+    {
+      "name": "cron_reconciled",
+      "priority": -1000
+    },
+    {
+      "name": "gateway_start",
+      "priority": -1000
+    },
+    {
+      "name": "gateway_stop",
+      "priority": -1000
+    },
+    {
+      "name": "heartbeat_prompt_contribution",
+      "priority": -1000
+    },
+    {
+      "name": "inbound_claim",
+      "priority": -1000
+    },
+    {
+      "name": "llm_input",
+      "priority": -1000
+    },
+    {
+      "name": "llm_output",
+      "priority": -1000
+    },
+    {
+      "name": "message_received",
+      "priority": -1000
+    },
+    {
+      "name": "message_sending",
+      "priority": -1000
+    },
+    {
+      "name": "message_sent",
+      "priority": -1000
+    },
+    {
+      "name": "model_call_ended",
+      "priority": -1000
+    },
+    {
+      "name": "model_call_started",
+      "priority": -1000
+    },
+    {
+      "name": "reply_dispatch",
+      "priority": -1000
+    },
+    {
+      "name": "reply_payload_sending",
+      "priority": -1000
+    },
+    {
+      "name": "resolve_exec_env",
+      "priority": -1000
+    },
+    {
+      "name": "session_end",
+      "priority": -1000
+    },
+    {
+      "name": "session_start",
+      "priority": -1000
+    },
+    {
+      "name": "skill_changed",
+      "priority": -1000
+    },
+    {
+      "name": "subagent_delivery_target",
+      "priority": -1000
+    },
+    {
+      "name": "subagent_ended",
+      "priority": -1000
+    },
+    {
+      "name": "subagent_progress",
+      "priority": -1000
+    },
+    {
+      "name": "subagent_spawned",
+      "priority": -1000
+    },
+    {
+      "name": "tool_result_persist",
+      "priority": -1000
+    }
+  ],
+  "customHooks": [],
+  "tools": [],
+  "commands": [
+    "guard",
+    "guardauth"
+  ],
+  "cliCommands": [],
+  "services": [],
+  "decisions": [],
+  "gatewayDiscoveryServices": [],
+  "gatewayMethods": [],
+  "mcpServers": [],
+  "lspServers": [],
+  "httpRouteCount": 0,
+  "bundleCapabilities": [],
+  "diagnostics": [
+    {
+      "level": "warn",
+      "pluginId": "pg-probe",
+      "source": "/pg/probe-plugin/index.js",
+      "message": "OpenClaw can't verify where this plugin came from. Review it with 'openclaw plugins inspect pg-probe'. Adding it to plugins.allow lets it load, but does not make it trusted. If it's an official plugin, reinstall it from its official npm package or its official ClawHub listing to enable trusted features. reason=record-missing; registryPath=\"/pg/runs/ch-guard4/state/state/openclaw.sqlite\"; origin=\"config\"; installSource=null; installSpec=null."
+    }
+  ],
+  "policy": {
+    "allowConversationAccess": true,
+    "hookTimeoutMs": 15000,
+    "allowedModels": [],
+    "hasAllowedModelsConfig": false
+  },
+  "compatibility": []
+}
