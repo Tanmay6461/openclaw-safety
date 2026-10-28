@@ -55,6 +55,7 @@ import { FileBackedStore, type GuardRule, type GuardStore } from "./store.js";
 const BOOTSTRAP_FILES = ["AGENTS.md", "SOUL.md", "IDENTITY.md", "USER.md", "BOOTSTRAP.md", "MEMORY.md"];
 const MAX_TRACKED_CALLS = 2000;
 const MAX_TRACKED_RUNS = 1000;
+const MAX_INBOUND_IDS = 5000;
 
 interface RunInfo {
   trigger?: string;
@@ -136,6 +137,8 @@ export class Guard {
   private readonly ownerSenders = new Set<string>();
   private readonly workspace: string;
   private readonly confirms = new Map<string, PendingConfirmation>();
+  /** Message ids the agent received; approval-emoji reactions to these are acks (§5.9). */
+  private readonly inboundIds = new Map<string, true>();
   /** Resolved `confirm` setting: how the owner confirms asks. */
   readonly confirmVia: "approval" | "command";
   readonly counts = { allow: 0, ask: 0, block: 0, shadowed: 0, errors: 0, mismatches: 0 };
@@ -189,6 +192,7 @@ export class Guard {
         ...gatewaySecretPaths(stateDir),
         ...(configPath ? [configPath, `${configPath}.*`] : []),
       ],
+      isInboundMessage: (id) => this.inboundIds.has(id),
       gatewayPorts: Number.isInteger(port) && port > 0 && port !== DEFAULT_GATEWAY_PORT ? [port, DEFAULT_GATEWAY_PORT] : [DEFAULT_GATEWAY_PORT],
     });
     this.confirmVia = config.confirm === "auto" ? (approvalsOwnerOnly(this.doctor()) ? "approval" : "command") : config.confirm;
@@ -591,6 +595,11 @@ export class Guard {
       const s = this.session(key);
       const sender = event.senderId ?? ctx.senderId;
       const text = event.content ?? "";
+      const messageId = event.messageId ?? ctx.messageId;
+      if (messageId) {
+        this.inboundIds.set(String(messageId), true);
+        bounded(this.inboundIds, MAX_INBOUND_IDS);
+      }
       if (this.isOwnerSender(ctx.channelId, sender)) {
         // Quotes and attachments are owner_forwarded: no channel exposes a forward flag (§5.4).
         const forwarded = [

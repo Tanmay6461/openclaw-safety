@@ -57,7 +57,8 @@ function window(messages) {
     const m = new RegExp(`\\b${k}=(\\d+)`).exec(userText);
     return m ? Number(m[1]) : undefined;
   };
-  return { mode, after, step: after.filter((m) => m.role === "assistant").length, from: num("FROM"), to: num("TO") };
+  const pass = /\bPASS=([a-z]+)/.exec(userText)?.[1];
+  return { mode, after, step: after.filter((m) => m.role === "assistant").length, from: num("FROM"), to: num("TO"), pass };
 }
 
 /** Tool results in the window, joined to the assistant tool call that produced them. */
@@ -72,29 +73,66 @@ function results(after) {
     .map((m) => ({ id: m.tool_call_id, ...(calls.get(m.tool_call_id) ?? {}), text: textOf(m.content) }));
 }
 
-function searchIds(res) {
-  const ids = new Set();
+/** Tool names and ids found so far: search candidates, CONTRACT_NAMES, and "Did you mean" suggestions. */
+function discovered(res) {
+  const out = new Map(); // id -> name (best known)
   for (const r of res) {
-    if (r.name !== "tool_search") continue;
-    for (const m of r.text.matchAll(/"id"\s*:\s*"([^"]+)"/g)) ids.add(m[1]);
+    if (r.name === "tool_search") {
+      const parsed = (() => {
+        try {
+          return JSON.parse(r.text);
+        } catch {
+          return null;
+        }
+      })();
+      for (const q of parsed?.results ?? [parsed ?? {}]) {
+        for (const c of q.candidates ?? []) if (c?.id) out.set(c.id, c.name ?? c.id);
+      }
+      for (const m of r.text.matchAll(/"id"\s*:\s*"([^"]+)"[^}]*?"name"\s*:\s*"([^"]+)"/g)) if (!out.has(m[1])) out.set(m[1], m[2]);
+    }
+    if (r.name === "tool_describe") {
+      const hint = /Did you mean: ([^?]+)\?/.exec(r.text)?.[1];
+      for (const n of hint ? hint.split(",").map((x) => x.trim()).filter(Boolean) : []) if (!out.has(n)) out.set(n, n);
+    }
   }
-  return ids;
+  for (const n of NAMES) if (!out.has(n)) out.set(n, n);
+  return out;
 }
 
-function plan(messages) {
+const SEARCH_BATCH = 12;
+
+function plan(messages, offered) {
   const { mode, after, step, from = 0, to } = window(messages);
   const res = results(after);
   if (mode === "dump") {
-    if (step === 0) {
-      const calls = [];
-      for (let i = 0; i < SEARCH_WORDS.length; i += 16) {
-        calls.push({ name: "tool_search", arguments: { queries: SEARCH_WORDS.slice(i, i + 16).map((query) => ({ query, limit: 3 })) } });
-      }
-      return { mode, step, tool_calls: calls };
+    const searchSteps = Math.ceil(SEARCH_WORDS.length / SEARCH_BATCH);
+    if (step < searchSteps) {
+      const words = SEARCH_WORDS.slice(step * SEARCH_BATCH, (step + 1) * SEARCH_BATCH);
+      return { mode, step, tool_calls: words.map((query) => ({ name: "tool_search", arguments: { query, limit: 8 } })) };
     }
-    const ids = [...new Set([...searchIds(res), ...NAMES])].sort();
-    const batch = ids.slice((step - 1) * DESCRIBE_BATCH, step * DESCRIBE_BATCH);
-    if (batch.length === 0) return { mode, step, content: `[contract] dump done: described ${ids.length} id(s)` };
+    // Describe each tool once (by name), skipping the directly offered ones, until no new ids appear.
+    const asked = new Set();
+    for (const m of after) {
+      for (const c of m.role === "assistant" ? (m.tool_calls ?? []) : []) {
+        if (c.function?.name !== "tool_describe") continue;
+        try {
+          asked.add(JSON.parse(c.function.arguments).id);
+        } catch {
+          // ignore
+        }
+      }
+    }
+    const found = discovered(res);
+    const askedNames = new Set([...asked].map((id) => found.get(id) ?? id));
+    const pending = [];
+    const pendingNames = new Set();
+    for (const [id, name] of found) {
+      if (asked.has(id) || askedNames.has(name) || offered.has(name) || pendingNames.has(name)) continue;
+      pending.push(id);
+      pendingNames.add(name);
+    }
+    const batch = pending.slice(0, DESCRIBE_BATCH);
+    if (batch.length === 0) return { mode, step, content: `[contract] dump done: described ${asked.size} id(s)` };
     return { mode, step, tool_calls: batch.map((id) => ({ name: "tool_describe", arguments: { id } })) };
   }
   if (mode === "taint") {
@@ -174,13 +212,14 @@ createServer(async (req, res) => {
         loggedTools = true;
         log({ kind: "directTools", tools: body.tools.map((t) => t.function ?? t) });
       }
-      const p = plan(messages);
+      const p = plan(messages, new Set((body.tools ?? []).map((t) => t.function?.name ?? t.name).filter(Boolean)));
       for (const r of results(window(messages).after)) {
         if (loggedResults.has(r.id)) continue;
         loggedResults.add(r.id);
         log({ kind: "toolResult", mode: p.mode, toolCallId: r.id, name: r.name, args: r.args, text: r.text });
       }
-      log({ kind: "chat", seq: id, mode: p.mode, step: p.step, emitted: (p.tool_calls ?? []).map((c) => `${c.name}${c.name === "tool_call" || c.name === "tool_describe" ? `:${c.arguments.id}` : ""}`), content: p.content ?? null });
+      const w = window(messages);
+      log({ kind: "chat", seq: id, mode: p.mode, step: p.step, from: w.from ?? null, pass: w.pass ?? null, batch: BATCH, emitted: (p.tool_calls ?? []).map((c) => `${c.name}${c.name === "tool_call" || c.name === "tool_describe" ? `:${c.arguments.id}` : ""}`), content: p.content ?? null });
       return respond(res, id, body.model ?? "mock", p, Boolean(body.stream), body.stream_options?.include_usage === true);
     }
     log({ kind: "unhandled", method: req.method, path: url.pathname });

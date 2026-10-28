@@ -96,6 +96,7 @@ export interface MessageContext {
   sessionKey?: string;
   runId?: string;
   senderId?: string;
+  messageId?: string;
 }
 
 export interface InputProvenance {

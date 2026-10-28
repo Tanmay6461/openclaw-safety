@@ -31,6 +31,16 @@ function checkFields(where: string, s: Record<string, unknown>, override: boolea
   enumField("resultSource", SOURCES, override);
   enumField("resultPrivate", PRIVATE, override);
   enumField("writeMode", WRITE_MODES, false);
+  if (s.actsAsOwner !== undefined && typeof s.actsAsOwner !== "boolean") errs.push(`${where}.actsAsOwner: must be boolean`);
+  if (s.reaction !== undefined && !(override && s.reaction === null)) {
+    const r = s.reaction;
+    const paths = (v: unknown) => typeof v === "string" || (Array.isArray(v) && v.length > 0 && v.every((x) => typeof x === "string"));
+    if (!isRecord(r) || !paths(r.emoji)) errs.push(`${where}.reaction: needs an emoji param path`);
+    else {
+      if (r.messageId !== undefined && !paths(r.messageId)) errs.push(`${where}.reaction.messageId: must be a path or a list of paths`);
+      if (r.remove !== undefined && typeof r.remove !== "string") errs.push(`${where}.reaction.remove: must be a string`);
+    }
+  }
   if (s.args !== undefined || !override) {
     if (!isRecord(s.args)) errs.push(`${where}.args: must be an object`);
     else {
@@ -48,6 +58,7 @@ export function validateToolSpec(name: string, spec: unknown): string[] {
   if (!isRecord(spec)) return [`${name}: must be an object`];
   const errs = checkFields(name, spec, false);
   if (spec.actionParam !== undefined && typeof spec.actionParam !== "string") errs.push(`${name}.actionParam: must be a string`);
+  if (spec.elevationParam !== undefined && typeof spec.elevationParam !== "string") errs.push(`${name}.elevationParam: must be a string`);
   if (spec.actions !== undefined) {
     if (!isRecord(spec.actions)) errs.push(`${name}.actions: must be an object`);
     else if (spec.actionParam === undefined) errs.push(`${name}.actions: needs actionParam`);

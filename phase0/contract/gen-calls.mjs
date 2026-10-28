@@ -67,7 +67,15 @@ for (const r of recs) {
   else if (!tools[t.name].direct) tools[t.name].id ??= id;
 }
 
-const ACTION_KEYS = ["action"];
+// Selector params swept per value. memory_search picks its corpus with `corpus`.
+const ACTION_KEYS = ["action", "corpus"];
+
+/** Values of a top-level enum-like param (enum, or anyOf/oneOf of consts). */
+function enumValues(p) {
+  if (!p || typeof p !== "object") return [];
+  if (Array.isArray(p.enum)) return p.enum.filter((v) => v !== null);
+  return (p.anyOf ?? p.oneOf ?? []).flatMap((b) => b?.enum ?? (b && "const" in b ? [b.const] : [])).filter((v) => v !== null);
+}
 
 function sampleString(name, s) {
   const n = name.toLowerCase();
@@ -165,7 +173,8 @@ for (const t of Object.values(tools).sort((a, b) => a.name.localeCompare(b.name)
     const vals = p.enum ?? (p.anyOf ?? p.oneOf ?? []).flatMap((b) => b.enum ?? ("const" in b ? [b.const] : []));
     if (vals.length > 0) actions = vals;
   }
-  manifest[t.name] = { id: t.id, direct: t.direct, actionKey: actionKey ?? null, actions: actions.filter((a) => a !== null), leafPaths: [...leafPaths(t.schema)].sort() };
+  const enums = Object.fromEntries(Object.entries(props).map(([k, v]) => [k, enumValues(v)]).filter(([, v]) => v.length > 0));
+  manifest[t.name] = { id: t.id, direct: t.direct, actionKey: actionKey ?? null, actions: actions.filter((a) => a !== null), enums, leafPaths: [...leafPaths(t.schema)].sort() };
   if (SKIP.has(t.name)) continue;
   for (const action of actions) {
     const args = sample("", { type: "object", ...t.schema }, 0);

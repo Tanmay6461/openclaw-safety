@@ -16,6 +16,9 @@ export function resolveSpec(spec: ToolSpec, params: Record<string, unknown>): To
   else if (o.resultPrivate !== undefined) out.resultPrivate = o.resultPrivate;
   if (o.otherArgs !== undefined) out.otherArgs = o.otherArgs;
   if (o.writeMode !== undefined) out.writeMode = o.writeMode;
+  if (o.reaction === null) delete out.reaction;
+  else if (o.reaction !== undefined) out.reaction = o.reaction;
+  if (o.actsAsOwner !== undefined) out.actsAsOwner = o.actsAsOwner;
   return out;
 }
 

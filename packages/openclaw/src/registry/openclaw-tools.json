@@ -21,8 +21,16 @@
         "workdir": "path",
         "host": "none",
         "node": "none",
-        "title": "none"
-      }
+        "title": "none",
+        "ask": "none",
+        "awaitResults": "none",
+        "background": "none",
+        "elevated": "none",
+        "pty": "none",
+        "timeoutSeconds": "none",
+        "yieldMs": "none"
+      },
+      "elevationParam": "elevated"
     },
     "process": {
       "category": "privileged_execution",
@@ -31,7 +39,13 @@
         "text": "code",
         "keys": "code",
         "hex": "code",
-        "sessionId": "none"
+        "sessionId": "none",
+        "literal": "code",
+        "bracketed": "none",
+        "eof": "none",
+        "offset": "none",
+        "limit": "none",
+        "timeout": "none"
       },
       "resultSource": "exec_output",
       "actionParam": "action",
@@ -44,20 +58,50 @@
         },
         "log": {
           "category": "read_only"
+        },
+        "write": {
+          "category": "privileged_execution"
+        },
+        "send-keys": {
+          "category": "privileged_execution"
+        },
+        "submit": {
+          "category": "privileged_execution"
+        },
+        "paste": {
+          "category": "privileged_execution"
+        },
+        "kill": {
+          "category": "privileged_execution",
+          "resultSource": null
+        },
+        "clear": {
+          "category": "read_only",
+          "resultSource": null
+        },
+        "remove": {
+          "category": "read_only",
+          "resultSource": null
         }
       }
     },
     "read": {
       "category": "read_only",
       "args": {
-        "path": "path"
+        "path": "path",
+        "cursor": "none",
+        "limit": "none",
+        "offset": "none",
+        "optional": "none"
       },
       "resultSource": "file"
     },
     "ls": {
       "category": "read_only",
       "args": {
-        "path": "path"
+        "path": "path",
+        "after": "none",
+        "limit": "none"
       }
     },
     "write": {
@@ -91,7 +135,9 @@
     "web_fetch": {
       "category": "external_retrieval",
       "args": {
-        "url": "egress_url"
+        "url": "egress_url",
+        "extractMode": "none",
+        "maxChars": "none"
       },
       "resultSource": "web"
     },
@@ -127,7 +173,87 @@
         "fn": "code",
         "request.fn": "code",
         "path": "path",
-        "paths": "path"
+        "paths": "path",
+        "actions[]": "content",
+        "request.actions[]": "content",
+        "domains[]": "none",
+        "accept": "none",
+        "browser": "none",
+        "button": "none",
+        "clear": "none",
+        "colorScheme": "none",
+        "compact": "none",
+        "dashboard": "none",
+        "delayMs": "none",
+        "depth": "none",
+        "device": "none",
+        "dialogId": "none",
+        "doubleClick": "none",
+        "element": "none",
+        "endRef": "none",
+        "filter": "none",
+        "frame": "none",
+        "fullPage": "none",
+        "height": "none",
+        "inputRef": "none",
+        "interactive": "none",
+        "into": "none",
+        "key": "none",
+        "kind": "none",
+        "label": "none",
+        "labels": "none",
+        "level": "none",
+        "limit": "none",
+        "loadState": "none",
+        "locale": "none",
+        "maxChars": "none",
+        "mode": "none",
+        "modifiers[]": "none",
+        "node": "none",
+        "profile": "none",
+        "query": "none",
+        "ref": "none",
+        "refs": "none",
+        "request.button": "none",
+        "request.delayMs": "none",
+        "request.doubleClick": "none",
+        "request.endRef": "none",
+        "request.height": "none",
+        "request.key": "none",
+        "request.kind": "none",
+        "request.loadState": "none",
+        "request.modifiers[]": "none",
+        "request.ref": "none",
+        "request.selector": "none",
+        "request.slowly": "none",
+        "request.startRef": "none",
+        "request.stopOnError": "none",
+        "request.submit": "none",
+        "request.targetId": "none",
+        "request.textGone": "none",
+        "request.timeMs": "none",
+        "request.timeoutMs": "none",
+        "request.width": "none",
+        "request.x": "none",
+        "request.y": "none",
+        "selector": "none",
+        "slowly": "none",
+        "snapshotFormat": "none",
+        "startRef": "none",
+        "stopOnError": "none",
+        "submit": "none",
+        "systemProfile": "none",
+        "target": "none",
+        "targetId": "none",
+        "textGone": "none",
+        "timeMs": "none",
+        "timeoutMs": "none",
+        "timezoneId": "none",
+        "type": "none",
+        "urls": "none",
+        "width": "none",
+        "x": "none",
+        "y": "none"
       },
       "actionParam": "action",
       "actions": {
@@ -178,14 +304,41 @@
         },
         "text": {
           "category": "read_only"
-        }
+        },
+        "importprofile": {
+          "category": "config"
+        },
+        "start": {
+          "category": "read_only",
+          "resultSource": null
+        },
+        "stop": {
+          "category": "read_only",
+          "resultSource": null
+        },
+        "focus": {
+          "category": "read_only",
+          "resultSource": null
+        },
+        "close": {
+          "category": "read_only",
+          "resultSource": null
+        },
+        "emulate": {
+          "category": "read_only",
+          "resultSource": null
+        },
+        "dialog": {
+          "category": "outbound_communication"
+        },
+        "open": {},
+        "navigate": {}
       }
     },
     "message": {
       "category": "outbound_communication",
       "args": {
         "target": "destination",
-        "targets": "destination",
         "to": "destination",
         "channelId": "destination",
         "media": "path",
@@ -205,7 +358,103 @@
         "asVoice": "none",
         "forceDocument": "none",
         "contentType": "none",
-        "mimeType": "none"
+        "mimeType": "none",
+        "targets[]": "destination",
+        "channelIds[]": "destination",
+        "chatId": "destination",
+        "userId": "destination",
+        "memberId": "destination",
+        "message": "content",
+        "caption": "content",
+        "quoteText": "content",
+        "title": "content",
+        "topic": "content",
+        "name": "content",
+        "threadName": "content",
+        "pollQuestion": "content",
+        "pollOption[]": "content",
+        "desc": "content",
+        "stickerName": "content",
+        "stickerDesc": "content",
+        "stickerTags": "content",
+        "eventName": "content",
+        "reason": "content",
+        "voiceText": "content",
+        "activityName": "content",
+        "buffer": "content",
+        "location": "content",
+        "emoji": "content",
+        "emojiName": "content",
+        "activityUrl": "egress_url",
+        "image": "egress_url",
+        "activityState": "none",
+        "activityType": "none",
+        "after": "none",
+        "appliedTags[]": "content",
+        "around": "none",
+        "asDocument": "none",
+        "attachments[].mimeType": "none",
+        "attachments[].name": "none",
+        "attachments[].type": "none",
+        "authorId": "none",
+        "authorIds[]": "none",
+        "autoArchiveMin": "none",
+        "before": "none",
+        "categoryId": "none",
+        "channelType": "none",
+        "clearParent": "none",
+        "deleteDays": "none",
+        "durationMin": "none",
+        "effect": "none",
+        "effectId": "none",
+        "endTime": "none",
+        "eventType": "none",
+        "fileId": "none",
+        "filename": "content",
+        "final": "none",
+        "fromMe": "none",
+        "gatewayToken": "none",
+        "gifPlayback": "none",
+        "groupId": "none",
+        "guildId": "none",
+        "includeArchived": "none",
+        "includeMembers": "none",
+        "kind": "none",
+        "limit": "none",
+        "memberIdType": "none",
+        "members": "destination",
+        "message_id": "none",
+        "nsfw": "none",
+        "openId": "none",
+        "pageSize": "none",
+        "pageToken": "none",
+        "parentId": "none",
+        "participant": "none",
+        "pollDurationHours": "none",
+        "pollId": "none",
+        "pollMulti": "none",
+        "pollOptionId": "none",
+        "pollOptionIds[]": "none",
+        "pollOptionIndex": "none",
+        "pollOptionIndexes[]": "none",
+        "position": "none",
+        "query": "none",
+        "rateLimitPerUser": "none",
+        "remove": "none",
+        "roleId": "none",
+        "roleIds[]": "none",
+        "scope": "none",
+        "startTime": "none",
+        "status": "none",
+        "stickerId[]": "none",
+        "targetAuthor": "none",
+        "targetAuthorUuid": "none",
+        "trackToolCalls": "none",
+        "track_tool_calls": "none",
+        "unionId": "none",
+        "until": "none",
+        "voiceId": "none",
+        "voiceProvider": "none"
       },
       "otherArgs": "content",
       "actionParam": "action",
@@ -265,7 +514,40 @@
         "download-file": {
           "category": "persistence_write",
           "resultSource": "external_sender"
-        }
+        },
+        "react": {
+          "category": "outbound_communication",
+          "resultSource": null,
+          "reaction": {
+            "emoji": [
+              "emoji",
+              "emojiName"
+            ],
+            "messageId": [
+              "messageId",
+              "message_id"
+            ],
+            "remove": "remove"
+          }
+        },
+        "edit": {
+          "category": "outbound_communication",
+          "resultSource": null
+        },
+        "delete": {
+          "category": "outbound_communication",
+          "resultSource": null
+        },
+        "thread-create": {
+          "category": "outbound_communication",
+          "resultSource": null
+        },
+        "thread-reply": {
+          "category": "outbound_communication",
+          "resultSource": null
+        },
+        "broadcast": {},
+        "send": {}
       }
     },
     "automations": {
@@ -322,7 +604,10 @@
         "sessionKey": "none",
         "label": "none",
         "agentId": "none",
-        "mode": "none"
+        "mode": "none",
+        "user": "none",
+        "timeoutSeconds": "none",
+        "watch": "none"
       }
     },
     "sessions_spawn": {
@@ -332,20 +617,128 @@
         "attachments[].content": "content",
         "cwd": "path",
         "agentId": "none",
-        "model": "none"
+        "model": "none",
+        "projectGitUrl": "egress_url",
+        "attachments[].name": "none",
+        "attachments[].encoding": "none",
+        "attachments[].mimeType": "none",
+        "attachAs.mountPath": "none",
+        "context": "none",
+        "sandbox": "none",
+        "placement": "none",
+        "outputSchema": "none",
+        "label": "content",
+        "taskName": "none",
+        "group": "content",
+        "cleanup": "none",
+        "collect": "none",
+        "completionTarget": "none",
+        "expectsCompletionMessage": "none",
+        "fastMode": "none",
+        "groupId": "none",
+        "lightContext": "none",
+        "mode": "none",
+        "projectId": "none",
+        "runTimeoutSeconds": "none",
+        "runtime": "none",
+        "thinking": "none",
+        "user": "none",
+        "visible": "none",
+        "worktree": "none",
+        "worktreeBaseRef": "none",
+        "worktreeName": "none"
       }
     },
     "subagents": {
       "category": "read_only",
-      "args": {}
+      "args": {
+        "recentMinutes": "none",
+        "runId": "none",
+        "runIds[]": "none",
+        "timeoutSeconds": "none"
+      },
+      "resultSource": "inter_session",
+      "actionParam": "action",
+      "actions": {
+        "cancel": {
+          "category": "inter_session",
+          "resultSource": null
+        },
+        "list": {},
+        "wait": {}
+      }
     },
     "sessions": {
       "category": "read_only",
-      "args": {}
+      "args": {
+        "user": "none",
+        "profileId": "none",
+        "offset": "none",
+        "sessionKey": "none",
+        "targets[].sessionKey": "none",
+        "targets[].expectedSessionId": "none",
+        "expectedSessionId": "none",
+        "runId": "none",
+        "clearQueued": "none",
+        "deleteTranscript": "none",
+        "label": "content",
+        "icon": "none",
+        "color": "none",
+        "group": "content",
+        "statusNote": "content",
+        "attention": "none",
+        "ttlMinutes": "none",
+        "pinned": "none",
+        "archived": "none",
+        "model": "none",
+        "thinkingLevel": "none",
+        "ownerType": "none",
+        "ownerId": "none",
+        "names[]": "content",
+        "name": "none",
+        "to": "content"
+      },
+      "actionParam": "action",
+      "actions": {
+        "cloud_profiles": {
+          "category": "read_only"
+        },
+        "group_list": {
+          "category": "read_only"
+        },
+        "patch": {
+          "category": "persistence_write"
+        },
+        "stop": {
+          "category": "inter_session"
+        },
+        "reset": {
+          "category": "inter_session"
+        },
+        "delete": {
+          "category": "inter_session"
+        },
+        "assign_owner": {
+          "category": "config"
+        },
+        "group_set": {
+          "category": "persistence_write"
+        },
+        "group_rename": {
+          "category": "persistence_write"
+        },
+        "group_delete": {
+          "category": "persistence_write"
+        }
+      }
     },
     "conversations_list": {
       "category": "read_only",
-      "args": {}
+      "args": {
+        "channel": "none",
+        "query": "none",
+        "limit": "none"
+      }
     },
     "conversations_send": {
       "category": "outbound_communication",
@@ -369,7 +762,8 @@
         "path": "none",
         "note": "content",
         "gatewayUrl": "egress_url",
-        "gatewayToken": "content"
+        "gatewayToken": "content",
+        "timeoutMs": "none"
       },
       "actionParam": "action",
       "actions": {
@@ -379,6 +773,9 @@
         },
         "config.schema.lookup": {
           "category": "read_only"
+        },
+        "update.run": {
+          "category": "install"
         }
       }
     },
@@ -422,12 +819,27 @@
         },
         "reloadAndResume": {
           "category": "config"
+        },
+        "install": {
+          "category": "install"
+        },
+        "enable": {
+          "category": "install"
         }
       }
     },
     "skill_workshop": {
       "category": "install",
-      "args": {},
+      "args": {
+        "name": "none",
+        "file_path": "none",
+        "content": "content",
+        "old_text": "none",
+        "new_text": "content",
+        "absorbed_into": "none",
+        "reason": "content",
+        "version": "none"
+      },
       "otherArgs": "content",
       "actionParam": "action",
       "actions": {
@@ -436,6 +848,24 @@
         },
         "list": {
           "category": "read_only"
+        },
+        "create": {
+          "category": "install"
+        },
+        "patch": {
+          "category": "install"
+        },
+        "write_file": {
+          "category": "install"
+        },
+        "remove_file": {
+          "category": "install"
+        },
+        "archive": {
+          "category": "install"
+        },
+        "restore": {
+          "category": "install"
         }
       }
     },
@@ -469,7 +899,35 @@
         "notificationReplyText": "content",
         "outPath": "path",
         "node": "none",
-        "sessionKey": "none"
+        "gatewayUrl": "egress_url",
+        "gatewayToken": "content",
+        "notificationKey": "destination",
+        "bins[]": "none",
+        "delayMs": "none",
+        "delivery": "none",
+        "desiredAccuracy": "none",
+        "deviceId": "none",
+        "duration": "none",
+        "durationMs": "none",
+        "facing": "none",
+        "fps": "none",
+        "includeAudio": "none",
+        "invokeTimeoutMs": "none",
+        "limit": "none",
+        "locationTimeoutMs": "none",
+        "maxAgeMs": "none",
+        "maxWidth": "none",
+        "notificationAction": "none",
+        "panDegrees": "none",
+        "priority": "none",
+        "ptzOperation": "none",
+        "quality": "none",
+        "requestId": "none",
+        "screenIndex": "none",
+        "sound": "none",
+        "tiltDegrees": "none",
+        "timeoutMs": "none",
+        "zoomPercent": "none"
       },
       "actionParam": "action",
       "actions": {
@@ -501,6 +959,51 @@
         "photos_latest": {
           "category": "read_only",
           "resultPrivate": "personal"
+        },
+        "camera_snap": {
+          "category": "read_only",
+          "resultPrivate": "personal"
+        },
+        "camera_clip": {
+          "category": "read_only",
+          "resultPrivate": "personal"
+        },
+        "screen_record": {
+          "category": "read_only",
+          "resultPrivate": "personal"
+        },
+        "screen_snapshot": {
+          "category": "read_only",
+          "resultPrivate": "personal"
+        },
+        "camera_list": {
+          "category": "read_only"
+        },
+        "device_status": {
+          "category": "read_only"
+        },
+        "device_info": {
+          "category": "read_only"
+        },
+        "device_permissions": {
+          "category": "read_only"
+        },
+        "device_health": {
+          "category": "read_only"
+        },
+        "notifications_list": {
+          "category": "read_only",
+          "resultSource": "external_sender",
+          "resultPrivate": "personal"
+        },
+        "notifications_action": {
+          "category": "outbound_communication"
+        },
+        "camera_ptz": {
+          "category": "privileged_execution"
+        },
+        "invoke": {
+          "category": "privileged_execution"
         }
       }
     },
@@ -537,9 +1040,32 @@
     },
     "terminal": {
       "category": "privileged_execution",
-      "args": {},
-      "otherArgs": "code",
-      "resultSource": "exec_output"
+      "args": {
+        "sessionId": "none",
+        "data": "code",
+        "cols": "none",
+        "rows": "none"
+      },
+      "resultSource": "exec_output",
+      "actionParam": "action",
+      "actions": {
+        "read": {
+          "category": "read_only"
+        },
+        "list": {
+          "category": "read_only",
+          "resultSource": null
+        },
+        "resize": {
+          "category": "read_only",
+          "resultSource": null
+        },
+        "close": {
+          "category": "read_only",
+          "resultSource": null
+        },
+        "input": {}
+      }
     },
     "code_execution": {
       "category": "privileged_execution",
@@ -554,10 +1080,27 @@
       "resultSource": "web"
     },
     "mobile_ui": {
-      "category": "unknown",
-      "args": {},
-      "otherArgs": "content",
-      "resultSource": "skill_output"
+      "category": "privileged_execution",
+      "args": {
+        "gatewayUrl": "egress_url",
+        "gatewayToken": "content",
+        "timeoutMs": "none",
+        "node": "none",
+        "snapshotId": "none",
+        "mobileAction": "content",
+        "confirmed": "none"
+      },
+      "actionParam": "action",
+      "actions": {
+        "observe": {
+          "category": "read_only",
+          "resultSource": "external_sender",
+          "resultPrivate": "personal"
+        },
+        "act": {
+          "actsAsOwner": true
+        }
+      }
     },
     "screen": {
       "category": "read_only",
@@ -566,26 +1109,70 @@
       "resultPrivate": "personal"
     },
     "portal": {
-      "category": "unknown",
-      "args": {},
-      "otherArgs": "content",
-      "resultSource": "skill_output"
+      "category": "persistence_write",
+      "args": {
+        "port": "none",
+        "title": "content",
+        "description": "content",
+        "path": "none",
+        "id": "none",
+        "environmentId": "none"
+      },
+      "actionParam": "action",
+      "actions": {
+        "list": {
+          "category": "read_only"
+        },
+        "close": {
+          "category": "read_only"
+        },
+        "open": {}
+      }
     },
     "canvas": {
-      "category": "unknown",
-      "args": {},
-      "otherArgs": "content",
-      "resultSource": "skill_output"
+      "category": "external_retrieval",
+      "args": {
+        "url": "egress_url",
+        "gatewayUrl": "egress_url",
+        "gatewayToken": "content",
+        "timeoutMs": "none",
+        "node": "none",
+        "target": "none",
+        "x": "none",
+        "y": "none",
+        "width": "none",
+        "height": "none"
+      },
+      "actionParam": "action",
+      "actions": {
+        "hide": {
+          "category": "read_only"
+        },
+        "present": {},
+        "navigate": {}
+      }
     },
     "secrets": {
       "category": "config",
-      "args": {},
+      "args": {
+        "name": "none",
+        "kind": "none",
+        "allowedHosts[]": "destination",
+        "reason": "content",
+        "timeoutSeconds": "none"
+      },
       "otherArgs": "content",
       "actionParam": "action",
       "actions": {
         "list": {
           "category": "read_only",
           "resultPrivate": "secret"
+        },
+        "request": {
+          "category": "outbound_communication"
+        },
+        "delete": {
+          "category": "config"
         }
       }
     },
@@ -597,7 +1184,11 @@
     },
     "tts": {
       "category": "outbound_communication",
-      "args": {},
+      "args": {
+        "text": "content",
+        "channel": "none",
+        "timeoutMs": "none"
+      },
       "otherArgs": "content"
     },
     "image_generate": {
@@ -676,6 +1267,336 @@
         "acknowledgment": "content",
         "waitFor": "none"
       }
+    },
+    "agents_list": {
+      "category": "read_only",
+      "args": {}
+    },
+    "agents_wait": {
+      "category": "read_only",
+      "args": {
+        "ids[]": "none",
+        "timeoutSeconds": "none",
+        "awaitResults": "none"
+      },
+      "resultSource": "inter_session"
+    },
+    "ask_user": {
+      "category": "read_only",
+      "args": {
+        "questions[].id": "none",
+        "questions[].header": "content",
+        "questions[].question": "content",
+        "questions[].options[].label": "content",
+        "questions[].options[].description": "content",
+        "questions[].options[].value": "none",
+        "questions[].options[].thumbnail": "egress_url",
+        "questions[].options[].resourceUri": "egress_url",
+        "questions[].options[].preview": "content",
+        "questions[].multiSelect": "none",
+        "timeoutSeconds": "none"
+      }
+    },
+    "create_goal": {
+      "category": "autonomous_scheduling",
+      "args": {
+        "objective": "deferred_instruction",
+        "token_budget": "none"
+      }
+    },
+    "get_goal": {
+      "category": "read_only",
+      "args": {}
+    },
+    "update_goal": {
+      "category": "persistence_write",
+      "args": {
+        "status": "none",
+        "note": "content"
+      }
+    },
+    "dashboard": {
+      "category": "persistence_write",
+      "args": {
+        "tabId": "none",
+        "title": "content",
+        "presentation": "none",
+        "position": "none",
+        "tabIds[]": "none",
+        "name": "none",
+        "after": "none",
+        "sizeW": "none",
+        "sizeH": "none",
+        "size": "none",
+        "pluginKind": "none",
+        "props": "content"
+      },
+      "actionParam": "action",
+      "actions": {
+        "read": {
+          "category": "read_only"
+        },
+        "widget_put": {
+          "category": "outbound_communication"
+        },
+        "tab_create": {},
+        "tab_update": {},
+        "tab_delete": {},
+        "tabs_reorder": {},
+        "widget_move": {},
+        "widget_resize": {},
+        "widget_remove": {},
+        "focus_tab": {},
+        "set_presentation": {},
+        "set_default_presentation": {}
+      }
+    },
+    "dir_list": {
+      "category": "read_only",
+      "args": {
+        "node": "none",
+        "path": "none",
+        "gatewayUrl": "egress_url",
+        "gatewayToken": "content",
+        "timeoutMs": "none",
+        "pageToken": "none",
+        "maxEntries": "none"
+      },
+      "resultSource": "unknown"
+    },
+    "dir_fetch": {
+      "category": "read_only",
+      "args": {
+        "node": "none",
+        "path": "none",
+        "maxBytes": "none",
+        "gatewayUrl": "egress_url",
+        "gatewayToken": "content",
+        "timeoutMs": "none"
+      },
+      "resultSource": "unknown",
+      "resultPrivate": "private_file"
+    },
+    "file_fetch": {
+      "category": "read_only",
+      "args": {
+        "node": "none",
+        "path": "none",
+        "maxBytes": "none",
+        "gatewayUrl": "egress_url",
+        "gatewayToken": "content",
+        "timeoutMs": "none"
+      },
+      "resultSource": "unknown",
+      "resultPrivate": "private_file"
+    },
+    "file_write": {
+      "category": "persistence_write",
+      "args": {
+        "node": "none",
+        "path": "none",
+        "contentBase64": "content",
+        "sourceMediaId": "none",
+        "mimeType": "none",
+        "overwrite": "none",
+        "createParents": "none"
+      },
+      "writeMode": "replace"
+    },
+    "github_identity_status": {
+      "category": "read_only",
+      "args": {}
+    },
+    "intent": {
+      "category": "autonomous_scheduling",
+      "args": {
+        "id": "none",
+        "description": "deferred_instruction",
+        "triggerKeywords[]": "content",
+        "scope": "none",
+        "senderScope": "none",
+        "expiresAt": "none",
+        "maxFires": "none",
+        "cooldownSeconds": "none",
+        "status": "none"
+      },
+      "actionParam": "action",
+      "actions": {
+        "list": {
+          "category": "read_only"
+        },
+        "cancel": {
+          "category": "persistence_write"
+        },
+        "create": {}
+      }
+    },
+    "node_inference": {
+      "category": "external_retrieval",
+      "args": {
+        "node": "none",
+        "model": "none",
+        "prompt": "content",
+        "system": "content",
+        "temperature": "none",
+        "maxTokens": "none",
+        "timeoutMs": "none"
+      },
+      "resultSource": "skill_output",
+      "actionParam": "action",
+      "actions": {
+        "discover": {
+          "category": "read_only",
+          "resultSource": null
+        },
+        "run": {}
+      }
+    },
+    "presence": {
+      "category": "read_only",
+      "args": {
+        "person": "none",
+        "deviceId": "none",
+        "include[]": "none",
+        "limit": "none"
+      },
+      "resultPrivate": "personal",
+      "actionParam": "action",
+      "actions": {
+        "list": {},
+        "person": {},
+        "device": {}
+      }
+    },
+    "session_status": {
+      "category": "read_only",
+      "args": {
+        "user": "none",
+        "sessionKey": "none",
+        "model": "none",
+        "changesSince": "none"
+      }
+    },
+    "sessions_history": {
+      "category": "read_only",
+      "args": {
+        "user": "none",
+        "sessionKey": "none",
+        "limit": "none",
+        "offset": "none",
+        "pendingBefore": "none",
+        "messageId": "none",
+        "sessionId": "none",
+        "includeTools": "none"
+      },
+      "resultSource": "inter_session",
+      "resultPrivate": "personal"
+    },
+    "sessions_list": {
+      "category": "read_only",
+      "args": {
+        "activeMinutes": "none",
+        "activeOnly": "none",
+        "agentId": "none",
+        "archived": "none",
+        "creatorId": "none",
+        "excludeSubagents": "none",
+        "group": "none",
+        "includeDerivedTitles": "none",
+        "includeLastMessage": "none",
+        "kinds[]": "none",
+        "label": "none",
+        "limit": "none",
+        "messageLimit": "none",
+        "offset": "none",
+        "ownerId": "none",
+        "pinned": "none",
+        "projectId": "none",
+        "relationship": "none",
+        "search": "none",
+        "user": "none",
+        "workspaceDir": "none"
+      },
+      "resultSource": "inter_session"
+    },
+    "sessions_search": {
+      "category": "read_only",
+      "args": {
+        "user": "none",
+        "query": "none",
+        "sessionKey": "none",
+        "limit": "none"
+      },
+      "resultSource": "inter_session",
+      "resultPrivate": "personal"
+    },
+    "skills_read": {
+      "category": "read_only",
+      "args": {
+        "name": "none"
+      },
+      "resultSource": "skill_output"
+    },
+    "skills_search": {
+      "category": "read_only",
+      "args": {
+        "query": "none",
+        "limit": "none"
+      },
+      "resultSource": "skill_output"
+    },
+    "talk_voice": {
+      "category": "read_only",
+      "args": {
+        "voice": "none"
+      },
+      "actionParam": "action",
+      "actions": {
+        "set": {
+          "category": "persistence_write"
+        },
+        "list": {}
+      }
+    },
+    "theme": {
+      "category": "persistence_write",
+      "args": {
+        "user": "none",
+        "id": "none",
+        "mode": "none",
+        "definition": "content",
+        "apply": "none"
+      },
+      "actionParam": "action",
+      "actions": {
+        "list": {
+          "category": "read_only"
+        },
+        "get": {
+          "category": "read_only"
+        },
+        "set": {},
+        "import": {}
+      }
+    },
+    "transcripts": {
+      "category": "external_retrieval",
+      "args": {
+        "sessionId": "none",
+        "selector": "none",
+        "limit": "none",
+        "title": "content",
+        "providerId": "none",
+        "accountId": "none",
+        "guildId": "none",
+        "channelId": "none",
+        "meetingUrl": "egress_url",
+        "transcript": "content",
+        "speakerLabel": "content",
+        "action": "none"
+      },
+      "resultSource": "external_sender",
+      "resultPrivate": "personal"
     }
   }
 }

@@ -1,6 +1,6 @@
 import { attestCommand, attestDestination, isOwnerIdentity } from "../attest/lookup.js";
 import { hostMatches, normalizePath, normalizeUrl } from "../attest/normalize.js";
-import { pathContext, type GuardEnv } from "../env.js";
+import { normalizeReaction, pathContext, type GuardEnv } from "../env.js";
 import { classifyExec, type ExecInfo } from "../exec/classify.js";
 import { forgeryInExec, forgeryInPath, forgeryInUrl, type Forgery } from "./forgery.js";
 import { rolePaths, specFor } from "../registry/resolve.js";
@@ -156,6 +156,21 @@ function findForgery(call: ToolCall, spec: ToolSpec, env: GuardEnv, execs: { arg
   return null;
 }
 
+/** The approval emoji this call would react with, unless it targets only messages the agent received. */
+function approvalReaction(call: ToolCall, spec: ToolSpec, env: GuardEnv): string | null {
+  const r = spec.reaction;
+  if (!r) return null;
+  if (r.remove && valuesAtPath(call.params, r.remove).some((v) => v === true || v === "true")) return null;
+  const at = (paths: string | string[] | undefined) =>
+    [paths ?? []].flat().flatMap((p) => valuesAtPath(call.params, p).flatMap((v) => collectStrings(v)));
+  const emoji = at(r.emoji).find((e) => env.approvalReactions.has(normalizeReaction(e)));
+  if (emoji === undefined) return null;
+  const targets = at(r.messageId);
+  const known = env.isInboundMessage;
+  if (known && targets.length > 0 && targets.every((id) => known(id))) return null;
+  return emoji;
+}
+
 function short(v: string): string {
   return sanitizePreview(v, 60);
 }
@@ -199,6 +214,28 @@ export function decide(call: ToolCall, session: SessionState, env: GuardEnv): De
     b.findings.push({ arg: forged.arg, role: forged.role, value: forged.value, status: "protected" });
     b.raise("block", `${forged.reason} With that the agent could approve its own actions, so the guard always blocks it. If you need this, run it yourself in a terminal.`);
     return b.build();
+  }
+
+  // Approval reactions: an agent-added 👍 on an approval prompt can approve its own action (§5.9).
+  const reacted = approvalReaction(call, spec, env);
+  if (reacted) {
+    b.hardSink = true;
+    b.findings.push({ arg: [spec.reaction!.emoji].flat()[0]!, role: "content", value: reacted, status: "protected" });
+    b.raise(
+      "block",
+      `Reacting with ${reacted} can answer an approval prompt, so the agent may only use approval emoji on messages it received from someone.`,
+    );
+    return b.build();
+  }
+
+  // Driving apps as the owner (phone UI control) from a tainted session is never allowed.
+  if (spec.actsAsOwner) {
+    if (tainted) {
+      b.hardSink = true;
+      b.raise("block", "This controls your device's apps as you, and the session has read untrusted content.");
+      return b.build();
+    }
+    if (autonomous) b.raise("ask", "An automatic run wants to control your device's apps as you.");
   }
 
   if (spec.category === "read_only" && urls.length === 0) {
@@ -329,6 +366,7 @@ export function decide(call: ToolCall, session: SessionState, env: GuardEnv): De
   }
 
   // Exec.
+  const elevated = spec.elevationParam !== undefined && call.params[spec.elevationParam] === true;
   for (const { arg, info } of execs) {
     const att = attestCommand(info, session, env);
     b.findings.push({ arg, role: "code", value: info.raw, status: att ? "attested" : "unattested", ...(att && { via: att.origin }) });
@@ -340,6 +378,10 @@ export function decide(call: ToolCall, session: SessionState, env: GuardEnv): De
     }
     if (!att && tainted) {
       b.raise(p.execUnattestedTainted, "This command didn't come from you, and the session has read untrusted content.");
+    }
+    if (elevated) {
+      if (autonomous) b.raise(p.sensitiveExecAutonomous, "An automatic run wants to run a command with host elevation.");
+      if (tainted) b.raise(att ? "ask" : "block", "This command asks for host elevation, and the session has read untrusted content.");
     }
   }
 

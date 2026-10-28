@@ -46,6 +46,10 @@ export interface GuardEnv {
   gatewaySecrets: PathMatcher;
   /** Gateway ports; connecting to one on a loopback address is always blocked, for the same reason. */
   gatewayPorts: readonly number[];
+  /** Reactions that can answer an approval prompt, normalized (see `normalizeReaction`). */
+  approvalReactions: ReadonlySet<string>;
+  /** Whether a message id is one the agent received (from message_received). Reactions to those are acks. */
+  isInboundMessage?: (messageId: string) => boolean;
   store: ProvenanceStore;
   resolveLinks?: boolean;
   /** File modification time in epoch ms, for exec windows (§5.4). */
@@ -127,6 +131,26 @@ export function gatewaySecretPaths(stateDir: string): string[] {
 
 export const DEFAULT_GATEWAY_PORT = 18789;
 
+/**
+ * Emoji (and channel shortcode names) that approval-reaction surfaces treat as a decision, plus close
+ * variants. Normalized: no variation selectors or skin tones, lowercase names without colons.
+ */
+export const DEFAULT_APPROVAL_REACTIONS: readonly string[] = [
+  "👍", "👎", "✅", "❌", "✔", "☑", "✖", "❎", "🆗", "👌", "🚫", "⛔",
+  "+1", "-1", "thumbsup", "thumbsdown", "thumbs_up", "thumbs_down", "like", "dislike",
+  "white_check_mark", "heavy_check_mark", "ballot_box_with_check", "x", "heavy_multiplication_x",
+  "negative_squared_cross_mark", "ok", "ok_hand", "no_entry", "no_entry_sign",
+];
+
+/** Strips variation selectors, skin tones, and shortcode colons so reaction variants compare equal. */
+export function normalizeReaction(raw: string): string {
+  return raw
+    .trim()
+    .replace(/[\u{FE0E}\u{FE0F}\u{1F3FB}-\u{1F3FF}\u{200D}]/gu, "")
+    .replace(/^:(.+):$/, "$1")
+    .toLowerCase();
+}
+
 export interface EnvOptions extends Partial<Omit<GuardEnv, "protectedPaths" | "untrustedPaths" | "privatePaths" | "memoryPaths" | "gatewaySecrets">> {
   home: string;
   hmacKey: string;
@@ -160,6 +184,8 @@ export function createEnv(opts: EnvOptions): GuardEnv {
     sensitiveHosts: opts.sensitiveHosts ?? DEFAULT_SENSITIVE_HOSTS,
     gatewaySecrets: new PathMatcher(opts.gatewaySecrets ?? DEFAULT_GATEWAY_SECRET_PATHS, home),
     gatewayPorts: opts.gatewayPorts ?? [DEFAULT_GATEWAY_PORT],
+    approvalReactions: opts.approvalReactions ?? new Set(DEFAULT_APPROVAL_REACTIONS.map(normalizeReaction)),
+    ...(opts.isInboundMessage && { isInboundMessage: opts.isInboundMessage }),
     store: opts.store ?? new MemoryStore(),
     ...(opts.resolveLinks !== undefined && { resolveLinks: opts.resolveLinks }),
     ...(opts.mtime && { mtime: opts.mtime }),

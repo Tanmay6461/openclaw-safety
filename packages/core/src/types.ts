@@ -76,7 +76,20 @@ export interface ToolSpec {
   actionParam?: string;
   /** Per-action overrides. An action missing here keeps the base spec, so make the base conservative. */
   actions?: Record<string, ActionOverride>;
+  /** The action adds an emoji reaction: which params hold the emoji, the target message, and removal (§5.9). */
+  reaction?: ReactionArgs;
+  /** The action drives apps as the owner (phone UI control): blocked once the session is tainted (§5.9). */
+  actsAsOwner?: boolean;
+  /** Boolean param that asks the host for elevated execution (exec `elevated`). */
+  elevationParam?: string;
   inferred?: boolean;
+}
+
+/** Param paths; a list when channels name the same field differently (`messageId` / `message_id`). */
+export interface ReactionArgs {
+  emoji: string | string[];
+  messageId?: string | string[];
+  remove?: string;
 }
 
 export interface ActionOverride {
@@ -88,6 +101,9 @@ export interface ActionOverride {
   resultSource?: SourceKind | null;
   resultPrivate?: PrivateCategory | null;
   writeMode?: "replace" | "merge";
+  /** `null` removes the base reaction args. */
+  reaction?: ReactionArgs | null;
+  actsAsOwner?: boolean;
 }
 
 export interface ToolCall {
