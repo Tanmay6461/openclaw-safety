@@ -23,6 +23,7 @@
       "privateSources": { "type": "array", "items": { "type": "string" } },
       "protectedPaths": { "type": "array", "items": { "type": "string" } },
       "failMode": { "type": "object", "properties": { "other": { "enum": ["ask", "allow", "block"] } } },
+      "confirm": { "enum": ["auto", "approval", "command"] },
       "stateDir": { "type": "string" },
       "auditPath": { "type": "string" }
     }
