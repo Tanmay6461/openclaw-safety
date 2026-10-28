@@ -951,7 +951,7 @@ Evidence: `phase0/source-notes-v2.md` (static, file:line), `phase0/contract-resu
 
 | Question | Result | Plan change |
 |---|---|---|
-| Codex-native names (was 4) | Normalized before `before_tool_call`: `Bash`/`exec_command`/`exec` → `exec` (`exec_command` adds `cmd`), `Write`/`Edit`/`apply_patch` → `apply_patch` (`{patch}`), `Agent` → `spawn_agent`. Rewrites still block | Registry: `exec.cmd`, `apply_patch.patch` (§5.5) |
+| Codex-native names (was 4) | Normalized before `before_tool_call`. **Runtime** (Codex 0.160.0 against a Responses-API mock, run codex-3): `exec_command {cmd}` arrived as `exec {command}`, and Codex's `apply_patch` custom tool as `apply_patch {command: <patch text>}`. Source adds `Write`/`Edit` → `apply_patch {patch}` and `Agent` → `spawn_agent`. Rewrites still block | Registry: `apply_patch.command` and `.patch` as content with patch paths derived from them, `exec.cmd` (§5.5) |
 | `message_sending` for plugin-handled sends (was 5) | **No.** Runtime (qa-channel): `message`-tool sends were delivered without `message_sending`/`message_sent`. Source: a channel's own `handleAction` path calls no hooks; on WhatsApp, `react` and `upload-file` also skip them | `before_tool_call` is the only enforcement point for `message`; delivery hooks stay a backstop (§5.10) |
 | Parameter names (was 7) | Live schemas of all 58 tools (qa-channel configured) compared with the registry: 24 tools were missing, several read-only tools had state-changing actions, and egress params (`gatewayUrl`, `canvas.url`, `projectGitUrl`, `ask_user` thumbnails) and code params (`process` `literal`, `terminal` `data`) were unmapped | Registry rewritten with every param and action listed; `test/contract.test.ts` checks it against the dump fixture (§5.5) |
 | Exactly one prompt when the Guard defers? (was 8) | Yes under `ask: "always"` (1 prompt); two under `mode: "ask"` on an allowlist miss | §5.9 |
@@ -962,12 +962,17 @@ Evidence: `phase0/source-notes-v2.md` (static, file:line), `phase0/contract-resu
 1. ~~`tool_result_persist` ordering~~ (answered above).
 2. ~~Channel turns: owner flag~~ (answered on qa-channel, above). Still open: the same check on a real channel.
 3. Self-chat echo on **WhatsApp**: does an `/approve <id>` or a `/guard` command sent through the `message` tool resolve anything, and does the live-path reaction hole reproduce (the Guard already blocks the agent's approval reactions)? qa-channel can't show this. Do Telegram, Slack, and Discord native approvals bind the resolver to their approver lists? Needs real accounts. (go/no-go)
-4. ~~Codex-native names~~ (answered from source: normalized, see below). A runtime check on the Codex lane is in progress.
+4. ~~Codex-native names~~ (answered from source and at runtime, see below). Still open: Codex's hosted `web_search` reaches the model without any OpenClaw hook, so the Guard can't label it (`phase0/codex-results.md`).
 5. ~~`message_sending` for plugin-handled sends~~ (answered below).
 6. ~~Lowest-priority params win; another plugin's `requireApproval`~~ (both answered above).
 7. ~~Parameter names~~ (answered by the contract sweep, below).
 8. ~~Host exec ask plus a Guard ask~~ (answered below).
 9. Benchmark cost: run count × tokens per run × price (§9).
+10. Codex hosted `web_search`: treat Codex sessions with it enabled as tainted from the start, or require it off.
+11. Upstream OpenClaw reports, drafted from Phase 0:
+    - a sender's first native `/approve` fails closed, and any session change revokes pending approvals;
+    - WhatsApp's live path resolves approval reactions before the echo filter;
+    - the config file identity can't be captured when its inode is ≥ 2^63 (GPFS-style scratch), so the Gateway refuses to start at random.
 
 ---
 

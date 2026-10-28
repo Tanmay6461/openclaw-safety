@@ -6,7 +6,16 @@ PG=${PG:-/scratch/$USER/pg}
 # inner.sh fences the network after the plugin install and aborts if an outside connection succeeds.
 # PIDNS=0 drops the separate PID namespace (--contain --ipc instead of --containall's --pid too).
 if [ "${PIDNS:-1}" = 1 ]; then ISOLATION=(--containall); else ISOLATION=(--contain --ipc); fi
-exec apptainer exec "${ISOLATION[@]}" --cleanenv \
+# OpenClaw's state goes on node-local disk (LOCAL_STATE=0 keeps it on scratch). Scratch hands out
+# random 64-bit inode numbers, and OpenClaw can't capture a config file identity whose inode is
+# >= 2^63 (SQLite integers are signed), so its startup config check fails at random (codex-2, codex-4).
+LOCAL=""
+if [ "${LOCAL_STATE:-1}" = 1 ]; then
+  LOCAL=$(mktemp -d /tmp/pg-codex-state.XXXXXX)
+  ISOLATION+=(--bind "$LOCAL":/localstate --env LOCAL_STATE_DIR=/localstate)
+fi
+set +e
+apptainer exec "${ISOLATION[@]}" --cleanenv \
   --home "$PG/home:/home/pg" --workdir "$PG/apptainer-work" --bind "$PG":/pg --pwd /pg \
   --env npm_config_cache=/pg/npm-cache \
   ${RUN:+--env RUN="$RUN"} \
@@ -15,3 +24,6 @@ exec apptainer exec "${ISOLATION[@]}" --cleanenv \
   ${PG_CODEX_SANDBOX:+--env PG_CODEX_SANDBOX="$PG_CODEX_SANDBOX"} \
   ${GW_SETSID:+--env GW_SETSID="$GW_SETSID"} \
   "$PG/images/node24.sif" bash /pg/codex/inner.sh
+code=$?
+[ -n "$LOCAL" ] && rm -rf "$LOCAL"
+exit $code

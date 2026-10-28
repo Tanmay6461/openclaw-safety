@@ -127,7 +127,8 @@
       "args": {
         "input": "content",
         "__derived.paths": "path",
-        "patch": "content"
+        "patch": "content",
+        "command": "content"
       },
       "writeMode": "merge",
       "derive": [

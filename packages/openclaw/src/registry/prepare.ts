@@ -85,8 +85,9 @@ export function prepareCall(event: HookToolEvent, registry: OpenClawRegistry, ct
   const derived: Record<string, unknown> = {};
   for (const d of entry?.derive ?? []) {
     if (d === "apply_patch_paths") {
-      // OpenClaw's apply_patch takes `input`; Codex-native Write/Edit arrive as apply_patch with `patch`.
-      const input = [params.input, params.patch].filter((v): v is string => typeof v === "string").join("\n");
+      // OpenClaw's apply_patch takes `input`. Codex's apply_patch (a custom tool) reaches the hook as
+      // apply_patch with the patch text in `command` (runtime, phase0/codex run codex-3); `patch` per source.
+      const input = [params.input, params.patch, params.command].filter((v): v is string => typeof v === "string").join("\n");
       derived.paths = [...new Set([...parsePatchPaths(input), ...(event.derivedPaths ?? [])])];
     } else if (d === "personal_instructions_path") {
       derived.paths = [personalInstructionsPath(typeof params.agentId === "string" ? params.agentId : ctx.agentId)];

@@ -24,7 +24,7 @@ const covers = (regPath: string, leaf: string) => leaf === regPath || leaf.start
 const KNOWN_UNSEEN: Record<string, ReadonlySet<string>> = {
   message: new Set(["to", "filePath", "path", "fileUrl", "chatJid"]),
   exec: new Set(["cmd"]), // Codex exec_command
-  apply_patch: new Set(["patch"]), // Codex Write/Edit
+  apply_patch: new Set(["patch", "command"]), // Codex apply_patch arrives as {command} (codex-3), Write/Edit as {patch}
 };
 
 describe(`registry contract (OpenClaw ${fixture.openclawVersion}, runs ${fixture.runs.join(", ")})`, () => {

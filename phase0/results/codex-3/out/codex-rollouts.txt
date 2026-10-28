@@ -1,0 +1,4 @@
+/pg/runs/codex-3/state/agents/main/agent/codex-home/sessions/2026/10/28/rollout-2026-10-28T19-40-53-01a184e3-571e-7f81-9125-7093f3b30d73.jsonl
+/pg/runs/codex-3/state/agents/main/agent/codex-home/sessions/2026/10/28/rollout-2026-10-28T19-41-08-01a184e3-8efc-78b0-b0d6-ceb8771a646f.jsonl
+/pg/runs/codex-3/state/agents/main/agent/codex-home/sessions/2026/10/28/rollout-2026-10-28T19-41-20-01a184e3-be0b-77b1-9196-efda00ba1607.jsonl
+/pg/runs/codex-3/state/agents/main/agent/codex-home/sessions/2026/10/28/rollout-2026-10-28T19-41-32-01a184e3-ee93-7d01-9680-ed20ac7a8daf.jsonl

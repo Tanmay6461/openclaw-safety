@@ -16,7 +16,12 @@ FAKE_KEY="sk-pg-mock-not-a-real-key"
 CATALOG="$RUN/codex-model-catalog.json"
 mkdir -p "$RUN/state/workspace" "$RUN/out"
 
-export OPENCLAW_STATE_DIR="$RUN/state" OPENCLAW_CONFIG_PATH="$RUN/state/openclaw.json"
+# State on node-local disk when run-codex.sh provides it (inode numbers >= 2^63 on scratch break OpenClaw's
+# config identity check); copied back to $RUN/state at the end, without the npm install tree.
+STATE="${LOCAL_STATE_DIR:+$LOCAL_STATE_DIR/state}"
+STATE="${STATE:-$RUN/state}"
+mkdir -p "$STATE/workspace"
+export OPENCLAW_STATE_DIR="$STATE" OPENCLAW_CONFIG_PATH="$STATE/openclaw.json"
 export OPENCLAW_GATEWAY_TOKEN="$TOKEN" OPENCLAW_GATEWAY_PORT="$PORT_GW"
 export OPENCLAW_SKIP_CHANNELS=1 OPENCLAW_SKIP_GMAIL_WATCHER=1 OPENCLAW_SKIP_CANVAS_HOST=1
 export OPENCLAW_SKIP_BROWSER_CONTROL_SERVER=1 OPENCLAW_SKIP_ACPX_RUNTIME=1 OPENCLAW_SKIP_ACPX_RUNTIME_PROBE=1
@@ -61,7 +66,7 @@ case "$CODEX_INSTALL" in
     # extensions root (<state>/extensions). Less proven than managed; see NOTES.md §2.
     src=/pg/oc/node_modules/@openclaw/codex
     [ -f "$src/openclaw.plugin.json" ] || { echo "missing $src; run install-codex.sh first"; exit 1; }
-    mkdir -p "$RUN/state/extensions" && ln -s "$src" "$RUN/state/extensions/codex"
+    mkdir -p "$STATE/extensions" && ln -s "$src" "$STATE/extensions/codex"
     ;;
   *) echo "CODEX_INSTALL must be managed or link"; exit 2 ;;
 esac
@@ -84,8 +89,8 @@ printf '%s\n' "$FAKE_KEY" | step auth-paste "$OC" models auth paste-api-key --pr
   || echo "auth paste failed; continuing with the provider apiKey and CODEX_API_KEY fallbacks"
 
 # 3. Final config: codex entry plus the runtime pin, merged into what steps 1-2 wrote.
-node "$HERE/write-config.mjs" "$RUN" "$PORT_GW" "$PORT_MOCK" "$TOKEN" final > "$RUN/state/openclaw.next.json" \
-  && mv "$RUN/state/openclaw.next.json" "$OPENCLAW_CONFIG_PATH" || { echo "final config failed"; exit 1; }
+node "$HERE/write-config.mjs" "$RUN" "$PORT_GW" "$PORT_MOCK" "$TOKEN" final > "$STATE/openclaw.next.json" \
+  && mv "$STATE/openclaw.next.json" "$OPENCLAW_CONFIG_PATH" || { echo "final config failed"; exit 1; }
 cp "$OPENCLAW_CONFIG_PATH" "$RUN/out/openclaw.final.json"
 step codex-inspect-offline "$OC" plugins inspect codex --json
 
@@ -121,6 +126,9 @@ sleep 3
 kill "$GW_PID" "$MOCK_PID" 2>/dev/null; wait 2>/dev/null; trap - EXIT
 
 # Codex's own rollouts (native tool calls and hook runs) stay in the per-agent Codex home.
+if [ "$STATE" != "$RUN/state" ]; then
+  mkdir -p "$RUN/state" && (cd "$STATE" && tar --exclude=./npm -cf - .) | (cd "$RUN/state" && tar -xf -)
+fi
 find "$RUN/state" -path '*codex-home*' -name '*.jsonl' > "$RUN/out/codex-rollouts.txt" 2>/dev/null
 node "$HERE/summarize.mjs" "$RUN" > "$RUN/report.md"
 cat "$RUN/report.md"
