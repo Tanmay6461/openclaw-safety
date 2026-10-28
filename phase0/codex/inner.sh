@@ -100,7 +100,9 @@ echo "mock: $(cat "$RUN/mock.out")"
 # setsid: inside the container's PID namespace, a process whose group leader is outside it shows pgid 0
 # in /proc/<pid>/stat, and the Codex plugin rejects that ("Process identity is unavailable", codex-1;
 # extensions/codex/src/app-server/transport-process-snapshot.ts parseLinuxProcess).
-setsid "$OC" gateway run --port "$PORT_GW" --bind loopback --auth token --token "$TOKEN" > "$RUN/gateway.log" 2>&1 &
+# GW_SETSID=0 skips it (with PIDNS=0 in run-codex.sh the container shares the node's PID namespace).
+if [ "${GW_SETSID:-1}" = 1 ]; then LAUNCH=(setsid); else LAUNCH=(); fi
+"${LAUNCH[@]}" "$OC" gateway run --verbose --port "$PORT_GW" --bind loopback --auth token --token "$TOKEN" > "$RUN/gateway.log" 2>&1 &
 GW_PID=$!
 trap 'kill $GW_PID $MOCK_PID 2>/dev/null; wait 2>/dev/null' EXIT
 for _ in $(seq 1 180); do
