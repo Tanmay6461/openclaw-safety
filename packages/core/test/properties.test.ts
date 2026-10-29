@@ -8,7 +8,10 @@ import {
   ingestOwnerMessage,
   labelContent,
   labelInbound,
+  memoryLabelsIn,
+  memoryLines,
   normalizeEmail,
+  recordMemoryWrite,
   SessionState,
   type ToolCall,
 } from "../src/index.js";
@@ -148,6 +151,66 @@ describe("attestation invariants (plan §5.6)", () => {
         labelContent(c, `see ${u}`, s, env);
         expect(classifyEgressUrl(u, s, env).cls).toBe("constructed");
       }),
+    );
+  });
+});
+
+const SEV = { allow: 0, ask: 1, block: 2 } as const;
+const trigger = fc.constantFrom("owner" as const, "non_owner" as const, "cron" as const, "unknown" as const);
+
+describe("decision monotonicity (plan §5.8)", () => {
+  it("adding untrusted or private labels never makes a decision less strict", () => {
+    fc.assert(
+      fc.property(fc.array(event, { maxLength: 6 }), toolCall, trigger, (events, c, trig) => {
+        const env = testEnv();
+        const s = session(trig);
+        events.forEach((e, i) => apply(s, e, env, i));
+        const tainted = SessionState.fromJSON(s.toJSON());
+        tainted.addUntrusted({ kind: "web", id: "evil.example", at: 1 });
+        const priv = SessionState.fromJSON(tainted.toJSON());
+        priv.addPrivate("secret");
+        const [a, b, d] = [s, tainted, priv].map((x) => SEV[decide(c, x, env).verdict]);
+        expect(b).toBeGreaterThanOrEqual(a!);
+        expect(d).toBeGreaterThanOrEqual(b!);
+      }),
+      { numRuns: 400 },
+    );
+  });
+});
+
+describe("memory entry index (plan §5.11)", () => {
+  // The unindexed reference: every entry checked against every line.
+  function reference(content: string, env: ReturnType<typeof testEnv>): string[] {
+    const views = [content, content.replace(/\\n/g, "\n").replace(/\\"/g, '"').replace(/\\\\/g, "\\")];
+    views.push(views[1]!.replace(/"/g, "\n"));
+    const hits = new Set<string>();
+    for (const v of views)
+      for (const line of memoryLines(v)) {
+        const part = line.replace(/^(?:…|\.{3})\s*/, "").replace(/\s*(?:…|\.{3})$/, "");
+        for (const e of env.store.memoryEntries())
+          if (e.text === line || (part.length >= 20 && e.text.includes(part)) || (e.text.length >= 20 && line.includes(e.text))) hits.add(e.hash);
+      }
+    return [...hits].sort();
+  }
+  const sentence = fc.array(fc.stringMatching(/^[a-z]{2,9}$/), { minLength: 1, maxLength: 9 }).map((w) => w.join(" "));
+
+  it("finds the same entries as checking every entry", () => {
+    fc.assert(
+      fc.property(fc.array(sentence, { minLength: 1, maxLength: 12 }), fc.array(fc.tuple(fc.nat(11), fc.nat(40), fc.nat(40), fc.constantFrom("plain", "snippet", "prefixed", "json")), { maxLength: 8 }), (lines, picks) => {
+        const env = testEnv();
+        const s = session();
+        s.addUntrusted({ kind: "web", id: "x", at: 1 });
+        recordMemoryWrite(`${env.home}/work/MEMORY.md`, [lines.join("\n")], s.labels(), "s", env, 1);
+        const content = picks
+          .map(([i, a, b, how]) => {
+            const t = lines[i % lines.length]!;
+            const cut = t.slice(Math.min(a, b) % (t.length + 1), Math.max(a, b) % (t.length + 1) || t.length);
+            return how === "plain" ? t : how === "snippet" ? `…${cut}…` : how === "prefixed" ? `MEMORY.md:3: ${t}` : JSON.stringify({ snippet: cut });
+          })
+          .join("\n");
+        expect(memoryLabelsIn(content, env).map((e) => e.hash).sort()).toEqual(reference(content, env));
+      }),
+      { numRuns: 300 },
     );
   });
 });
