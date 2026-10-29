@@ -63,7 +63,7 @@ export class KeyedGuardStore implements GuardStore {
   /** The last write or load error, for /guard status. */
   lastError: string | null = null;
   /** What the startup load found, per namespace (audited by the Guard). */
-  loaded = { artifacts: 0, sessions: 0, meta: false, errors: [] as string[] };
+  loaded = { artifacts: 0, sessions: 0, meta: false, errors: [] as string[], probe: {} as Record<string, Record<string, number | string>> };
 
   constructor(open: OpenKeyedStore, legacyFile?: string) {
     this.artStore = open<ArtifactRecord>({ namespace: "pg-artifacts", retention: "retained" });
@@ -74,17 +74,30 @@ export class KeyedGuardStore implements GuardStore {
     });
   }
 
-  /** Every row of a namespace: paged key ranges when the store has them, else entries(). */
-  private async readAll<T>(store: HostKeyedStore<T>): Promise<[string, T][]> {
-    if (!store.entriesInKeyRange) return pairs(await store.entries());
+  /**
+   * Every row of a namespace. entries() first; if it fails or returns nothing, paged key ranges over
+   * `range` (artifact keys are hex hashes, so "0".."g"). guard-persist-2 showed a retained namespace
+   * returning no rows for an open-ended ("" to U+10FFFF) range. Counts per method go to `probe`.
+   */
+  private async readAll<T>(store: HostKeyedStore<T>, probe: Record<string, number | string>, range: [string, string] = ["0", "g"]): Promise<[string, T][]> {
+    let rows: [string, T][] = [];
+    try {
+      rows = pairs(await store.entries());
+      probe.entries = rows.length;
+    } catch (err) {
+      probe.entries = `error: ${String(err).slice(0, 120)}`;
+    }
+    if (rows.length > 0 || !store.entriesInKeyRange) return rows;
     const out: [string, T][] = [];
-    let start = "";
+    let start = range[0];
     for (;;) {
-      const page = pairs(await store.entriesInKeyRange({ keyStartInclusive: start, keyEndExclusive: "\u{10FFFF}", limit: 1000, order: "asc" }));
+      const page = pairs(await store.entriesInKeyRange({ keyStartInclusive: start, keyEndExclusive: range[1], limit: 1000, order: "asc" }));
       out.push(...page);
-      if (page.length < 1000) return out;
+      if (page.length < 1000) break;
       start = `${page[page.length - 1]![0]}\u0000`;
     }
+    probe.range = out.length;
+    return out;
   }
 
   private async load(legacyFile?: string): Promise<void> {
@@ -99,8 +112,8 @@ export class KeyedGuardStore implements GuardStore {
       }
     };
     const [arts, sessions, meta] = await Promise.all([
-      guarded("pg-artifacts", () => this.readAll(this.artStore)),
-      guarded("pg-sessions", () => this.readAll(this.sessionStore)),
+      guarded("pg-artifacts", () => this.readAll(this.artStore, (this.loaded.probe.artifacts = {}))),
+      guarded("pg-sessions", () => this.readAll(this.sessionStore, (this.loaded.probe.sessions = {}), ["", "\u{10FFFF}"])),
       guarded("pg-meta", () => this.metaStore.lookup("meta")),
     ]);
     for (const [, a] of arts ?? []) if (!this.arts.has(a.path)) this.arts.set(a.path, a);
