@@ -992,6 +992,8 @@ Evidence: `phase0/source-notes-v2.md` (static, file:line), `phase0/contract-resu
     - a sender's first native `/approve` fails closed, and any session change revokes pending approvals;
     - WhatsApp's live path resolves approval reactions before the echo filter;
     - the config file identity can't be captured when its inode is ≥ 2^63 (GPFS-style scratch), so the Gateway refuses to start at random.
+    - qa-channel streams reply previews before `reply_payload_sending` runs, so a sanitized final can follow an unsanitized preview (benchmark a12);
+    - docs: a cron job with `sessionTarget: "current"` copies the creating chat's recent conversation into each run's prompt (benchmark a17).
 
 ---
 
