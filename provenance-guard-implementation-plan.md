@@ -962,14 +962,14 @@ Evidence: `phase0/source-notes-v2.md` (static, file:line), `phase0/contract-resu
 1. ~~`tool_result_persist` ordering~~ (answered above).
 2. ~~Channel turns: owner flag~~ (answered on qa-channel, above). Still open: the same check on a real channel.
 3. Self-chat echo on **WhatsApp**: does an `/approve <id>` or a `/guard` command sent through the `message` tool resolve anything, and does the live-path reaction hole reproduce (the Guard already blocks the agent's approval reactions)? qa-channel can't show this. Do Telegram, Slack, and Discord native approvals bind the resolver to their approver lists? Needs real accounts. (go/no-go)
-4. ~~Codex-native names~~ (answered from source and at runtime, see below). Still open: Codex's hosted `web_search` reaches the model without any OpenClaw hook, so the Guard can't label it (`phase0/codex-results.md`).
+4. ~~Codex-native names~~ (answered from source and at runtime, see below). Codex's hosted `web_search` reaches the model without any OpenClaw hook, so Codex runs start untrusted (item 10).
 5. ~~`message_sending` for plugin-handled sends~~ (answered below).
 6. ~~Lowest-priority params win; another plugin's `requireApproval`~~ (both answered above).
 7. ~~Parameter names~~ (answered by the contract sweep, below).
 8. ~~Host exec ask plus a Guard ask~~ (answered below).
 9. Benchmark cost: run count × tokens per run × price (§9).
-10. Codex hosted `web_search`: treat Codex sessions with it enabled as tainted from the start, or require it off.
-11. Upstream OpenClaw reports, drafted from Phase 0:
+10. ~~Codex hosted `web_search`~~: done. Runs whose model resolves to the Codex runtime are labeled untrusted on `before_model_resolve`/`llm_input`; `codexWebSearch: off` opts out.
+11. Upstream OpenClaw reports: drafted in `phase0/upstream-reports.md`, not yet filed:
     - a sender's first native `/approve` fails closed, and any session change revokes pending approvals;
     - WhatsApp's live path resolves approval reactions before the echo filter;
     - the config file identity can't be captured when its inode is ≥ 2^63 (GPFS-style scratch), so the Gateway refuses to start at random.
