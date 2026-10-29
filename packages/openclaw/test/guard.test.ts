@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, utimesSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -314,6 +314,19 @@ describe("entry-level memory labels (§5.11)", () => {
     h.tool("exec", { command: `echo "- ${INJECTED}" >> ${mem}` });
     writeFileSync(mem, `- ${INJECTED}\n`);
     expect(h.guard.session("agent:main:next").tainted).toBe(true);
+  });
+
+  it("bench l01: a finished tainted exec doesn't taint later owner edits to MEMORY.md", () => {
+    const h = harness();
+    const mem = path.join(h.workspace, "MEMORY.md");
+    h.tool("web_fetch", { url: "https://recipes.example/x" }, {}, "call_f");
+    persist(h, "call_f", "web_fetch", "a page");
+    h.tool("exec", { command: "df -h", workdir: h.workspace }, {}, "call_x");
+    persist(h, "call_x", "exec", "Filesystem Size Used");
+    writeFileSync(mem, "- my own note\n");
+    const later = Date.now() / 1000 + 30; // well after the exec finished
+    utimesSync(mem, later, later);
+    expect(h.guard.session("agent:main:next").tainted).toBe(false);
   });
 
   it("a change the exec parser can't see is still caught at bootstrap through the exec window", () => {

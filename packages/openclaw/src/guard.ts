@@ -225,6 +225,7 @@ export class Guard {
       ],
       isInboundMessage: (id) => this.inboundIds.has(id),
       readText: readSmallText,
+      wallNow: Date.now,
       // Exec windows (§5.4) label files changed under a tainted exec's cwd by modification time.
       mtime: (abs) => {
         try {

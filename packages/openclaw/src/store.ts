@@ -88,6 +88,10 @@ export class FileBackedStore implements GuardStore {
   execWindows(): readonly ExecWindow[] {
     return this.windows;
   }
+  closeExecWindow(callId: string, end: number): void {
+    for (const w of this.windows) if (w.callId === callId && w.end === undefined) w.end = end;
+    this.schedule();
+  }
   getMemoryEntry(hash: string): MemoryEntryRecord | undefined {
     return this.entries.get(hash);
   }

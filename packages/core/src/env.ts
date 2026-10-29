@@ -11,6 +11,8 @@ import { PathMatcher } from "./util.js";
 export interface GuardEnv {
   preset: Preset;
   now: () => number;
+  /** Wall-clock time, for comparing with file modification times (exec windows). */
+  wallNow: () => number;
   home: string;
   cwd: string;
   /** Local secret for HMACs (audit log, private tokens). */
@@ -171,6 +173,7 @@ export function createEnv(opts: EnvOptions): GuardEnv {
   return {
     preset: opts.preset ?? BALANCED,
     now: opts.now ?? Date.now,
+    wallNow: opts.wallNow ?? opts.now ?? Date.now,
     home,
     cwd: opts.cwd ?? home,
     hmacKey: opts.hmacKey,

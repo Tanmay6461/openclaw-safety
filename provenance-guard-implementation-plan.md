@@ -865,7 +865,7 @@ Run at least 2 models (one frontier, one smaller or open-weight), with 3–5 rep
 | `before_tool_call` decision | p95 < 5 ms, p99 < 20 ms, hard deadline 200 ms (§5.12), no model calls |
 | `tool_result_persist` labeling | Synchronous and in memory; linear in result size, scanning at most 1 MB per result; store writes deferred to the background |
 | Measured (2026-10-29, `bench/perf/guard-perf.mjs`) | 5,000 file labels, 500 exec windows, 3,000 labeled memory lines, a session with 900 attestations and 10,000 seen URLs: `before_tool_call` p95 0.34 ms, p99 0.42 ms. `tool_result_persist` takes 0.5 ms for a 10 KB result, 3.4 ms for 100 KB, and 36 ms for 1 MB. Memory matching goes through rare-word and anchor indexes; the unindexed version took 4 s at 1 MB |
-| Exec-window lookup on read | One `stat` plus a lookup over the session's exec windows |
+| Exec-window lookup on read | One `stat` plus a lookup over the exec windows. A window covers only the exec's own run: it closes when the result comes back, and background or unfinished execs cap at 30 min. Benchmark l01 showed an unbounded window tainting every later session |
 | Store size | < 50 MB typical |
 | Audit retention | 90 days by default (configurable) |
 | Extractor | Opt-in; one small-model call per use |

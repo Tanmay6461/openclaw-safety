@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  EXEC_WINDOW_OPEN_MS,
   applyUpfrontLabels,
   decide,
   ingestOwnerMessage,
@@ -81,6 +82,43 @@ describe("up-front labels (before_tool_call)", () => {
     const fresh2 = session("owner", "s3");
     applyUpfrontLabels(call("read", { path: "old.txt" }), fresh2, env);
     expect(fresh2.tainted).toBe(false);
+  });
+
+  it("exec windows cover only the exec's own run (closed when its result comes back)", () => {
+    const mtimes = new Map<string, number>();
+    const env = testEnv({ mtime: (p) => mtimes.get(p) });
+    const s = session();
+    taint(s);
+    const c = call("exec", { command: "python3 build.py", workdir: "~/work" });
+    applyUpfrontLabels(c, s, env);
+    mtimes.set("/home/u/work/during.txt", env.now() + 5);
+    env.advance(60_000);
+    labelContent(c, "built", s, env); // result back: the window closes
+    mtimes.set("/home/u/work/after.txt", env.now() + 10_000);
+    const read = (p: string, key: string) => {
+      const fresh = session("owner", key);
+      applyUpfrontLabels(call("read", { path: p }), fresh, env);
+      return fresh.tainted;
+    };
+    expect(read("during.txt", "r1")).toBe(true);
+    expect(read("after.txt", "r2")).toBe(false);
+  });
+
+  it("a background exec's window stays open until the cap", () => {
+    const mtimes = new Map<string, number>();
+    const env = testEnv({ mtime: (p) => mtimes.get(p) });
+    const s = session();
+    taint(s);
+    const c = call("exec", { command: "python3 serve.py", workdir: "~/work", background: true });
+    applyUpfrontLabels(c, s, env);
+    labelContent(c, "started", s, env);
+    mtimes.set("/home/u/work/late.txt", env.now() + 20 * 60_000);
+    mtimes.set("/home/u/work/much-later.txt", env.now() + EXEC_WINDOW_OPEN_MS + 60_000);
+    const a = session("owner", "r3");
+    applyUpfrontLabels(call("read", { path: "late.txt" }), a, env);
+    const b = session("owner", "r4");
+    applyUpfrontLabels(call("read", { path: "much-later.txt" }), b, env);
+    expect([a.tainted, b.tainted]).toEqual([true, false]);
   });
 
   it("a clean write replaces a file's labels; an edit merges them", () => {

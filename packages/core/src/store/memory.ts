@@ -12,12 +12,18 @@ export interface ArtifactRecord {
   stale?: boolean;
 }
 
-/** An exec in a tainted session: files under `cwd` modified after `start` inherit `labels` (§5.4). */
+/**
+ * An exec in a tainted session: files under `cwd` modified while it ran inherit `labels` (§5.4).
+ * Times are wall clock, like file mtimes. `end` is set when the exec's result comes back; a window
+ * that never closes (background commands, lost results) counts as open for EXEC_WINDOW_OPEN_MS.
+ */
 export interface ExecWindow {
   sessionKey: string;
   cwd: string;
   start: number;
   labels: Labels;
+  callId?: string;
+  end?: number;
 }
 
 /** A memory line added by a labeled session (§5.11, entry-level labels). Clean lines aren't stored. */
@@ -40,6 +46,8 @@ export interface ProvenanceStore {
   artifacts(): Iterable<ArtifactRecord>;
   addExecWindow(w: ExecWindow): void;
   execWindows(): readonly ExecWindow[];
+  /** Ends the window an exec call opened. */
+  closeExecWindow(callId: string, end: number): void;
   getMemoryEntry(hash: string): MemoryEntryRecord | undefined;
   putMemoryEntry(rec: MemoryEntryRecord): void;
   memoryEntries(): Iterable<MemoryEntryRecord>;
@@ -68,6 +76,10 @@ export class MemoryStore implements ProvenanceStore {
 
   execWindows(): readonly ExecWindow[] {
     return this.windows;
+  }
+
+  closeExecWindow(callId: string, end: number): void {
+    for (const w of this.windows) if (w.callId === callId && w.end === undefined) w.end = end;
   }
 
   getMemoryEntry(hash: string): MemoryEntryRecord | undefined {

@@ -21,12 +21,22 @@ function isUnder(abs: string, dir: string): boolean {
   return abs === dir || abs.startsWith(dir.endsWith("/") ? dir : `${dir}/`);
 }
 
-/** Labels of the tainted exec windows that cover `abs` and opened before its last change (§5.4). */
+/** How long a window that never got its result (background commands) counts as open. */
+export const EXEC_WINDOW_OPEN_MS = 30 * 60 * 1000;
+/** Filesystem timestamps can trail the result by a little. */
+const EXEC_WINDOW_SLACK_MS = 2000;
+
+/**
+ * Labels of the tainted exec windows that cover `abs` and were open when it last changed (§5.4).
+ * Only changes made while the exec ran count: a window left open would label every later edit
+ * under its directory, the owner's own included (benchmark l01: every session started tainted).
+ */
 export function execWindowLabels(abs: string, env: GuardEnv): Labels[] {
   const windows = env.store.execWindows().filter((w) => isUnder(abs, w.cwd));
   if (windows.length === 0) return [];
   const mtime = env.mtime?.(abs);
-  return mtime === undefined ? [] : windows.filter((w) => mtime >= w.start).map((w) => w.labels);
+  if (mtime === undefined) return [];
+  return windows.filter((w) => mtime >= w.start && mtime <= (w.end ?? w.start + EXEC_WINDOW_OPEN_MS) + EXEC_WINDOW_SLACK_MS).map((w) => w.labels);
 }
 
 const contentHash = (text: string) => createHash("sha256").update(text).digest("hex");
@@ -121,7 +131,7 @@ export function applyUpfrontLabels(call: ToolCall, session: SessionState, env: G
           env.store.putArtifact({ path: abs, labels: prev ? mergeLabels(prev.labels, session.labels()) : session.labels(), sessionKey: session.sessionKey, updatedAt: at });
         }
       }
-      if (session.tainted) env.store.addExecWindow({ sessionKey: session.sessionKey, cwd, start: at, labels: session.labels() });
+      if (session.tainted) env.store.addExecWindow({ sessionKey: session.sessionKey, cwd, start: env.wallNow(), labels: session.labels(), callId: call.id });
     }
   }
 
@@ -163,6 +173,9 @@ export function applyUpfrontLabels(call: ToolCall, session: SessionState, env: G
 export function labelContent(call: ToolCall, content: string, session: SessionState, env: GuardEnv): void {
   const spec = specFor(call, env);
   const pending = session.takePending(call.id);
+  // The exec has finished: close its window, unless it keeps running in the background.
+  if (spec.category === "privileged_execution" && call.params.background !== true) env.store.closeExecWindow(call.id, env.wallNow());
+
   // The write has landed: record what the labeled file holds now, to notice later outside edits.
   if (spec.category === "persistence_write") {
     for (const p of valuesFor(call, spec, "path")) {

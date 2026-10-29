@@ -191,6 +191,16 @@ export class KeyedGuardStore implements GuardStore {
   execWindows(): readonly ExecWindow[] {
     return this.meta.execWindows;
   }
+  closeExecWindow(callId: string, end: number): void {
+    let changed = false;
+    for (const w of this.meta.execWindows) {
+      if (w.callId === callId && w.end === undefined) {
+        w.end = end;
+        changed = true;
+      }
+    }
+    if (changed) this.touchMeta();
+  }
   getMemoryEntry(hash: string): MemoryEntryRecord | undefined {
     return this.entries.get(hash);
   }
