@@ -1,0 +1,5 @@
+{"ts": 1793237156590, "seq": 1, "scenario": "default", "toolsOffered": ["apply_patch", "edit", "exec", "ls", "openclaw", "process", "read", "sessions_yield", "tool_call", "tool_describe", "tool_search", "write"]}
+{"ts": 1793237205257, "seq": 2, "scenario": "default", "toolsOffered": ["apply_patch", "edit", "exec", "ls", "process", "read", "sessions_yield", "tool_call", "tool_describe", "tool_search", "write"]}
+{"ts": 1793237208396, "seq": 3, "scenario": "default", "toolsOffered": ["apply_patch", "edit", "exec", "ls", "process", "read", "sessions_yield", "tool_call", "tool_describe", "tool_search", "write"]}
+{"ts": 1793237264105, "seq": 4, "scenario": "approve-low", "toolsOffered": ["apply_patch", "edit", "exec", "ls", "openclaw", "process", "read", "sessions_yield", "tool_call", "tool_describe", "tool_search", "write"]}
+{"ts": 1793238748419, "seq": 5, "scenario": "default", "toolsOffered": ["apply_patch", "edit", "exec", "ls", "openclaw", "process", "read", "sessions_yield", "tool_call", "tool_describe", "tool_search", "write"]}

@@ -152,4 +152,20 @@ describe("host keyed store: retained-store reads", () => {
     expect(s.loaded.probe.artifacts).toMatchObject({ range: 2500 });
     expect(String(s.loaded.probe.sessions?.entries)).toMatch(/not supported/);
   });
+
+  it("clears a failed attempt's error once a retry loads cleanly", async () => {
+    let calls = 0;
+    const open: OpenKeyedStore = <T>() => ({
+      register: async () => undefined,
+      lookup: async () => {
+        if (calls++ === 0) throw new Error("Failed to open the plugin state database");
+        return undefined;
+      },
+      entries: async () => [] as { key: string; value: T }[],
+    });
+    const s = new KeyedGuardStore(open);
+    await s.ready;
+    expect((s.loaded as { attempts?: number }).attempts).toBe(2);
+    expect(s.lastError).toBeNull();
+  });
 });

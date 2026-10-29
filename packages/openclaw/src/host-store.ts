@@ -109,6 +109,8 @@ export class KeyedGuardStore implements GuardStore {
       this.loaded.errors = [];
       await this.loadOnce(legacyFile);
       (this.loaded as { attempts?: number }).attempts = attempt;
+      // A clean retry clears an earlier attempt's error, so /guard status doesn't report it (tg-2).
+      if (this.loaded.errors.length === 0 && this.lastError?.startsWith("load")) this.lastError = null;
       const retryable = this.loaded.errors.some((e) => /Failed to open the plugin state database/.test(e));
       if (!retryable || attempt >= 8) return;
       await new Promise((r) => setTimeout(r, 250));
