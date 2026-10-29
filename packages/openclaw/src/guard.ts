@@ -50,6 +50,7 @@ import type {
 } from "./host.js";
 import { loadRegistry, type OpenClawRegistry } from "./registry/index.js";
 import { innerCallIdsFor, prepareCall, unwrapMetaCall, type CallContext, type PreparedCall } from "./registry/prepare.js";
+import { KeyedGuardStore } from "./host-store.js";
 import { FileBackedStore, type GuardRule, type GuardStore } from "./store.js";
 
 /** Auto-loaded workspace files (plan §5.11); a labeled one taints every session that loads it. */
@@ -142,6 +143,10 @@ export class Guard {
   private readonly inboundIds = new Map<string, true>();
   /** Resolved `confirm` setting: how the owner confirms asks. */
   readonly confirmVia: "approval" | "command";
+  /** Settles once persisted state is loaded; before_tool_call waits for it (host keyed store). */
+  readonly ready: Promise<void>;
+  isReady = true;
+  readonly storageBackend: "host" | "file" | "injected";
   readonly counts = { allow: 0, ask: 0, block: 0, shadowed: 0, errors: 0, mismatches: 0 };
   mode: GuardMode;
   preset: "balanced" | "strict";
@@ -155,7 +160,22 @@ export class Guard {
     this.now = deps.now ?? Date.now;
     this.registry = deps.registry ?? loadRegistry();
     const stateDir = config.stateDir ?? path.join(this.hostStateDir(), "provenance-guard");
-    this.store = deps.store ?? new FileBackedStore(path.join(stateDir, "store.json"));
+    const open = this.api.runtime?.state?.openKeyedStore;
+    const useHost = !deps.store && config.storage !== "file" && typeof open === "function";
+    if (!deps.store && config.storage === "host" && !useHost) this.api.logger?.warn?.("[provenance-guard] storage: host keyed store unavailable; using store.json");
+    if (useHost) {
+      const keyed = new KeyedGuardStore(open.bind(this.api.runtime!.state), path.join(stateDir, "store.json"));
+      this.store = keyed;
+      this.isReady = false;
+      this.ready = keyed.ready.then(() => {
+        this.isReady = true;
+        this.applyRuntimeState();
+      });
+    } else {
+      this.store = deps.store ?? new FileBackedStore(path.join(stateDir, "store.json"));
+      this.ready = Promise.resolve();
+    }
+    this.storageBackend = deps.store ? "injected" : useHost ? "host" : "file";
     this.audit = deps.audit ?? new JsonlAuditLog(config.auditPath ?? path.join(stateDir, "audit.jsonl"));
     const saved = this.store.runtimeState();
     this.mode = saved.mode ?? config.mode;
@@ -210,6 +230,20 @@ export class Guard {
     const exec = get(this.api.config, "tools", "exec");
     if (get(exec, "mode") !== undefined) return false;
     return get(exec, "ask") === "always" && get(exec, "security") !== "deny";
+  }
+
+  /** Mode, preset and pause loaded from the store after construction (host keyed store). */
+  private applyRuntimeState(): void {
+    const saved = this.store.runtimeState();
+    if (saved.mode) this.mode = saved.mode;
+    if (saved.preset) this.setPresetQuiet(saved.preset);
+    if (saved.pausedUntil !== undefined) this.pausedUntil = saved.pausedUntil;
+    this.rebuildRules();
+  }
+
+  private setPresetQuiet(preset: "balanced" | "strict"): void {
+    this.preset = preset;
+    this.env.preset = PRESETS[preset];
   }
 
   doctor(): DoctorCheck[] {

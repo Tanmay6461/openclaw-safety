@@ -29,6 +29,8 @@ export interface GuardConfig {
    * having read untrusted web content; "off" is for owners who turned that search off in Codex.
    */
   codexWebSearch: "assume_on" | "off";
+  /** Where labels, rules and state persist: the host's keyed store ("host"), store.json ("file"), or "auto" (host when available). */
+  storage: "auto" | "host" | "file";
   /** Overrides for where the Guard keeps its store, audit log, and HMAC key. */
   stateDir?: string;
   auditPath?: string;
@@ -46,11 +48,12 @@ export const DEFAULT_CONFIG: GuardConfig = {
   failMode: { other: "ask" },
   confirm: "auto",
   codexWebSearch: "assume_on",
+  storage: "auto",
 };
 
 const KNOWN = new Set([
   "mode", "preset", "deadlineMs", "approvalTimeoutSec", "trusted", "untrustedPaths", "privateSources",
-  "protectedPaths", "failMode", "confirm", "codexWebSearch", "stateDir", "auditPath", "secretScan", "extractor",
+  "protectedPaths", "failMode", "confirm", "codexWebSearch", "storage", "stateDir", "auditPath", "secretScan", "extractor",
 ]);
 
 function strings(v: unknown, where: string, errors: string[]): string[] {
@@ -98,6 +101,7 @@ export function parseConfig(raw: unknown): { config: GuardConfig; errors: string
     failMode: { other: oneOf(failMode.other, ["ask", "allow", "block"] as const, DEFAULT_CONFIG.failMode.other, "failMode.other", errors) },
     confirm: oneOf(r.confirm, ["auto", "approval", "command"] as const, DEFAULT_CONFIG.confirm, "confirm", errors),
     codexWebSearch: oneOf(r.codexWebSearch, ["assume_on", "off"] as const, DEFAULT_CONFIG.codexWebSearch, "codexWebSearch", errors),
+    storage: oneOf(r.storage, ["auto", "host", "file"] as const, DEFAULT_CONFIG.storage, "storage", errors),
   };
   if (typeof r.stateDir === "string") config.stateDir = r.stateDir;
   if (typeof r.auditPath === "string") config.auditPath = r.auditPath;

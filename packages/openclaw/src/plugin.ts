@@ -16,7 +16,9 @@ export function registerGuard(api: PluginApi, deps: Partial<Omit<GuardDeps, "api
   const on = <E, C>(hook: string, fn: (event: E, ctx: C) => unknown, opts?: { priority?: number; timeoutMs?: number }) =>
     api.on(hook, fn as unknown as HookHandler, opts);
 
-  on("before_tool_call", (e: Parameters<Guard["beforeToolCall"]>[0], c: Parameters<Guard["beforeToolCall"]>[1]) => guard.beforeToolCall(e, c), {
+  // before_tool_call is awaited: wait for persisted labels and rules before the first decision.
+  on("before_tool_call", (e: Parameters<Guard["beforeToolCall"]>[0], c: Parameters<Guard["beforeToolCall"]>[1]) =>
+    guard.isReady ? guard.beforeToolCall(e, c) : guard.ready.then(() => guard.beforeToolCall(e, c)), {
     priority: LOWEST_PRIORITY,
     timeoutMs: 5000,
   });

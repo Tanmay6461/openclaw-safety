@@ -103,6 +103,13 @@
           "assume_on",
           "off"
         ]
+      },
+      "storage": {
+        "enum": [
+          "auto",
+          "host",
+          "file"
+        ]
       }
     }
   }

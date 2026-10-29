@@ -3,6 +3,8 @@
 // adapter never imports OpenClaw, so these are deliberately loose: every field is optional unless
 // the runtime always sent it.
 
+import type { OpenKeyedStore } from "./host-store.js";
+
 export interface HostRequester {
   channel?: string;
   accountId?: string;
@@ -176,6 +178,7 @@ export interface PluginApi {
   runtime?: {
     state?: {
       resolveStateDir?: (env?: NodeJS.ProcessEnv) => string;
+      openKeyedStore?: OpenKeyedStore;
     };
   };
   logger?: { info?: (msg: string) => void; warn?: (msg: string) => void; error?: (msg: string) => void };

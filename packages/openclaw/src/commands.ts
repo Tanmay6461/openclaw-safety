@@ -1,5 +1,6 @@
 import { normalizePath } from "@provenance-guard/core";
 import type { Guard } from "./guard.js";
+import { KeyedGuardStore } from "./host-store.js";
 import type { CommandContext, CommandDefinition, PluginApi } from "./host.js";
 
 /**
@@ -84,6 +85,7 @@ export function runGuardCommand(guard: Guard, args: string, surface: CommandSurf
         `Mode: ${guard.mode}${guard.pausedUntil > now ? ` (paused until ${new Date(guard.pausedUntil).toISOString()})` : ""} · preset: ${guard.preset}`,
         `Sessions: ${sessions.length} (${tainted} started tainted or became tainted) · rules: ${guard.store.rules().length}`,
         `Decisions: ${guard.counts.allow} allow, ${guard.counts.ask} ask, ${guard.counts.block} block, ${guard.counts.shadowed} shadowed · errors: ${guard.counts.errors}`,
+        `Storage: ${guard.storageBackend}${guard.isReady ? "" : " (loading)"}${guard.store instanceof KeyedGuardStore && guard.store.lastError ? ` · last error: ${guard.store.lastError}` : ""}`,
         `Confirmations: ${guard.confirmVia === "command" ? `/guard allow <code> (${guard.pendingConfirmations().length} pending)` : "OpenClaw approval prompts"}`,
       ];
       const failing = guard.doctor().filter((c) => !c.ok).length;
