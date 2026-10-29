@@ -409,6 +409,11 @@ The registry is data, not code, so it can be updated without a release when Open
 
 Some exec commands are reclassified by their parsed command line: `openclaw` CLI config, plugins, and skills subcommands count as `config` or `install`, and `crontab`, `at`, `systemd-run`, and `launchctl load`/`bootstrap` count as `autonomous_scheduling` (§5.12).
 
+**OpenClaw Code Mode (benchmark ds-v1, 2026-10-29).** With Code Mode on, a model runs every step as a script: `exec {title, code}` (`command` is an alias of `code`), which calls tools from JavaScript. DeepSeek V4.1 Flash works this way, and each tool call inside a script reaches `before_tool_call` on its own.
+- **QuickJS executor** (`tools.codeMode.executor: "quickjs"`, or per agent under `agents.entries.<id>`): a script has no ambient host access and can act only through the tool bridge, so the script itself passes, and every tool call inside it is judged as usual.
+- **Node executor (the default):** OpenClaw says it isn't a security boundary, so a script could act without any tool call. The script is judged as code: it's unattested, so it asks after untrusted content. `/guard doctor` recommends QuickJS whenever Code Mode is on, or once Node scripts have been seen.
+- **Why it matters:** on Node, DeepSeek's benign completion fell from 9/10 to 5/10. There were about 3 prompts per task, and the prompt cap then blocked the rest.
+
 ### 5.6 Attestation and URL rules
 
 **Where attested values come from**

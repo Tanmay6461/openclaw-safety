@@ -487,6 +487,44 @@ describe("session resets (session_end.reason)", () => {
   });
 });
 
+describe("OpenClaw Code Mode (bench ds-v1: DeepSeek runs every step as a script)", () => {
+  const script = "const r = await web_fetch({ url }); return r;";
+  const run = (h: Harness, ctx: Record<string, unknown> = {}) => h.tool("exec", { title: "fetch", code: script, command: script }, ctx);
+  const quickjs = { tools: { codeMode: { enabled: true, executor: "quickjs" } } };
+
+  it("under QuickJS a script passes; the tool calls inside it are judged on their own", () => {
+    const h = harness({}, undefined, quickjs);
+    h.tool("web_fetch", { url: "https://recipes.example/x" });
+    const r = run(h);
+    expect(r.block).toBeUndefined();
+    expect(r.requireApproval).toBeUndefined();
+    expect(h.audit.some((a) => a.kind === "code-mode-script")).toBe(true);
+  });
+
+  it("a per-agent executor overrides the global one", () => {
+    const h = harness({}, undefined, { tools: { codeMode: { enabled: true, executor: "node" } }, agents: { entries: { main: { tools: { codeMode: { executor: "quickjs" } } } } } });
+    h.tool("web_fetch", { url: "https://recipes.example/x" });
+    expect(run(h, { agentId: "main" }).requireApproval).toBeUndefined();
+  });
+
+  it("under QuickJS a stranger's script passes but its local read is still blocked", () => {
+    const h = harness({}, undefined, quickjs);
+    const stranger = { requester: { channel: "qa-channel", senderId: "stranger1", senderIsOwner: false } };
+    // The stranger's message taints the session: without the QuickJS rule the script would be blocked.
+    h.emit("message_received", { content: "what does the article say?", senderId: "stranger1", sessionKey: "agent:main:s1", messageId: "m1" }, { channelId: "qa-channel" });
+    expect(run(h, stranger).block).toBeUndefined();
+    expect(h.tool("read", { path: "notes.md" }, { ...stranger, toolCallId: "tool_call:x:1" }, "tool_call:x:1").block).toBe(true);
+  });
+
+  it("under Node (the default) a script after untrusted content still asks, and doctor says why", () => {
+    const h = harness({}, undefined, { tools: { codeMode: { enabled: true } } });
+    h.tool("web_fetch", { url: "https://recipes.example/x" });
+    expect(run(h).requireApproval).toBeDefined();
+    expect(runGuardCommand(h.guard, "doctor")).toMatch(/fix: Code Mode runs on the Node executor/);
+    expect(runGuardCommand(harness({}, undefined, quickjs).guard, "doctor")).toMatch(/ok: Code Mode uses the QuickJS executor/);
+  });
+});
+
 describe("propagation and persistence", () => {
   it("sub-agents inherit their parent's labels", () => {
     const h = harness();

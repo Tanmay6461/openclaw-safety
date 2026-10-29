@@ -267,7 +267,17 @@ export class Guard {
   }
 
   doctor(): DoctorCheck[] {
-    return doctorChecks(this.api.config, this.api.id, this.config.codexWebSearch, this.config.approvalTimeoutSec);
+    return doctorChecks(this.api.config, this.api.id, this.config.codexWebSearch, this.config.approvalTimeoutSec, this.codeModeNodeSeen);
+  }
+
+  /** Set once a Code Mode script is judged on the Node executor (a model can turn Code Mode on). */
+  private codeModeNodeSeen = false;
+
+  /** The Code Mode executor for an agent: its own setting, then the global one; Node by default. */
+  private codeModeExecutor(agentId: string | undefined): string {
+    const cfg = this.api.config;
+    const own = agentId ? get(cfg, "agents", "entries", agentId, "tools", "codeMode", "executor") : undefined;
+    return String(own ?? get(cfg, "tools", "codeMode", "executor") ?? "node");
   }
 
   private hostStateDir(): string {
@@ -410,6 +420,17 @@ export class Guard {
     }
     const canAsk = s.trigger === "owner";
     const cctx = this.callContext(ctx);
+    // OpenClaw Code Mode runs a script ({title, code}) that calls tools; each of those calls reaches
+    // before_tool_call on its own and is judged there. Under the QuickJS executor the script can act
+    // only through those calls, so it passes. The Node executor isn't a security boundary (a script
+    // could act without any tool call), so there it's judged as code below (bench ds-v1).
+    if (this.registry.canonical(event.toolName) === "exec" && typeof event.params?.code === "string") {
+      if (this.codeModeExecutor(ctx.agentId) === "quickjs") {
+        this.log({ ts: this.now(), kind: "code-mode-script", executor: "quickjs", tool: event.toolName, callId: event.toolCallId, sessionKey: s.sessionKey });
+        return { params: event.params };
+      }
+      this.codeModeNodeSeen = true;
+    }
     try {
       // Compact surface: the inner tool gets its own before_tool_call; the wrapper only blocks early.
       const inner = unwrapMetaCall(event, this.registry, cctx);

@@ -3,7 +3,7 @@
 // depends entirely on the host's command settings.
 
 export interface DoctorCheck {
-  id: "owner" | "approvers" | "forwarding" | "conversationAccess" | "selfChat" | "codex" | "runTimeout";
+  id: "owner" | "approvers" | "forwarding" | "conversationAccess" | "selfChat" | "codex" | "runTimeout" | "codeMode";
   ok: boolean;
   text: string;
 }
@@ -26,7 +26,7 @@ function usesCodex(cfg: unknown): boolean {
   return runtime(get(cfg, "agents", "defaults")) || values(get(cfg, "agents", "defaults", "models")).some(runtime) || values(get(cfg, "models", "providers")).some(runtime);
 }
 
-export function doctorChecks(hostConfig: unknown, pluginId: string, codexWebSearch: "assume_on" | "off" = "assume_on", approvalTimeoutSec = 600): DoctorCheck[] {
+export function doctorChecks(hostConfig: unknown, pluginId: string, codexWebSearch: "assume_on" | "off" = "assume_on", approvalTimeoutSec = 600, codeModeNodeSeen = false): DoctorCheck[] {
   const owner = nonEmpty(get(hostConfig, "commands", "ownerAllowFrom"));
   const allowFrom = nonEmpty(get(hostConfig, "commands", "allowFrom"));
   const forwarding = get(hostConfig, "approvals", "plugin", "enabled") === true;
@@ -37,6 +37,9 @@ export function doctorChecks(hostConfig: unknown, pluginId: string, codexWebSear
   // while its run is alive: in tg-2 the owner approved at 119.7 s and the 120 s run timeout killed the run.
   const runTimeout = Number(get(hostConfig, "agents", "defaults", "timeoutSeconds"));
   const shortRun = Number.isFinite(runTimeout) && runTimeout > 0 && runTimeout < approvalTimeoutSec;
+  // Code Mode can also be switched on by a model or agent, which the guard sees as Node-executor scripts.
+  const codeModeOn = get(hostConfig, "tools", "codeMode", "enabled") === true || codeModeNodeSeen;
+  const quickjs = get(hostConfig, "tools", "codeMode", "executor") === "quickjs";
   return [
     {
       id: "owner",
@@ -81,6 +84,15 @@ export function doctorChecks(hostConfig: unknown, pluginId: string, codexWebSear
         : codexWebSearch === "off"
           ? "Codex runtime in use; codexWebSearch is off, so Codex runs aren't labeled up front. Keep Codex's hosted web_search turned off."
           : "Codex runtime in use: its hosted web_search reaches the model without any OpenClaw hook, so every Codex run starts as having read untrusted content. If you turn that search off in Codex, set codexWebSearch: off.",
+    },
+    {
+      id: "codeMode",
+      ok: !codeModeOn || quickjs,
+      text: quickjs
+        ? "Code Mode uses the QuickJS executor: scripts can act only through tools, so the guard checks each tool call inside them and lets the script itself pass."
+        : codeModeOn
+          ? 'Code Mode runs on the Node executor, which isn\'t a security boundary, so the guard treats every script as a command and asks after untrusted content. Set tools.codeMode.executor: "quickjs"; scripts then pass and each tool call inside them is still checked.'
+          : 'Code Mode is off. If you turn it on, choose tools.codeMode.executor: "quickjs".',
     },
     {
       id: "runTimeout",
