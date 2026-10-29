@@ -18,7 +18,9 @@ import {
   JsonlAuditLog,
   labelContent,
   labelInbound,
+  labelsEmpty,
   memoryLabelsIn,
+  mergeLabels,
   normalizeUrl,
   parseSimpleCommand,
   PRESETS,
@@ -332,6 +334,9 @@ export class Guard {
     }
     const parent = this.parents.get(k);
     if (parent && parent !== k) s.addLabels(this.session(parent).labels());
+    // Isolated cron runs: agent:<id>:cron:<jobId>:run:<sessionId> (Phase 0 runtime).
+    const job = this.cronJobLabels(/:cron:([^:]+)/.exec(k)?.[1]);
+    if (job) s.addLabels(job);
     this.sessions.set(k, s);
     return s;
   }
@@ -632,8 +637,10 @@ export class Guard {
       const content = textOf(event.message?.content);
       for (const cid of ids) {
         const call = this.calls.get(cid);
-        if (call) labelContent(call, content, s, this.env);
-        else s.takePending(cid);
+        if (call) {
+          labelContent(call, content, s, this.env);
+          this.recordCronJob(call, content, s);
+        } else s.takePending(cid);
       }
       this.persist(s);
     } catch {
@@ -641,6 +648,37 @@ export class Guard {
       this.session(ctx.sessionKey).markDegraded();
     }
     return undefined;
+  }
+
+  /**
+   * Cron labels (§5.11): a job created or changed in a labeled session keeps that session's labels,
+   * stored as the virtual artifact `cron:<jobId>`. Runs of the job inherit them (beforeAgentRun,
+   * and session() for isolated `:cron:<jobId>:` sessions). The id comes from the tool result; the
+   * compact surface nests that result as escaped JSON after its own tool "id", so match a UUID.
+   */
+  private recordCronJob(call: ToolCall, content: string, s: SessionState): void {
+    if (this.registry.canonical(call.tool) !== "automations") return;
+    const action = call.params.action;
+    if (action !== "add" && action !== "update") return;
+    const labels = s.labels();
+    if (labelsEmpty(labels)) return;
+    const ids = new Set<string>();
+    const fromResult = /\\?"id\\?"\s*:\s*\\?"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i.exec(content)?.[1];
+    if (fromResult) ids.add(fromResult);
+    for (const k of ["id", "jobId"]) {
+      const v = call.params[k];
+      if (typeof v === "string" && v !== "") ids.add(v);
+    }
+    for (const id of ids) {
+      const key = `cron:${id}`;
+      const prev = this.store.getArtifact(key);
+      this.store.putArtifact({ path: key, labels: prev ? mergeLabels(prev.labels, labels) : labels, sessionKey: s.sessionKey, updatedAt: this.now() });
+    }
+  }
+
+  /** Labels a cron job carries, if it was created or changed in a labeled session. */
+  private cronJobLabels(jobId: string | undefined) {
+    return jobId ? this.store.getArtifact(`cron:${jobId}`)?.labels : undefined;
   }
 
   // ---- after_tool_call (audit only) ---------------------------------------------------------
@@ -735,6 +773,13 @@ export class Guard {
     if (ctx.sessionKey !== undefined) info.sessionKey = ctx.sessionKey;
     this.runs.set(ctx.runId, info);
     bounded(this.runs, MAX_TRACKED_RUNS);
+    // A job can also fire into an existing session (sessionTarget "main"): label that session too.
+    const job = ctx.trigger === "cron" ? this.cronJobLabels(ctx.jobId) : undefined;
+    if (job && ctx.sessionKey) {
+      const s = this.session(ctx.sessionKey);
+      s.addLabels(job);
+      this.persist(s);
+    }
   }
 
   /**
