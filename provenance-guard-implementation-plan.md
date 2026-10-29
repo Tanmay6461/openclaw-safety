@@ -838,6 +838,15 @@ Every configuration × model × repeat × simulated user is a separate run, beca
 - **v0.1:** about 40 scenarios × 2 models × 3 repeats, across 2 stock configurations plus 3 asking configurations × 3 user types: roughly 2,600 runs.
 - **v0.2:** 100+ scenarios × 2 models × 3–5 repeats, across 2 stock configurations plus 5 asking configurations × 3 user types: roughly 10,000–17,000 runs.
 
+**First results (2026-10-29, `bench/reports/v1-report.md`; 33 scenarios: 20 attacks, 13 benign):**
+- **Mock model** (it always follows the injection, so this is the worst case):
+  - stock OpenClaw: 100% attack success;
+  - every exec asking (hardening): 70% with a careful user;
+  - **Guard Balanced, careful user: 0%, with 100% benign completion, no false blocks, and 0.08 prompts per benign task** (outside the 20-day taint-creep scenario).
+- **Taint creep:** 13 of 20 sessions start tainted, exactly the sessions that load web-derived memory notes. `/guard trust` clears them.
+- **Real model** (Qwen2.5-7B on a cluster vLLM): stock leaked 1 of 20; the Guard stopped it. A 7B model ignores most injections, so real-model security numbers need a stronger model.
+- The benchmark found 7 bugs (5 in the Guard, 2 in the harness), all fixed. They're listed in the report.
+
 Phase 0 estimate (`phase0/benchmark-cost.md`): v0.1 ≈ $330–$480 at the measured token profile ($650–$1,000 with margin), about 8–11 hours on one 10-CPU node; v0.2 $3,600–$6,200 with margin.
 
 ### Simulated users
