@@ -773,6 +773,14 @@ export class Guard {
     if (ctx.sessionKey !== undefined) info.sessionKey = ctx.sessionKey;
     this.runs.set(ctx.runId, info);
     bounded(this.runs, MAX_TRACKED_RUNS);
+    // sessions_send targets and sub-agent announces (channel results ch-base4, ch-base7): the
+    // receiving session inherits the sending session's labels before its first tool call (§5.11).
+    const source = ctx.inputProvenance?.kind === "inter_session" ? ctx.inputProvenance.sourceSessionKey : undefined;
+    if (source && ctx.sessionKey && source !== ctx.sessionKey) {
+      const s = this.session(ctx.sessionKey);
+      s.addLabels(this.session(source).labels());
+      this.persist(s);
+    }
     // A job can also fire into an existing session (sessionTarget "main"): label that session too.
     const job = ctx.trigger === "cron" ? this.cronJobLabels(ctx.jobId) : undefined;
     if (job && ctx.sessionKey) {

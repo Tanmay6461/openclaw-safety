@@ -358,6 +358,25 @@ describe("cron labels (§5.11)", () => {
   });
 });
 
+describe("inter-session propagation (§5.11)", () => {
+  const arrive = (h: Harness, source: string) =>
+    h.emit("before_agent_run", { senderIsOwner: false }, { runId: `r-${source}`, trigger: "user", sessionKey: "agent:main:qa-channel:direct:dm:bob", inputProvenance: { kind: "inter_session", sourceSessionKey: source, sourceTool: "sessions_send" } });
+
+  it("a sessions_send target inherits the sender's labels", () => {
+    const h = harness();
+    h.tool("web_fetch", { url: "https://recipes.example/x" }, {}, "call_w");
+    arrive(h, "agent:main:s1");
+    expect(h.guard.session("agent:main:qa-channel:direct:dm:bob").tainted).toBe(true);
+  });
+
+  it("a clean sender leaves the target clean", () => {
+    const h = harness();
+    h.tool("read", { path: "notes.md" });
+    arrive(h, "agent:main:s1");
+    expect(h.guard.session("agent:main:qa-channel:direct:dm:bob").tainted).toBe(false);
+  });
+});
+
 describe("propagation and persistence", () => {
   it("sub-agents inherit their parent's labels", () => {
     const h = harness();
