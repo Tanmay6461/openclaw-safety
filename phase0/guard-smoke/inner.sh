@@ -51,7 +51,34 @@ step plugin-inspect "$OC" plugins inspect provenance-guard --runtime --json
 for sc in smoke-clean smoke-taint-exec smoke-protected smoke-meta-block smoke-neutralize smoke-links; do
   step "$sc" "$OC" agent --agent main --session-key "pg-$sc" --message "Guard smoke. [scenario:$sc]" --json --timeout 180
 done
+# Persistence across a Gateway restart (host keyed store): a tainted session writes pg-persist.md, the
+# Gateway restarts, and a new session that reads the file must still be tainted by its label.
+step persist-write "$OC" agent --agent main --session-key pg-persist-write --message "Guard smoke. [scenario:persist-write]" --json --timeout 180
+sleep 3
+kill "$GW_PID" 2>/dev/null; wait "$GW_PID" 2>/dev/null
+echo "--- gateway restart ---" >> "$RUN/gateway.log"
+"$OC" gateway run --port "$PORT_GW" --bind loopback --auth token --token "$TOKEN" >> "$RUN/gateway.log" 2>&1 &
+GW_PID=$!
+for _ in $(seq 1 180); do
+  [ "$(grep -c "\[gateway\] ready" "$RUN/gateway.log")" -ge 2 ] && break
+  kill -0 "$GW_PID" 2>/dev/null || break
+  sleep 1
+done
+step persist-read "$OC" agent --agent main --session-key pg-persist-read --message "Guard smoke. [scenario:persist-read]" --json --timeout 180
 sleep 3
 kill "$GW_PID" "$MOCK_PID" 2>/dev/null; wait 2>/dev/null; trap - EXIT
+# What the Guard stored in the host keyed store (plugin state SQLite).
+node -e '
+const { DatabaseSync } = require("node:sqlite"); const fs = require("node:fs"); const path = require("node:path");
+const dbs = []; const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else if (/\.sqlite$/.test(e.name)) dbs.push(p); } };
+walk(process.argv[1]);
+for (const f of dbs) { try { const db = new DatabaseSync(f, { readOnly: true });
+  for (const { name } of db.prepare("SELECT name FROM sqlite_master WHERE type=\x27table\x27").all()) {
+    const cols = db.prepare(`PRAGMA table_info(${JSON.stringify(name)})`).all().map((c) => c.name);
+    if (!cols.includes("namespace")) continue;
+    for (const r of db.prepare(`SELECT namespace, count(*) AS n FROM ${JSON.stringify(name)} WHERE namespace LIKE \x27%pg-%\x27 GROUP BY namespace`).all()) console.log(`${path.basename(f)} ${name} ${r.namespace}: ${r.n}`);
+  } } catch (e) { console.log(`${path.basename(f)}: ${e.message}`); } }
+' "$RUN/state" > "$RUN/out/keyed-store.txt" 2>&1
+cat "$RUN/out/keyed-store.txt"
 node /pg/guard-smoke/check.mjs "$RUN" > "$RUN/report.md"
 echo "report: $RUN/report.md"

@@ -129,3 +129,26 @@ describe("host keyed store", () => {
     expect(host.spaces.get("pg-meta")?.get("meta")).toBeDefined();
   });
 });
+
+describe("host keyed store: retained-store reads", () => {
+  it("pages with entriesInKeyRange when entries() isn't usable, and reports per-namespace load errors", async () => {
+    const m = new Map<string, unknown>();
+    for (let i = 0; i < 2500; i++) m.set(`k${String(i).padStart(5, "0")}`, { path: `/w/f${i}.md`, labels: { untrusted: [], privateData: [] }, sessionKey: "s", updatedAt: 1 });
+    const open: OpenKeyedStore = <T>({ namespace }: { namespace: string }) => ({
+      register: async () => undefined,
+      lookup: async () => undefined,
+      entries: async () => {
+        throw new Error(`entries() not supported on ${namespace}`);
+      },
+      ...(namespace === "pg-artifacts" && {
+        entriesInKeyRange: async ({ keyStartInclusive, limit }: { keyStartInclusive: string; limit: number }) =>
+          [...m.entries()].filter(([k]) => k >= keyStartInclusive).sort(([a], [b]) => (a < b ? -1 : 1)).slice(0, limit).map(([key, value]) => ({ key, value: value as T })),
+      }),
+    });
+    const s = new KeyedGuardStore(open);
+    await s.ready;
+    expect(s.loaded.artifacts).toBe(2500);
+    expect(s.getArtifact("/w/f2499.md")).toBeDefined();
+    expect(s.loaded.errors).toEqual(["pg-sessions: Error: entries() not supported on pg-sessions"]);
+  });
+});

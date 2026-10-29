@@ -43,6 +43,13 @@ const checks = [
     () => decisions("smoke-links").some((d) => d.tool === "web_fetch" && (d.findings ?? []).some((f) => f.status === "link_following")),
   ],
   ["smoke-links", "constructed URL with an encoded query does NOT run", () => webHits("/web/collect") === 0],
+  ["persist-write", "the tainted session's write runs (the file inherits the taint label)", () => ran("persist-write", "write")],
+  [
+    "persist-read",
+    "after a Gateway restart, reading that file taints the new session: the send to an unknown address is not allowed",
+    () => decisions("persist-read").some((d) => d.tool === "message" && d.verdict !== "allow") && !ran("persist-read", "message"),
+  ],
+  ["persist-read", "the Guard used the host keyed store (pg-* namespaces in the plugin state SQLite)", () => /pg-meta: \d+/.test(fs.existsSync(`${run}/out/keyed-store.txt`) ? fs.readFileSync(`${run}/out/keyed-store.txt`, "utf8") : "")],
 ];
 
 p("# Guard smoke test");

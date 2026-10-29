@@ -13,6 +13,10 @@ export interface HostKeyedStore<T> {
   lookup(key: string): Promise<T | undefined>;
   delete?(key: string): Promise<unknown>;
   entries(): Promise<readonly { key: string; value: T }[] | readonly [string, T][]>;
+  /** Paged lexical range read; the docs' way to read a growing retained store. */
+  entriesInKeyRange?(range: { keyStartInclusive: string; keyEndExclusive: string; limit: number; order?: "asc" | "desc" }): Promise<
+    readonly { key: string; value: T }[] | readonly [string, T][]
+  >;
 }
 
 export type OpenKeyedStore = <T>(opts: { namespace: string; retention?: "retained"; maxEntries?: number }) => HostKeyedStore<T>;
@@ -58,6 +62,8 @@ export class KeyedGuardStore implements GuardStore {
   readonly ready: Promise<void>;
   /** The last write or load error, for /guard status. */
   lastError: string | null = null;
+  /** What the startup load found, per namespace (audited by the Guard). */
+  loaded = { artifacts: 0, sessions: 0, meta: false, errors: [] as string[] };
 
   constructor(open: OpenKeyedStore, legacyFile?: string) {
     this.artStore = open<ArtifactRecord>({ namespace: "pg-artifacts", retention: "retained" });
@@ -68,12 +74,42 @@ export class KeyedGuardStore implements GuardStore {
     });
   }
 
+  /** Every row of a namespace: paged key ranges when the store has them, else entries(). */
+  private async readAll<T>(store: HostKeyedStore<T>): Promise<[string, T][]> {
+    if (!store.entriesInKeyRange) return pairs(await store.entries());
+    const out: [string, T][] = [];
+    let start = "";
+    for (;;) {
+      const page = pairs(await store.entriesInKeyRange({ keyStartInclusive: start, keyEndExclusive: "\u{10FFFF}", limit: 1000, order: "asc" }));
+      out.push(...page);
+      if (page.length < 1000) return out;
+      start = `${page[page.length - 1]![0]}\u0000`;
+    }
+  }
+
   private async load(legacyFile?: string): Promise<void> {
-    const [arts, sessions, meta] = await Promise.all([this.artStore.entries(), this.sessionStore.entries(), this.metaStore.lookup("meta")]);
-    for (const [, a] of pairs(arts)) if (!this.arts.has(a.path)) this.arts.set(a.path, a);
-    for (const [, s] of pairs(sessions)) if (!this.sessions.has(s.sessionKey)) this.sessions.set(s.sessionKey, s);
+    // Each namespace loads on its own, so one failure can't empty the others.
+    const guarded = async <T>(name: string, fn: () => Promise<T>): Promise<T | undefined> => {
+      try {
+        return await fn();
+      } catch (err) {
+        this.loaded.errors.push(`${name}: ${String(err)}`);
+        this.lastError = `load ${name}: ${String(err)}`;
+        return undefined;
+      }
+    };
+    const [arts, sessions, meta] = await Promise.all([
+      guarded("pg-artifacts", () => this.readAll(this.artStore)),
+      guarded("pg-sessions", () => this.readAll(this.sessionStore)),
+      guarded("pg-meta", () => this.metaStore.lookup("meta")),
+    ]);
+    for (const [, a] of arts ?? []) if (!this.arts.has(a.path)) this.arts.set(a.path, a);
+    for (const [, s] of sessions ?? []) if (!this.sessions.has(s.sessionKey)) this.sessions.set(s.sessionKey, s);
     if (meta && !this.metaTouched) this.meta = { rules: meta.rules ?? [], state: meta.state ?? {}, execWindows: meta.execWindows ?? [] };
-    if (legacyFile && pairs(arts).length === 0 && !meta) this.importLegacy(legacyFile);
+    this.loaded.artifacts = arts?.length ?? 0;
+    this.loaded.sessions = sessions?.length ?? 0;
+    this.loaded.meta = Boolean(meta);
+    if (legacyFile && arts !== undefined && arts.length === 0 && meta === undefined && this.loaded.errors.length === 0) this.importLegacy(legacyFile);
   }
 
   private importLegacy(file: string): void {
