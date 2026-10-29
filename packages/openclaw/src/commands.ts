@@ -1,4 +1,4 @@
-import { normalizePath } from "@provenance-guard/core";
+import { memoryLabelsIn, normalizePath } from "@provenance-guard/core";
 import type { Guard } from "./guard.js";
 import { KeyedGuardStore } from "./host-store.js";
 import type { CommandContext, CommandDefinition, PluginApi } from "./host.js";
@@ -81,9 +81,10 @@ export function runGuardCommand(guard: Guard, args: string, surface: CommandSurf
     case "status": {
       const sessions = guard.sessionsList();
       const tainted = sessions.filter((s) => s.tainted).length;
+      const started = sessions.filter((s) => s.startedTainted !== undefined);
       const lines = [
         `Mode: ${guard.mode}${guard.pausedUntil > now ? ` (paused until ${new Date(guard.pausedUntil).toISOString()})` : ""} · preset: ${guard.preset}`,
-        `Sessions: ${sessions.length} (${tainted} started tainted or became tainted) · rules: ${guard.store.rules().length}`,
+        `Sessions: ${sessions.length} (${tainted} tainted; ${started.filter((s) => s.startedTainted).length} of ${started.length} were tainted at their first tool call) · rules: ${guard.store.rules().length}`,
         `Decisions: ${guard.counts.allow} allow, ${guard.counts.ask} ask, ${guard.counts.block} block, ${guard.counts.shadowed} shadowed · errors: ${guard.counts.errors}`,
         `Storage: ${guard.storageBackend}${guard.isReady ? "" : " (loading)"}${guard.store instanceof KeyedGuardStore && guard.store.lastError ? ` · last error: ${guard.store.lastError}` : ""}`,
         `Confirmations: ${guard.confirmVia === "command" ? `/guard allow <code> (${guard.pendingConfirmations().length} pending)` : "OpenClaw approval prompts"}`,
@@ -142,8 +143,18 @@ export function runGuardCommand(guard: Guard, args: string, surface: CommandSurf
     case "trust": {
       if (rest.length === 0) return "Usage: /guard trust <path>";
       const p = normalizePath(rest.join(" "), { home: guard.env.home, cwd: guard.env.cwd });
-      guard.store.putArtifact({ path: p, labels: { untrusted: [], privateData: [] }, sessionKey: "/guard trust", updatedAt: now });
-      return `Cleared labels on ${p}.`;
+      const empty = { untrusted: [], privateData: [] };
+      guard.store.putArtifact({ path: p, labels: empty, sessionKey: "/guard trust", updatedAt: now });
+      // A memory file's labels live on its lines (§5.11): clear the lines written to it, and any
+      // labeled line it holds now (copied from elsewhere).
+      const inFile = new Set(memoryLabelsIn(guard.env.readText?.(p) ?? "", guard.env).map((e) => e.hash));
+      let lines = 0;
+      for (const e of [...guard.store.memoryEntries()]) {
+        if ((e.file !== p && !inFile.has(e.hash)) || (e.labels.untrusted.length === 0 && e.labels.privateData.length === 0)) continue;
+        guard.store.putMemoryEntry({ ...e, labels: empty, updatedAt: now });
+        lines++;
+      }
+      return `Cleared labels on ${p}${lines > 0 ? ` and ${lines} memory line(s)` : ""}.`;
     }
     case "report":
       return `Since start: ${JSON.stringify(guard.counts)}`;

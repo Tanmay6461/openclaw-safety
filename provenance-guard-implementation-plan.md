@@ -166,7 +166,7 @@ Commands are registered with `api.registerCommand`, so the agent never sees them
 | `/guard pause 1h` | Temporarily log-only (hard sinks still enforced) |
 | `/guard preset relaxed\|balanced\|strict` | Change preset |
 | `/guard rules` / `/guard forget <id>` | Manage learned rules |
-| `/guard trust <path>` | Clear the label on a file the owner has reviewed |
+| `/guard trust <path>` | Clear the label on a file the owner has reviewed. For a memory file, also the labels on its lines (§5.11) |
 | `/guard report` | Redacted summary for sharing false positives |
 | `/guard doctor` | Checks the host settings that make approvals owner-only (§4.4) and shows the confirmation mode |
 | `/guard pending` / `/guard allow <code> [always]` / `/guard deny <code>` | Owner confirmation in `confirm: command` mode (§4.4) |
@@ -589,7 +589,7 @@ Kept in the host's per-plugin SQLite keyed stores (`api.runtime.state.openKeyedS
 - **`sessions_send` (implemented 2026-10-29):** the target session inherits the sending session's labels when the message arrives. That happens in `before_agent_run`, from `inputProvenance: {kind: "inter_session", sourceSessionKey}`, before the target's first tool call. The same path covers a parent receiving a sub-agent's announce (channel results ch-base4, ch-base7). The per-message hash table isn't needed: provenance names the source session directly.
 - **Compaction:** session labels live in session state, keyed by session key, so they survive compaction. The built-in SQLite compactor keeps the session id; a custom context engine may hand compaction a successor id, so an id change never resets labels. If summaries are written to disk, they are labeled as artifacts.
 - **Resets (implemented 2026-10-29):** after `session_end` with reason `new`, `reset`, `idle`, `daily` or `deleted`, the key's next transcript starts empty, so the key starts with fresh labels. It still picks up labeled memory lines, its parent's labels, or its cron job's labels. Compaction, shutdown, restart and unknown endings keep labels. Without this, one web fetch would keep an owner's DM tainted through every `/new`.
-- **Taint creep:** labels only grow, so files and memory tend to become tainted over time, and once every session starts tainted the clean-session fast path is gone. The share of sessions that start tainted is computed weekly from the audit log and shown in `/guard status`. If it keeps rising, the shadow or weekly summary names the files and memory entries responsible and points to `/guard trust`.
+- **Taint creep:** labels only grow, so files and memory tend to become tainted over time, and once every session starts tainted the clean-session fast path is gone. Each session's first decision writes a `session-start` audit record saying whether it was already tainted; `/guard status` shows the current sessions' share. The weekly share is computed from the audit log. If it keeps rising, the shadow or weekly summary names the files and memory entries responsible and points to `/guard trust`.
 
 ### 5.12 Self-protection and fail-safety
 

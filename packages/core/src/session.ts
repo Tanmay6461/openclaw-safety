@@ -61,6 +61,8 @@ export interface SessionSnapshot extends SessionInit {
   seenUrls: [string, SourceRef][];
   degraded: boolean;
   unscannedPrivate: boolean;
+  /** Whether the session already held labels at its first decision (taint creep, §5.11). */
+  startedTainted?: boolean;
 }
 
 const RATE_STATE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -82,6 +84,8 @@ export class SessionState {
   readonly seenUrls = new Map<string, SourceRef>();
   /** HMACs of high-entropy tokens read from private sources (§5.10). */
   readonly privateTokens = new Set<string>();
+  /** Set at the session's first decision: was it already tainted (bootstrap, parent, cron job)? */
+  startedTainted: boolean | undefined;
 
   private readonly untrustedMap = new Map<string, SourceRef>();
   private readonly privateSet = new Set<PrivateCategory>();
@@ -211,6 +215,7 @@ export class SessionState {
     };
     if (this.agentId !== undefined) snap.agentId = this.agentId;
     if (this.parentSessionKey !== undefined) snap.parentSessionKey = this.parentSessionKey;
+    if (this.startedTainted !== undefined) snap.startedTainted = this.startedTainted;
     return snap;
   }
 
@@ -222,6 +227,7 @@ export class SessionState {
     for (const [u, r] of snap.seenUrls) s.seenUrls.set(u, r);
     if (snap.degraded) s.markDegraded();
     if (snap.unscannedPrivate) s.markUnscannedPrivate();
+    if (snap.startedTainted !== undefined) s.startedTainted = snap.startedTainted;
     return s;
   }
 }

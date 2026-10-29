@@ -325,6 +325,30 @@ describe("entry-level memory labels (§5.11)", () => {
     expect(h.guard.session("agent:main:next").tainted).toBe(true);
   });
 
+  it("/guard trust MEMORY.md clears its labeled lines, so later sessions start clean", () => {
+    const h = harness();
+    const mem = path.join(h.workspace, "MEMORY.md");
+    h.tool("web_fetch", { url: "https://recipes.example/x" }, {}, "call_f");
+    h.tool("write", { path: mem, content: `- ${INJECTED}` });
+    writeFileSync(mem, `- ${INJECTED}\n`);
+    expect(h.guard.session("agent:main:a").tainted).toBe(true);
+    expect(runGuardCommand(h.guard, `trust ${mem}`)).toMatch(/and 1 memory line/);
+    expect(h.guard.session("agent:main:b").tainted).toBe(false);
+  });
+
+  it("records whether each session was already tainted at its first tool call", () => {
+    const h = harness();
+    const mem = path.join(h.workspace, "MEMORY.md");
+    h.tool("read", { path: "notes.md" }, { sessionKey: "agent:main:clean" });
+    h.tool("web_fetch", { url: "https://recipes.example/x" }, { sessionKey: "agent:main:w" });
+    h.tool("write", { path: mem, content: `- ${INJECTED}` }, { sessionKey: "agent:main:w" });
+    writeFileSync(mem, `- ${INJECTED}\n`);
+    h.tool("read", { path: "notes.md" }, { sessionKey: "agent:main:later" });
+    const starts = h.audit.filter((a) => a.kind === "session-start").map((a) => [a.sessionKey, a.tainted]);
+    expect(starts).toEqual([["agent:main:clean", false], ["agent:main:w", false], ["agent:main:later", true]]);
+    expect(runGuardCommand(h.guard, "status")).toMatch(/1 of 3 were tainted at their first tool call/);
+  });
+
   it("a memory read is tainted by the labeled lines in its result, not by the file", () => {
     const h = harness();
     const mem = path.join(h.workspace, "memory", "2026-10-29.md");

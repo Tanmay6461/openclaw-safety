@@ -399,6 +399,11 @@ export class Guard {
     const start = this.now();
     const s = this.session(ctx.sessionKey);
     s.trigger = this.triggerFor(ctx);
+    if (s.startedTainted === undefined) {
+      // Taint creep (§5.11): the share of sessions that are already tainted when they start working.
+      s.startedTainted = s.tainted;
+      this.log({ ts: this.now(), kind: "session-start", sessionKey: s.sessionKey, tainted: s.tainted, private: s.holdsPrivate, trigger: s.trigger });
+    }
     const canAsk = s.trigger === "owner";
     const cctx = this.callContext(ctx);
     try {
