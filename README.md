@@ -6,7 +6,7 @@ It tracks where the data in each session came from: web pages, emails, other peo
 
 When untrusted content would reach a risky argument the owner never supplied, the Guard asks the owner through OpenClaw's own approval prompt. For actions that can't be undone, it blocks. It needs no model calls and does no injection detection: every decision is deterministic and runs outside the model.
 
-> **Status: pre-release (0.0.1).** Not yet on npm or ClawHub. It's tested against OpenClaw `v2026.10.8`:
+> **Status: beta (0.1.0-beta.0, unreleased).** Not yet on npm or ClawHub. MIT licensed. It's tested against OpenClaw `v2026.10.8`:
 > - 555 unit, property and fuzz tests;
 > - runtime tests on a real Gateway with qa-channel and Telegram;
 > - a benchmark run with a scripted mock model.

@@ -1,7 +1,19 @@
 {
   "name": "@provenance-guard/core",
-  "version": "0.0.1",
+  "version": "0.1.0-beta.0",
   "description": "Harness-agnostic provenance tracking and tool-call policy engine",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tanmay6461/openclaw-safety.git",
+    "directory": "packages/core"
+  },
+  "keywords": [
+    "prompt-injection",
+    "provenance",
+    "agent-security",
+    "taint-tracking"
+  ],
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,14 +23,22 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "cp ../../LICENSE ."
   },
   "dependencies": {
     "tldts": "7.4.17"
   },
   "engines": {
     "node": ">=24.22.1 <25 || >=26.12.1"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

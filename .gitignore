@@ -10,3 +10,7 @@ bench/
 
 # Local progress notes (kept up to date, not committed)
 PROGRESS.md
+
+# Copied into the packages at pack time (prepack)
+packages/*/LICENSE
+packages/openclaw/README.md

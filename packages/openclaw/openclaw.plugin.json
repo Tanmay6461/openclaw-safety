@@ -2,6 +2,10 @@
   "id": "provenance-guard",
   "name": "Provenance Guard",
   "description": "Tracks where data came from and checks each tool argument's origin before risky actions.",
+  "version": "0.1.0-beta.0",
+  "categories": [
+    "security"
+  ],
   "activation": {
     "onStartup": true
   },
