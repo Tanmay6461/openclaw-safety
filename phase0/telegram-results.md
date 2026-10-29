@@ -39,7 +39,7 @@ The bot token was never copied out of the cluster.
 1. **Approval window = agent run timeout.**
    - The approval asked for 300 s, but the embedded run timed out at 120 s (`agents.defaults.timeoutSeconds`). The owner approved at 119.7 s and the exec ran, then the run was killed, and the group got "Request timed out before a response was generated".
    - So an approval only works while the run is still alive. For the Guard's asks, the effective window is the shorter of the approval timeout and the run's remaining time.
-   - **Fix:** `/guard doctor` should warn when the run timeout is short for human confirmations.
+   - **Fixed:** `/guard doctor` now warns when `agents.defaults.timeoutSeconds` is shorter than `approvalTimeoutSec`. OpenClaw's default is 48 h, so this only bites with a configured timeout, like the 120 s in our test config.
 2. **Stale load error in `/guard status` (fixed).**
    - The keyed-store load failed on its first attempt and loaded cleanly on retry (audit `store-loaded`, attempts 2, no errors). `lastError` still kept the first attempt's message, so status reported "last error: load pg-artifacts: … runtime is no longer active".
    - **Fix:** a clean retry now clears it (`host-store.ts`, test in `host-store.test.ts`).

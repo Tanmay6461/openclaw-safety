@@ -249,7 +249,7 @@ export class Guard {
   }
 
   doctor(): DoctorCheck[] {
-    return doctorChecks(this.api.config, this.api.id, this.config.codexWebSearch);
+    return doctorChecks(this.api.config, this.api.id, this.config.codexWebSearch, this.config.approvalTimeoutSec);
   }
 
   private hostStateDir(): string {

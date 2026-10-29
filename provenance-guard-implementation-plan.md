@@ -973,7 +973,7 @@ Evidence: `phase0/source-notes-v2.md` (static, file:line), `phase0/contract-resu
 3. **Telegram part answered (tg-2):**
    - Native approval buttons accept only the configured approvers; the non-owner's taps resolved nothing.
    - Non-owner `/guard` is dropped before the handler.
-   - The approval window is capped by the agent run timeout, so `/guard doctor` should warn about it.
+   - The approval window is capped by the agent run timeout; `/guard doctor` now warns when `agents.defaults.timeoutSeconds` is shorter than `approvalTimeoutSec`.
 
    Still open: self-chat echo on **WhatsApp**: does an `/approve <id>` or a `/guard` command sent through the `message` tool resolve anything, and does the live-path reaction hole reproduce (the Guard already blocks the agent's approval reactions)? qa-channel can't show this. Slack and Discord approver lists are optional. Needs real accounts. (go/no-go)
 4. ~~Codex-native names~~ (answered from source and at runtime, see below). Codex's hosted `web_search` reaches the model without any OpenClaw hook, so Codex runs start untrusted (item 10).

@@ -503,6 +503,13 @@ describe("Codex hosted web_search (phase0/codex-results.md)", () => {
     expect(off.guard.session("agent:main:s1").tainted).toBe(false);
   });
 
+  it("doctor warns when the agent run timeout is shorter than the approval window (tg-2)", () => {
+    const short = harness({ approvalTimeoutSec: 300 }, undefined, { agents: { defaults: { timeoutSeconds: 120 } } });
+    expect(runGuardCommand(short.guard, "doctor")).toMatch(/fix: agents\.defaults\.timeoutSeconds is 120 s, shorter than the guard's 300 s/);
+    expect(runGuardCommand(harness().guard, "doctor")).toMatch(/ok: The agent run timeout leaves the full 600 s/);
+    expect(runGuardCommand(harness({}, undefined, { agents: { defaults: { timeoutSeconds: 0 } } }).guard, "doctor")).toMatch(/ok: The agent run timeout/);
+  });
+
   it("doctor explains the rule when Codex is in use", () => {
     expect(runGuardCommand(harness({}, undefined, codexHost).guard, "doctor")).toMatch(/hosted web_search reaches the model/);
     expect(runGuardCommand(harness().guard, "doctor")).toMatch(/No model runs on the Codex runtime/);
