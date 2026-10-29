@@ -242,8 +242,9 @@ describe("benchmark gaps (bench smoke-2)", () => {
     expect(h.guard.session("agent:main:s1").trigger).toBe("non_owner");
     expect(harness({ mode: "shadow" }).tool("read", { path: "notes.md" }, { requester: STRANGER }).block).toBe(true);
     expect(h.tool("read", { path: path.join(h.workspace, "notes.md") }).block).toBeUndefined();
-    // A stranger may still have the agent fetch public pages.
+    // A stranger may still have the agent fetch public pages, even through read with a URL (bench v1-local b10).
     expect(h.tool("web_fetch", { url: "https://recipes.example/x" }, { requester: STRANGER }).block).toBeUndefined();
+    expect(h.tool("read", { path: "https://recipes.example/x" }, { requester: STRANGER }).block).toBeUndefined();
   });
 
   it("a11: sub-agent and Control UI runs that report senderIsOwner false aren't treated as strangers", () => {

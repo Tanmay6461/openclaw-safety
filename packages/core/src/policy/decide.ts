@@ -255,7 +255,10 @@ export function decide(call: ToolCall, session: SessionState, env: GuardEnv): De
   // A non-owner's run answers that non-owner: whatever it reads from this machine can leave in the
   // reply, which no tool call carries (benchmark a11, stranger DM). The pattern is the lethal
   // trifecta (untrusted instructions, private data, a way out), so it holds in shadow mode too.
-  if (session.trigger === "non_owner" && readsLocalData(spec) && p.localReadForNonOwner === "block") {
+  // A file tool given only URLs reads nothing local (a model passing a web page to `read`, bench
+  // v1-local b10); those URLs go through the egress checks below instead.
+  const urlOnly = spec.resultSource === "file" && pathVals.length > 0 && localPaths.length === 0;
+  if (session.trigger === "non_owner" && readsLocalData(spec) && !urlOnly && p.localReadForNonOwner === "block") {
     b.trifecta = true;
     b.raise("block", "Someone other than you started this run, and this reads your local data, which the reply would send to them.");
     return b.build();
