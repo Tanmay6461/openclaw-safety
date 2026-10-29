@@ -827,7 +827,7 @@ Every configuration × model × repeat × simulated user is a separate run, beca
 - **v0.1:** about 40 scenarios × 2 models × 3 repeats, across 2 stock configurations plus 3 asking configurations × 3 user types: roughly 2,600 runs.
 - **v0.2:** 100+ scenarios × 2 models × 3–5 repeats, across 2 stock configurations plus 5 asking configurations × 3 user types: roughly 10,000–17,000 runs.
 
-Phase 0 turns these counts into a dollar and wall-clock estimate.
+Phase 0 estimate (`phase0/benchmark-cost.md`): v0.1 ≈ $330–$480 at the measured token profile ($650–$1,000 with margin), about 8–11 hours on one 10-CPU node; v0.2 $3,600–$6,200 with margin.
 
 ### Simulated users
 - **Careful:** approves only prompts for benign scenarios (uses ground truth).
@@ -967,7 +967,7 @@ Evidence: `phase0/source-notes-v2.md` (static, file:line), `phase0/contract-resu
 6. ~~Lowest-priority params win; another plugin's `requireApproval`~~ (both answered above).
 7. ~~Parameter names~~ (answered by the contract sweep, below).
 8. ~~Host exec ask plus a Guard ask~~ (answered below).
-9. Benchmark cost: run count × tokens per run × price (§9).
+9. ~~Benchmark cost~~: `phase0/benchmark-cost.md`. v0.1 (2,640 runs) ≈ $330 (Opus 5.5 + Haiku 5.5) to $480 (Opus 5.5 + Sonnet 5.5), $650–$1,000 with margin; about 8–11 h on one 10-CPU node.
 10. ~~Codex hosted `web_search`~~: done. Runs whose model resolves to the Codex runtime are labeled untrusted on `before_model_resolve`/`llm_input`; `codexWebSearch: off` opts out.
 11. Upstream OpenClaw reports: drafted in `phase0/upstream-reports.md`, not yet filed:
     - a sender's first native `/approve` fails closed, and any session change revokes pending approvals;
