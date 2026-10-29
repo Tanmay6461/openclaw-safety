@@ -1,9 +1,0 @@
-{"step":"codex-install","exit":0,"start":1793230431878,"end":1793230562264}
-{"step":"auth-paste","exit":0,"start":1793230568387,"end":1793230595209}
-{"step":"codex-inspect-offline","exit":0,"start":1793230595290,"end":1793230613617}
-{"step":"plugin-inspect-codex","exit":0,"start":1793230726348,"end":1793230820493}
-{"step":"plugin-inspect-probe","exit":0,"start":1793230820498,"end":1793230834414}
-{"step":"default","exit":0,"start":1793230834428,"end":1793230861248}
-{"step":"codex-shell","exit":0,"start":1793230861252,"end":1793230874182}
-{"step":"codex-patch","exit":0,"start":1793230874185,"end":1793230886676}
-{"step":"codex-spawn","exit":0,"start":1793230886680,"end":1793230897839}

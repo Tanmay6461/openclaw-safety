@@ -1,7 +1,0 @@
-[driver] a-dm-bob start
-[driver] a-dm-bob inbound
-[driver] a-dm-bob agent_end ok
-[driver] d-send start
-[driver] d-send inbound
-[driver] d-send done
-[driver]  driver-done

@@ -1,6 +1,0 @@
-Installing to /pg/runs/codex-3/state/npm/projects/openclaw-codex-8902d781d4…
-Installing @openclaw/codex@2026.10.8 into /pg/runs/codex-3/state/npm/projects/.openclaw-install-stage-v1fX3j…
-Linked peerDependency "openclaw" -> /pg/oc/node_modules/openclaw
-[plugins/cleanup] Plugin codex forced retirement after 5000ms: 1 still-running call(s), 0 retained consumer(s); resource cleanup remains pending.
-Installed plugin: codex
-Saved for the next Gateway start.

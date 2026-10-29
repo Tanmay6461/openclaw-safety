@@ -1,9 +1,0 @@
-[driver] c4e-cron-exec start
-[driver] c4e-cron-exec inbound
-[driver] c4e-cron-exec approval-prompt id=plugin:5294884f-0038-4a9d-8cc5-21326f9e6de9
-[driver] c4e-cron-exec cli
-[driver] c4e-cron-exec cron-job 8daf51f5-9af2-48ff-a2b1-c0e25d6c92b2
-[driver] c4e-cron-exec cli
-[driver] c4e-cron-exec resolution decision=cancelled
-[driver] c4e-cron-exec tool-result
-[driver]  driver-done

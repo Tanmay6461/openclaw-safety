@@ -1,7 +1,0 @@
-[driver] c1-owner start
-[driver] c1-owner inbound
-[driver] c1-owner approval-prompt id=plugin:adb2b5a1-2445-490d-8c30-4f05d0ba79bb
-[driver] c1-owner inbound
-[driver] c1-owner resolution none within 20000ms
-[driver] c1-owner agent_end ok
-[driver]  driver-done

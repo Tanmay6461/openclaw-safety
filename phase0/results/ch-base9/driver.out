@@ -1,5 +1,0 @@
-[driver] c4g-background start
-[driver] c4g-background inbound
-[driver] c4g-background resolution decision=allow-once
-[driver] c4g-background tool-result decision=allow-once
-[driver]  driver-done

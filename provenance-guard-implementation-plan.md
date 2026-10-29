@@ -905,6 +905,8 @@ Run at least 2 models (one frontier, one smaller or open-weight), with 3–5 rep
 
 ## 13. Phase 0 questions
 
+`phase0/` (harnesses, raw results, write-ups) and `bench/` are kept outside the repo, on the owner's machine and the cluster. Paths below refer to those copies.
+
 ### Answered
 From static reads of OpenClaw `v2026.10.8` docs and source; evidence with file and line references is in `phase0/docs-findings.md`. Items marked **test** still need a direct check on the cluster.
 

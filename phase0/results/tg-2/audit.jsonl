@@ -1,2 +1,0 @@
-{"ts":1793237063971,"kind":"store-loaded","backend":"host","pid":35,"cmd":"gateway run","artifacts":0,"sessions":0,"meta":false,"errors":[],"probe":{"artifacts":{"entries":0,"range":0},"sessions":{"entries":0,"range":0}},"attempts":2}
-{"ts":1793237264268,"sessionKey":"agent:main:telegram:group:-5556524199","callId":"call_4_0","tool":"exec","action":"allow","verdict":"allow","shadowed":false,"hardSink":false,"trifecta":false,"reasons":["clean session started by the owner"],"findings":[],"tainted":true,"private":false,"trigger":"owner","rewritten":false}

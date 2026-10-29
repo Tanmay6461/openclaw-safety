@@ -3,11 +3,10 @@ dist/
 *.tsbuildinfo
 .DS_Store
 
-# Phase 0 raw gateway logs: large, and they can contain run tokens
-phase0/results/**/gateway.log
+# Test harnesses, cluster scripts, run results and the benchmark stay local and on the cluster;
+# the repo holds only the product (packages/, with their unit tests) and the plan.
+phase0/
+bench/
 
 # Local progress notes (kept up to date, not committed)
 PROGRESS.md
-
-# Contract sweeps: per-run CLI output is bulky and not evidence (the mock, sentinel and audit logs are)
-phase0/results/contract-*/out/

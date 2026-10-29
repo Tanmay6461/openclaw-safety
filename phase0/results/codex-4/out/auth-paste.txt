@@ -1,5 +1,0 @@
-Installed Gateway service state and config paths could not be verified. Inspect the service environment with `openclaw gateway status --deep` before repairing plugin state.
-API key saved, but the Gateway has not confirmed applying the provider settings. Run `openclaw gateway restart` to apply them.
-Updated config: /pg/runs/codex-4/state/openclaw.json
-  Backup: /pg/runs/codex-4/state/openclaw.json.bak
-Auth profile: pg-mock-openai (openai/api_key)
