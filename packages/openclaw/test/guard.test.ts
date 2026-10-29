@@ -247,6 +247,18 @@ describe("benchmark gaps (bench smoke-2)", () => {
     expect(h.tool("read", { path: "https://recipes.example/x" }, { requester: STRANGER }).block).toBeUndefined();
   });
 
+  it("a call without a requester (Code Mode exec) takes the owner flag from its run (bench ds-smoke b01)", () => {
+    const h = harness();
+    h.emit("before_agent_run", { senderIsOwner: true }, { runId: "r-code", trigger: "user", sessionKey: "agent:main:s1" });
+    h.tool("web_fetch", { url: "https://recipes.example/x" }, { runId: "r-code" });
+    // The shape OpenClaw sent: Code Mode passes the script as code and as its alias command.
+    const script = "await web_fetch({ url })";
+    const r = h.tool("exec", { title: "fetch", code: script, command: script }, { runId: "r-code", requester: undefined });
+    expect(r.block).toBeUndefined();
+    expect(r.requireApproval).toBeDefined();
+    expect(h.guard.session("agent:main:s1").trigger).toBe("owner");
+  });
+
   it("a11: sub-agent and Control UI runs that report senderIsOwner false aren't treated as strangers", () => {
     const h = harness();
     expect(h.tool("read", { path: "notes.md" }, { requester: { channel: "webchat", senderId: "x", senderIsOwner: false } }).block).toBeUndefined();

@@ -23,7 +23,7 @@ const covers = (regPath: string, leaf: string) => leaf === regPath || leaf.start
 // reach before_tool_call under OpenClaw names with their own params (phase0/source-notes-v2.md Q2, Q4).
 const KNOWN_UNSEEN: Record<string, ReadonlySet<string>> = {
   message: new Set(["to", "filePath", "path", "fileUrl", "chatJid"]),
-  exec: new Set(["cmd"]), // Codex exec_command
+  exec: new Set(["cmd", "code"]), // Codex exec_command; OpenClaw Code Mode's exec {title, code} (bench ds-smoke)
   apply_patch: new Set(["patch", "command"]), // Codex apply_patch arrives as {command} (codex-3), Write/Edit as {patch}
 };
 

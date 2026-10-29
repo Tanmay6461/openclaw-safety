@@ -363,6 +363,9 @@ export class Guard {
     if (run?.provenanceKind === "inter_session") return "inter_session";
     if (run?.trigger === "cron") return "cron";
     if (run?.trigger === "heartbeat") return "heartbeat";
+    // Some calls carry no requester at all (OpenClaw Code Mode's exec, bench ds-smoke b01, while its
+    // inner tool calls do): use the run's own sender flag from before_agent_run, the same host fact.
+    if (!ctx.requester && run?.senderIsOwner === true) return "owner";
     // A channel turn from someone who isn't the owner. Sub-agent and inter-session runs also report
     // senderIsOwner false; they're caught above by provenance, or here by being a known child or
     // arriving through webchat (the Control UI's channel name for them, channel results).

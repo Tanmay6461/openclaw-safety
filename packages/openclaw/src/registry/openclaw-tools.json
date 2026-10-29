@@ -29,7 +29,8 @@
         "pty": "none",
         "timeoutSeconds": "none",
         "yieldMs": "none",
-        "cmd": "code"
+        "cmd": "code",
+        "code": "code"
       },
       "elevationParam": "elevated"
     },
