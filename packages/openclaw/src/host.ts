@@ -143,6 +143,8 @@ export interface BeforeAgentRunEvent {
 export interface SessionEvent {
   sessionId?: string;
   sessionKey?: string;
+  /** session_end: new, reset, idle, daily, compaction, deleted, shutdown, restart, or unknown. */
+  reason?: string;
 }
 
 export interface CommandContext {

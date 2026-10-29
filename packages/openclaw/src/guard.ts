@@ -839,13 +839,32 @@ export class Guard {
     if (existing) existing.addLabels(this.session(parent).labels());
   }
 
+  /**
+   * session_end. After a reset (`/new`, `/reset`, idle or daily) the key's next transcript starts
+   * empty, so the untrusted and private content behind its labels is out of the model's context:
+   * start that key fresh. Its next session still picks up labeled memory lines, a parent, or a cron
+   * job. Compaction keeps the history (summarized), and shutdown, restart, and unknown endings may,
+   * so labels stay. A context engine can also hand compaction a successor session id, which is
+   * why a sessionId change alone never resets labels.
+   */
   sessionEnd(event: SessionEvent, ctx: SessionEvent): void {
     const key = event.sessionKey ?? ctx.sessionKey;
     const s = key ? this.sessions.get(key) : undefined;
-    if (s) this.persist(s);
+    const reason = event.reason ?? ctx.reason;
+    if (key && reason !== undefined && FRESH_AFTER.has(reason)) {
+      const was = s ?? (this.store.getSession(key) ? this.session(key) : undefined);
+      this.sessions.delete(key);
+      this.store.putSession(new SessionState({ sessionKey: key, trigger: "unknown" }).toJSON());
+      if (was?.tainted || was?.holdsPrivate) this.log({ ts: this.now(), kind: "session-reset", sessionKey: key, reason });
+    } else if (s) {
+      this.persist(s);
+    }
     this.store.flush();
   }
 }
+
+/** session_end reasons after which the session key starts with an empty transcript. */
+const FRESH_AFTER: ReadonlySet<string> = new Set(["new", "reset", "idle", "daily", "deleted"]);
 
 const MAX_READ = 1 << 20;
 
