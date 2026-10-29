@@ -20,18 +20,35 @@ export interface ExecWindow {
   labels: Labels;
 }
 
-/** Persistent label storage (§5.11). The backend (node:sqlite or JSONL) is chosen in Phase 0. */
+/** A memory line added by a labeled session (§5.11, entry-level labels). Clean lines aren't stored. */
+export interface MemoryEntryRecord {
+  /** sha256 of the normalized line (normalizeMemoryLine). */
+  hash: string;
+  /** The normalized line, for matching partial lines such as search snippets. */
+  text: string;
+  labels: Labels;
+  /** The memory file it was written to (realpath). */
+  file: string;
+  sessionKey: string;
+  updatedAt: number;
+}
+
+/** Persistent label storage (§5.11). */
 export interface ProvenanceStore {
   getArtifact(path: string): ArtifactRecord | undefined;
   putArtifact(rec: ArtifactRecord): void;
   artifacts(): Iterable<ArtifactRecord>;
   addExecWindow(w: ExecWindow): void;
   execWindows(): readonly ExecWindow[];
+  getMemoryEntry(hash: string): MemoryEntryRecord | undefined;
+  putMemoryEntry(rec: MemoryEntryRecord): void;
+  memoryEntries(): Iterable<MemoryEntryRecord>;
 }
 
 export class MemoryStore implements ProvenanceStore {
   private readonly arts = new Map<string, ArtifactRecord>();
   private readonly windows: ExecWindow[] = [];
+  private readonly entries = new Map<string, MemoryEntryRecord>();
 
   getArtifact(path: string): ArtifactRecord | undefined {
     return this.arts.get(path);
@@ -51,5 +68,17 @@ export class MemoryStore implements ProvenanceStore {
 
   execWindows(): readonly ExecWindow[] {
     return this.windows;
+  }
+
+  getMemoryEntry(hash: string): MemoryEntryRecord | undefined {
+    return this.entries.get(hash);
+  }
+
+  putMemoryEntry(rec: MemoryEntryRecord): void {
+    this.entries.set(rec.hash, rec);
+  }
+
+  memoryEntries(): Iterable<MemoryEntryRecord> {
+    return this.entries.values();
   }
 }

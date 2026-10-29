@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import type { ArtifactRecord, ExecWindow, ProvenanceStore, SessionSnapshot } from "@provenance-guard/core";
+import type { ArtifactRecord, ExecWindow, MemoryEntryRecord, ProvenanceStore, SessionSnapshot } from "@provenance-guard/core";
 import type { GuardMode } from "./config.js";
 
 /** A learned `allow-always` rule (§4.5): one value, one kind of action. */
@@ -33,6 +33,7 @@ interface FileShape {
   version: 1;
   artifacts: ArtifactRecord[];
   execWindows: ExecWindow[];
+  memoryEntries?: MemoryEntryRecord[];
   sessions: SessionSnapshot[];
   rules: GuardRule[];
   state: GuardRuntimeState;
@@ -48,6 +49,7 @@ const MAX_EXEC_WINDOWS = 500;
 export class FileBackedStore implements GuardStore {
   private readonly arts = new Map<string, ArtifactRecord>();
   private windows: ExecWindow[] = [];
+  private readonly entries = new Map<string, MemoryEntryRecord>();
   private readonly sessions = new Map<string, SessionSnapshot>();
   private ruleList: GuardRule[] = [];
   private state: GuardRuntimeState = {};
@@ -59,6 +61,7 @@ export class FileBackedStore implements GuardStore {
       const d = JSON.parse(readFileSync(file, "utf8")) as Partial<FileShape>;
       for (const a of d.artifacts ?? []) this.arts.set(a.path, a);
       this.windows = d.execWindows ?? [];
+      for (const e of d.memoryEntries ?? []) this.entries.set(e.hash, e);
       for (const s of d.sessions ?? []) this.sessions.set(s.sessionKey, s);
       this.ruleList = d.rules ?? [];
       this.state = d.state ?? {};
@@ -84,6 +87,16 @@ export class FileBackedStore implements GuardStore {
   }
   execWindows(): readonly ExecWindow[] {
     return this.windows;
+  }
+  getMemoryEntry(hash: string): MemoryEntryRecord | undefined {
+    return this.entries.get(hash);
+  }
+  putMemoryEntry(rec: MemoryEntryRecord): void {
+    this.entries.set(rec.hash, rec);
+    this.schedule();
+  }
+  memoryEntries(): Iterable<MemoryEntryRecord> {
+    return this.entries.values();
   }
   getSession(key: string): SessionSnapshot | undefined {
     return this.sessions.get(key);
@@ -120,6 +133,7 @@ export class FileBackedStore implements GuardStore {
       version: 1,
       artifacts: [...this.arts.values()],
       execWindows: this.windows,
+      memoryEntries: [...this.entries.values()],
       sessions: [...this.sessions.values()],
       rules: this.ruleList,
       state: this.state,

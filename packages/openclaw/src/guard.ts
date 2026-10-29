@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import {
@@ -18,6 +18,7 @@ import {
   JsonlAuditLog,
   labelContent,
   labelInbound,
+  memoryLabelsIn,
   normalizeUrl,
   parseSimpleCommand,
   PRESETS,
@@ -220,6 +221,15 @@ export class Guard {
         ...(configPath ? [configPath, `${configPath}.*`] : []),
       ],
       isInboundMessage: (id) => this.inboundIds.has(id),
+      readText: readSmallText,
+      // Exec windows (§5.4) label files changed under a tainted exec's cwd by modification time.
+      mtime: (abs) => {
+        try {
+          return statSync(abs).mtimeMs;
+        } catch {
+          return undefined;
+        }
+      },
       gatewayPorts: Number.isInteger(port) && port > 0 && port !== DEFAULT_GATEWAY_PORT ? [port, DEFAULT_GATEWAY_PORT] : [DEFAULT_GATEWAY_PORT],
     });
     this.confirmVia = config.confirm === "auto" ? (approvalsOwnerOnly(this.doctor()) ? "approval" : "command") : config.confirm;
@@ -313,9 +323,12 @@ export class Guard {
     const snap = this.store.getSession(k);
     s = snap ? SessionState.fromJSON(snap) : new SessionState({ sessionKey: k, trigger: "unknown" });
     // Bootstrap fallback (§5.11): labeled auto-loaded files taint the session before its first tool call.
+    // Memory files count only for the labeled lines they hold now, so removing a line clears it.
     for (const f of BOOTSTRAP_FILES) {
-      const rec = this.store.getArtifact(path.join(this.workspace, f));
+      const abs = path.join(this.workspace, f);
+      const rec = this.store.getArtifact(abs);
       if (rec) s.addLabels(rec.labels);
+      if (this.env.memoryPaths.matches(abs)) for (const e of memoryLabelsIn(this.env.readText?.(abs) ?? "", this.env)) s.addLabels(e.labels);
     }
     const parent = this.parents.get(k);
     if (parent && parent !== k) s.addLabels(this.session(parent).labels());
@@ -778,6 +791,17 @@ export class Guard {
     const s = key ? this.sessions.get(key) : undefined;
     if (s) this.persist(s);
     this.store.flush();
+  }
+}
+
+const MAX_READ = 1 << 20;
+
+/** A local file's text for memory diffing and bootstrap checks; undefined if missing or over 1 MiB. */
+function readSmallText(abs: string): string | undefined {
+  try {
+    return statSync(abs).size <= MAX_READ ? readFileSync(abs, "utf8") : undefined;
+  } catch {
+    return undefined;
   }
 }
 

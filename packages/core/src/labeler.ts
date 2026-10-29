@@ -5,6 +5,7 @@ import { classifyExec } from "./exec/classify.js";
 import type { Decision } from "./policy/decide.js";
 import { rolePaths, specFor } from "./registry/resolve.js";
 import { findSecretFormats, rememberPrivateTokens } from "./secrets/scan.js";
+import { looksLikePatch, memoryLabelsIn, patchAddedLines, recordMemoryWrite } from "./memory-labels.js";
 import { labelsEmpty, mergeLabels, type SessionState } from "./session.js";
 import type { Role, SourceKind, SourceRef, ToolCall, ToolSpec } from "./types.js";
 import { classifyEgressUrl } from "./urls/classify.js";
@@ -106,6 +107,13 @@ export function applyUpfrontLabels(call: ToolCall, session: SessionState, env: G
   if (spec.category === "persistence_write") {
     for (const p of valuesFor(call, spec, "path")) {
       const abs = normalizePath(p, pathContext(env));
+      // Memory files get entry-level labels, so one tainted line doesn't taint the whole file (§5.11).
+      if (env.memoryPaths.matches(abs)) {
+        const content = valuesFor(call, spec, "content");
+        const written = content.flatMap((c) => (looksLikePatch(c) ? patchAddedLines(c) : [c]));
+        recordMemoryWrite(abs, written, session.labels(), session.sessionKey, env, at);
+        continue;
+      }
       const prev = env.store.getArtifact(abs);
       const labels = spec.writeMode === "merge" && prev ? mergeLabels(prev.labels, session.labels()) : session.labels();
       if (prev || !labelsEmpty(labels)) {
@@ -136,6 +144,11 @@ export function labelContent(call: ToolCall, content: string, session: SessionSt
   const pending = session.takePending(call.id);
   const kind: SourceKind | undefined = spec.category === "privileged_execution" ? "exec_output" : spec.resultSource;
   if (kind) recordSeenUrls(session, content, { kind, id: call.id, at: env.now() }, call.params, env);
+
+  // Memory text read back, by any route, brings the labels of the labeled lines it contains (§5.11).
+  if (kind === "file" || kind === "memory" || kind === "exec_output" || kind === "inter_session") {
+    for (const e of memoryLabelsIn(content, env)) session.addLabels(e.labels);
+  }
 
   // Credentials showing up in command output or files make the session private.
   const formats = kind === "exec_output" || kind === "file" ? findSecretFormats(content) : [];

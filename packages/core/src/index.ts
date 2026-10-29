@@ -22,5 +22,6 @@ export * from "./policy/enforce.js";
 export * from "./policy/forgery.js";
 export * from "./policy/explain.js";
 export * from "./labeler.js";
+export * from "./memory-labels.js";
 export * from "./store/memory.js";
 export * from "./audit/log.js";

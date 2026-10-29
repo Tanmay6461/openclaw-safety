@@ -54,6 +54,8 @@ export interface GuardEnv {
   resolveLinks?: boolean;
   /** File modification time in epoch ms, for exec windows (§5.4). */
   mtime?: (absPath: string) => number | undefined;
+  /** Current text of a local file (memory diffing and bootstrap checks); undefined if unreadable. */
+  readText?: (absPath: string) => string | undefined;
   defaultCallingCode?: string;
   stripPlusTag?: boolean;
 }
@@ -192,6 +194,7 @@ export function createEnv(opts: EnvOptions): GuardEnv {
     store: opts.store ?? new MemoryStore(),
     ...(opts.resolveLinks !== undefined && { resolveLinks: opts.resolveLinks }),
     ...(opts.mtime && { mtime: opts.mtime }),
+    ...(opts.readText && { readText: opts.readText }),
     ...(opts.defaultCallingCode && { defaultCallingCode: opts.defaultCallingCode }),
     ...(opts.stripPlusTag !== undefined && { stripPlusTag: opts.stripPlusTag }),
   };

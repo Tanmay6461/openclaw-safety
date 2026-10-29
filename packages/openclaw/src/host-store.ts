@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFileSync, renameSync } from "node:fs";
-import type { ArtifactRecord, ExecWindow, SessionSnapshot } from "@provenance-guard/core";
+import type { ArtifactRecord, ExecWindow, MemoryEntryRecord, SessionSnapshot } from "@provenance-guard/core";
 import type { GuardRule, GuardRuntimeState, GuardStore } from "./store.js";
 
 /**
@@ -49,9 +49,11 @@ function pairs<T>(rows: readonly { key: string; value: T }[] | readonly [string,
 export class KeyedGuardStore implements GuardStore {
   private readonly arts = new Map<string, ArtifactRecord>();
   private readonly sessions = new Map<string, SessionSnapshot>();
+  private readonly entries = new Map<string, MemoryEntryRecord>();
   private meta: Meta = { rules: [], state: {}, execWindows: [] };
   private readonly dirtyArts = new Set<string>();
   private readonly dirtySessions = new Set<string>();
+  private readonly dirtyEntries = new Set<string>();
   private dirtyMeta = false;
   private metaTouched = false;
   private scheduled = false;
@@ -59,16 +61,19 @@ export class KeyedGuardStore implements GuardStore {
   private readonly artStore: HostKeyedStore<ArtifactRecord>;
   private readonly sessionStore: HostKeyedStore<SessionSnapshot>;
   private readonly metaStore: HostKeyedStore<Meta>;
+  private readonly memoryStore: HostKeyedStore<MemoryEntryRecord>;
   readonly ready: Promise<void>;
   /** The last write or load error, for /guard status. */
   lastError: string | null = null;
   /** What the startup load found, per namespace (audited by the Guard). */
-  loaded = { artifacts: 0, sessions: 0, meta: false, errors: [] as string[], probe: {} as Record<string, Record<string, number | string>> };
+  loaded = { artifacts: 0, sessions: 0, memoryEntries: 0, meta: false, errors: [] as string[], probe: {} as Record<string, Record<string, number | string>> };
 
   constructor(open: OpenKeyedStore, legacyFile?: string) {
     this.artStore = open<ArtifactRecord>({ namespace: "pg-artifacts", retention: "retained" });
     this.sessionStore = open<SessionSnapshot>({ namespace: "pg-sessions", maxEntries: MAX_SESSIONS });
     this.metaStore = open<Meta>({ namespace: "pg-meta", retention: "retained" });
+    // Retained: an evicted entry would silently drop a taint label.
+    this.memoryStore = open<MemoryEntryRecord>({ namespace: "pg-memory", retention: "retained" });
     this.ready = this.load(legacyFile).catch((err: unknown) => {
       this.lastError = `load: ${String(err)}`;
     });
@@ -128,16 +133,20 @@ export class KeyedGuardStore implements GuardStore {
         return undefined;
       }
     };
-    const [arts, sessions, meta] = await Promise.all([
+    const [arts, sessions, meta, entries] = await Promise.all([
       guarded("pg-artifacts", () => this.readAll(this.artStore, (this.loaded.probe.artifacts = {}))),
       guarded("pg-sessions", () => this.readAll(this.sessionStore, (this.loaded.probe.sessions = {}), ["", "\u{10FFFF}"])),
       guarded("pg-meta", () => this.metaStore.lookup("meta")),
+      // Entry keys are sha256 hex, so the artifacts' hex range fits.
+      guarded("pg-memory", () => this.readAll(this.memoryStore, (this.loaded.probe.memory = {}))),
     ]);
     for (const [, a] of arts ?? []) if (!this.arts.has(a.path)) this.arts.set(a.path, a);
     for (const [, s] of sessions ?? []) if (!this.sessions.has(s.sessionKey)) this.sessions.set(s.sessionKey, s);
+    for (const [, e] of entries ?? []) if (!this.entries.has(e.hash)) this.entries.set(e.hash, e);
     if (meta && !this.metaTouched) this.meta = { rules: meta.rules ?? [], state: meta.state ?? {}, execWindows: meta.execWindows ?? [] };
     this.loaded.artifacts = arts?.length ?? 0;
     this.loaded.sessions = sessions?.length ?? 0;
+    this.loaded.memoryEntries = entries?.length ?? 0;
     this.loaded.meta = Boolean(meta);
     if (legacyFile && arts !== undefined && arts.length === 0 && meta === undefined && this.loaded.errors.length === 0) this.importLegacy(legacyFile);
   }
@@ -182,6 +191,17 @@ export class KeyedGuardStore implements GuardStore {
   execWindows(): readonly ExecWindow[] {
     return this.meta.execWindows;
   }
+  getMemoryEntry(hash: string): MemoryEntryRecord | undefined {
+    return this.entries.get(hash);
+  }
+  putMemoryEntry(rec: MemoryEntryRecord): void {
+    this.entries.set(rec.hash, rec);
+    this.dirtyEntries.add(rec.hash);
+    this.schedule();
+  }
+  memoryEntries(): Iterable<MemoryEntryRecord> {
+    return this.entries.values();
+  }
   getSession(key: string): SessionSnapshot | undefined {
     return this.sessions.get(key);
   }
@@ -222,15 +242,18 @@ export class KeyedGuardStore implements GuardStore {
     this.scheduled = false;
     const arts = [...this.dirtyArts].map((p) => this.arts.get(p)!).filter(Boolean);
     const sessions = [...this.dirtySessions].map((k) => this.sessions.get(k)!).filter(Boolean);
+    const entries = [...this.dirtyEntries].map((h) => this.entries.get(h)!).filter(Boolean);
     const meta = this.dirtyMeta ? structuredClone(this.meta) : null;
     this.dirtyArts.clear();
     this.dirtySessions.clear();
+    this.dirtyEntries.clear();
     this.dirtyMeta = false;
-    if (arts.length === 0 && sessions.length === 0 && !meta) return;
+    if (arts.length === 0 && sessions.length === 0 && entries.length === 0 && !meta) return;
     this.chain = this.chain
       .then(async () => {
         for (const a of arts) await this.artStore.register(artifactKey(a.path), a);
         for (const s of sessions) await this.sessionStore.register(sessionKey(s.sessionKey), s);
+        for (const e of entries) await this.memoryStore.register(e.hash, e);
         if (meta) await this.metaStore.register("meta", meta);
       })
       .catch((err: unknown) => {
