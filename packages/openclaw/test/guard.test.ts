@@ -420,6 +420,26 @@ describe("inter-session propagation (§5.11)", () => {
   });
 });
 
+describe("labeled files changed outside the agent (§5.11)", () => {
+  it("keeps the label, marks the file stale, and lists it in /guard status until trusted", () => {
+    const h = harness();
+    const f = path.join(h.workspace, "plan.md");
+    h.tool("web_fetch", { url: "https://recipes.example/x" }, {}, "call_f");
+    h.tool("write", { path: f, content: "copied" }, {}, "call_w");
+    writeFileSync(f, "copied");
+    persist(h, "call_w", "write", "ok");
+    h.tool("read", { path: f }, { sessionKey: "agent:main:r1" });
+    expect(runGuardCommand(h.guard, "status")).not.toMatch(/changed outside the agent/);
+
+    writeFileSync(f, "edited by hand");
+    h.tool("read", { path: f }, { sessionKey: "agent:main:r2" });
+    expect(h.guard.session("agent:main:r2").tainted).toBe(true);
+    expect(runGuardCommand(h.guard, "status")).toMatch(/1 labeled file\(s\) changed outside the agent/);
+    runGuardCommand(h.guard, `trust ${f}`);
+    expect(runGuardCommand(h.guard, "status")).not.toMatch(/changed outside the agent/);
+  });
+});
+
 describe("session resets (session_end.reason)", () => {
   it("/new, /reset, idle and daily resets start the key fresh; compaction and restarts keep labels", () => {
     for (const [reason, tainted] of [["new", false], ["reset", false], ["daily", false], ["idle", false], ["compaction", true], ["restart", true], ["unknown", true]] as const) {

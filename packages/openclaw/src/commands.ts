@@ -89,6 +89,8 @@ export function runGuardCommand(guard: Guard, args: string, surface: CommandSurf
         `Storage: ${guard.storageBackend}${guard.isReady ? "" : " (loading)"}${guard.store instanceof KeyedGuardStore && guard.store.lastError ? ` · last error: ${guard.store.lastError}` : ""}`,
         `Confirmations: ${guard.confirmVia === "command" ? `/guard allow <code> (${guard.pendingConfirmations().length} pending)` : "OpenClaw approval prompts"}`,
       ];
+      const stale = [...guard.store.artifacts()].filter((a) => a.stale && (a.labels.untrusted.length > 0 || a.labels.privateData.length > 0));
+      if (stale.length > 0) lines.push(`${stale.length} labeled file(s) changed outside the agent; review, then /guard trust <path>: ${stale.slice(0, 3).map((a) => a.path).join(", ")}${stale.length > 3 ? ", …" : ""}`);
       const failing = guard.doctor().filter((c) => !c.ok).length;
       if (failing > 0) lines.push(`${failing} config check(s) need attention: /guard doctor`);
       return lines.join("\n");
@@ -144,7 +146,7 @@ export function runGuardCommand(guard: Guard, args: string, surface: CommandSurf
       if (rest.length === 0) return "Usage: /guard trust <path>";
       const p = normalizePath(rest.join(" "), { home: guard.env.home, cwd: guard.env.cwd });
       const empty = { untrusted: [], privateData: [] };
-      guard.store.putArtifact({ path: p, labels: empty, sessionKey: "/guard trust", updatedAt: now });
+      guard.store.putArtifact({ path: p, labels: empty, sessionKey: "/guard trust", updatedAt: now, stale: false });
       // A memory file's labels live on its lines (§5.11): clear the lines written to it, and any
       // labeled line it holds now (copied from elsewhere).
       const inFile = new Set(memoryLabelsIn(guard.env.readText?.(p) ?? "", guard.env).map((e) => e.hash));

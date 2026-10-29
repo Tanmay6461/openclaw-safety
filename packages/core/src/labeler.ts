@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { attestCommand } from "./attest/lookup.js";
 import { normalizePath, normalizeUrl } from "./attest/normalize.js";
 import { pathContext, type GuardEnv } from "./env.js";
@@ -28,11 +29,18 @@ export function execWindowLabels(abs: string, env: GuardEnv): Labels[] {
   return mtime === undefined ? [] : windows.filter((w) => mtime >= w.start).map((w) => w.labels);
 }
 
+const contentHash = (text: string) => createHash("sha256").update(text).digest("hex");
+
 /** Labels a file read adds: stored labels, exec windows, untrusted paths, private paths (§5.4). */
 function labelFileRead(abs: string, session: SessionState, env: GuardEnv, at: number): { privateSource: boolean } {
   const rec = env.store.getArtifact(abs);
   if (rec) {
     session.addLabels(rec.labels);
+    // Changed outside the agent since it was labeled: keep the label, flag it for review (§5.11).
+    if (rec.hash && !rec.stale) {
+      const text = env.readText?.(abs);
+      if (text !== undefined && contentHash(text) !== rec.hash) env.store.putArtifact({ ...rec, stale: true });
+    }
   } else {
     if (env.untrustedPaths.matches(abs)) session.addUntrusted({ kind: "file", id: abs, at });
     for (const l of execWindowLabels(abs, env)) session.addLabels(l);
@@ -155,6 +163,15 @@ export function applyUpfrontLabels(call: ToolCall, session: SessionState, env: G
 export function labelContent(call: ToolCall, content: string, session: SessionState, env: GuardEnv): void {
   const spec = specFor(call, env);
   const pending = session.takePending(call.id);
+  // The write has landed: record what the labeled file holds now, to notice later outside edits.
+  if (spec.category === "persistence_write") {
+    for (const p of valuesFor(call, spec, "path")) {
+      const abs = normalizePath(p, pathContext(env));
+      const rec = env.store.getArtifact(abs);
+      const text = rec ? env.readText?.(abs) : undefined;
+      if (rec && text !== undefined) env.store.putArtifact({ ...rec, hash: contentHash(text), stale: false });
+    }
+  }
   const kind: SourceKind | undefined = spec.category === "privileged_execution" ? "exec_output" : spec.resultSource;
   if (kind) recordSeenUrls(session, content, { kind, id: call.id, at: env.now() }, call.params, env);
 
