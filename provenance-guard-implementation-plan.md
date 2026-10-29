@@ -845,7 +845,7 @@ Every configuration × model × repeat × simulated user is a separate run, beca
   - **Guard Balanced, careful user: 0%, with 100% benign completion, no false blocks, and 0.08 prompts per benign task** (outside the 20-day taint-creep scenario).
 - **Taint creep:** 13 of 20 sessions start tainted, exactly the sessions that load web-derived memory notes. `/guard trust` clears them.
 - **Real model** (Qwen2.5-7B on a cluster vLLM): stock leaked 1 of 20; the Guard stopped it. A 7B model ignores most injections, so real-model security numbers need a stronger model.
-- The benchmark found 7 bugs (5 in the Guard, 2 in the harness), all fixed. They're listed in the report.
+- The benchmark found 7 problems (6 in the Guard, 1 in the harness), all fixed. They're listed in the report.
 
 Phase 0 estimate (`phase0/benchmark-cost.md`): v0.1 ≈ $330–$480 at the measured token profile ($650–$1,000 with margin), about 8–11 hours on one 10-CPU node; v0.2 $3,600–$6,200 with margin.
 
