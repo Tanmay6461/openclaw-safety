@@ -108,7 +108,7 @@ All keys are optional (`plugins.entries.provenance-guard.config`).
 
 ## Limits
 
-See [docs/limitations.md](docs/limitations.md) for what the Guard doesn't do, and [docs/threat-model.md](docs/threat-model.md) for what it's built against.
+See [docs/limitations.md](docs/limitations.md) for what the Guard doesn't do, [docs/threat-model.md](docs/threat-model.md) for what it's built against, and [docs/faq.md](docs/faq.md) for common questions.
 
 ## Development
 
