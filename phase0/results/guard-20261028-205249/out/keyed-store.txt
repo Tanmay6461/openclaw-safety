@@ -1,0 +1,3 @@
+openclaw.sqlite plugin_state_entries @retained.pg-artifacts: 1
+openclaw.sqlite plugin_state_entries @retained.pg-meta: 1
+openclaw.sqlite plugin_state_entries pg-sessions: 8

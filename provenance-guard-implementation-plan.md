@@ -620,6 +620,15 @@ Kept in the host's per-plugin SQLite keyed stores (`api.runtime.state.openKeyedS
 
 ---
 
+### Storage (implemented, 2026-10-28)
+The Guard persists labels, sessions, rules and runtime state in OpenClaw's plugin keyed store (`api.runtime.state.openKeyedStore`; `packages/openclaw/src/host-store.ts`):
+- **Namespaces:** three of them. `pg-artifacts` (retained, keyed by path hash), `pg-sessions` (bounded), and `pg-meta` (retained: rules, mode, preset, exec windows).
+- **Synchronous working copy:** reads and writes stay synchronous against memory, which `tool_result_persist` requires, and changes are written behind in order.
+- **Startup load:** stored data loads at startup, and `before_tool_call`, which the host awaits, waits for that load.
+- **Retries:** right after a Gateway restart the state database can briefly fail to open, so the load retries for up to ~2 s.
+- **Migration and fallback:** an existing `store.json` is imported once, and `storage: file` keeps the old JSON backend.
+- **Verified on the cluster:** run `guard-20261028-205249`, 11/11. A tainted file's label written before a Gateway restart taints the session that reads it afterwards.
+
 ## 6. Repository layout and tech stack
 
 ```
