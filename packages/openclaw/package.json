@@ -2,7 +2,7 @@
   "name": "@provenance-guard/openclaw",
   "version": "0.0.1",
   "private": true,
-  "description": "OpenClaw adapter for Provenance Guard (registry only so far)",
+  "description": "OpenClaw plugin: tracks where data came from and checks each tool argument's origin before risky actions",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

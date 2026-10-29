@@ -8,7 +8,8 @@
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc -p packages/core/tsconfig.json && tsc -p packages/openclaw/tsconfig.json",
-    "build": "npm run build --workspaces --if-present"
+    "build": "npm run build --workspaces --if-present",
+    "bundle": "bash scripts/bundle-plugin.sh dist/provenance-guard"
   },
   "devDependencies": {
     "@types/node": "26.6.5",
