@@ -100,7 +100,22 @@ export class KeyedGuardStore implements GuardStore {
     return out;
   }
 
+  /**
+   * Retries while the plugin state database can't be opened (seen right after a Gateway restart and in
+   * CLI processes, guard-persist-3), for up to ~2 s; before_tool_call's 5 s timeout still bounds it.
+   */
   private async load(legacyFile?: string): Promise<void> {
+    for (let attempt = 1; ; attempt++) {
+      this.loaded.errors = [];
+      await this.loadOnce(legacyFile);
+      (this.loaded as { attempts?: number }).attempts = attempt;
+      const retryable = this.loaded.errors.some((e) => /Failed to open the plugin state database/.test(e));
+      if (!retryable || attempt >= 8) return;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
+
+  private async loadOnce(legacyFile?: string): Promise<void> {
     // Each namespace loads on its own, so one failure can't empty the others.
     const guarded = async <T>(name: string, fn: () => Promise<T>): Promise<T | undefined> => {
       try {

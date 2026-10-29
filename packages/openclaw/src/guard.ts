@@ -170,7 +170,7 @@ export class Guard {
       this.ready = keyed.ready.then(() => {
         this.isReady = true;
         this.applyRuntimeState();
-        this.log({ ts: this.now(), kind: "store-loaded", backend: "host", ...keyed.loaded });
+        this.log({ ts: this.now(), kind: "store-loaded", backend: "host", pid: process.pid, cmd: process.argv.slice(2, 4).join(" "), ...keyed.loaded });
         for (const e of keyed.loaded.errors) this.api.logger?.warn?.(`[provenance-guard] keyed store load failed: ${e}`);
       });
     } else {
