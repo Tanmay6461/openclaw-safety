@@ -14,3 +14,6 @@ PROGRESS.md
 # Copied into the packages at pack time (prepack)
 packages/*/LICENSE
 packages/openclaw/README.md
+
+# Local Claude Code settings
+.claude/
