@@ -17,6 +17,7 @@ import {
   ingestOwnerMessage,
   JsonlAuditLog,
   labelContent,
+  execWindowLabels,
   labelInbound,
   labelsEmpty,
   memoryLabelsIn,
@@ -330,6 +331,8 @@ export class Guard {
       const abs = path.join(this.workspace, f);
       const rec = this.store.getArtifact(abs);
       if (rec) s.addLabels(rec.labels);
+      // Changed under a tainted exec in a way the command parser didn't see (python -c, scripts).
+      for (const l of execWindowLabels(abs, this.env)) s.addLabels(l);
       if (this.env.memoryPaths.matches(abs)) for (const e of memoryLabelsIn(this.env.readText?.(abs) ?? "", this.env)) s.addLabels(e.labels);
     }
     const parent = this.parents.get(k);

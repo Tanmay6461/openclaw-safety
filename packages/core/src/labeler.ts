@@ -7,7 +7,7 @@ import { rolePaths, specFor } from "./registry/resolve.js";
 import { findSecretFormats, rememberPrivateTokens } from "./secrets/scan.js";
 import { looksLikePatch, memoryLabelsIn, patchAddedLines, recordMemoryWrite } from "./memory-labels.js";
 import { labelsEmpty, mergeLabels, type SessionState } from "./session.js";
-import type { Role, SourceKind, SourceRef, ToolCall, ToolSpec } from "./types.js";
+import type { Labels, Role, SourceKind, SourceRef, ToolCall, ToolSpec } from "./types.js";
 import { classifyEgressUrl } from "./urls/classify.js";
 import { recordSeenUrls } from "./urls/seen.js";
 import { collectStrings, valuesAtPath } from "./util.js";
@@ -20,6 +20,14 @@ function isUnder(abs: string, dir: string): boolean {
   return abs === dir || abs.startsWith(dir.endsWith("/") ? dir : `${dir}/`);
 }
 
+/** Labels of the tainted exec windows that cover `abs` and opened before its last change (§5.4). */
+export function execWindowLabels(abs: string, env: GuardEnv): Labels[] {
+  const windows = env.store.execWindows().filter((w) => isUnder(abs, w.cwd));
+  if (windows.length === 0) return [];
+  const mtime = env.mtime?.(abs);
+  return mtime === undefined ? [] : windows.filter((w) => mtime >= w.start).map((w) => w.labels);
+}
+
 /** Labels a file read adds: stored labels, exec windows, untrusted paths, private paths (§5.4). */
 function labelFileRead(abs: string, session: SessionState, env: GuardEnv, at: number): { privateSource: boolean } {
   const rec = env.store.getArtifact(abs);
@@ -27,11 +35,7 @@ function labelFileRead(abs: string, session: SessionState, env: GuardEnv, at: nu
     session.addLabels(rec.labels);
   } else {
     if (env.untrustedPaths.matches(abs)) session.addUntrusted({ kind: "file", id: abs, at });
-    const windows = env.store.execWindows().filter((w) => isUnder(abs, w.cwd));
-    if (windows.length > 0) {
-      const mtime = env.mtime?.(abs);
-      for (const w of windows) if (mtime !== undefined && mtime >= w.start) session.addLabels(w.labels);
-    }
+    for (const l of execWindowLabels(abs, env)) session.addLabels(l);
   }
   const privateSource = env.privatePaths.matches(abs);
   if (privateSource) session.addPrivate("private_file");
@@ -99,6 +103,15 @@ export function applyUpfrontLabels(call: ToolCall, session: SessionState, env: G
       }
       for (const t of info.downloadTargets) {
         env.store.putArtifact({ path: normalizePath(t, pathContext(env, cwd)), labels: session.labels(), sessionKey: session.sessionKey, updatedAt: at });
+      }
+      // Redirection and tee targets: file-level labels (memory files too, the conservative fallback),
+      // merged with what the file had, since `>>` and `tee -a` append.
+      if (!labelsEmpty(session.labels())) {
+        for (const t of info.writeTargets) {
+          const abs = normalizePath(t, pathContext(env, cwd));
+          const prev = env.store.getArtifact(abs);
+          env.store.putArtifact({ path: abs, labels: prev ? mergeLabels(prev.labels, session.labels()) : session.labels(), sessionKey: session.sessionKey, updatedAt: at });
+        }
       }
       if (session.tainted) env.store.addExecWindow({ sessionKey: session.sessionKey, cwd, start: at, labels: session.labels() });
     }

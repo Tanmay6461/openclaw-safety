@@ -19,6 +19,8 @@ export interface ExecInfo {
   openclawCli: boolean;
   /** Files the command is known to create (git clone, curl -o, wget). */
   downloadTargets: string[];
+  /** Files it writes through output redirection (`>`, `>>`, `&>`, `2>`) or `tee`. */
+  writeTargets: string[];
   /** Arguments that look like file paths, or that a file-reading command will read. */
   pathArgs: string[];
 }
@@ -101,11 +103,30 @@ export function classifyExec(command: string): ExecInfo {
     guardCli,
     openclawCli,
     downloadTargets: argv ? downloadTargets(argv) : [],
+    writeTargets: writeTargets(raw),
     pathArgs: pathArgs(raw, argv),
   };
 }
 
 const URL_LIKE = /^[a-z][a-z0-9+.-]*:\/\//i;
+
+const REDIRECT = /(?:^|[^<>&\d])(?:\d|&)?>>?\|?\s*(?!&)([^\s;|&<>()]+)/g;
+const unquote = (t: string) => t.replace(/^(['"])(.*)\1$/, "$2");
+
+/**
+ * Output redirection targets and `tee` arguments, anywhere in the command (pipelines and lists
+ * included). Over-matching only labels more files, the safe direction. `2>&1` and /dev/* aren't files.
+ */
+function writeTargets(raw: string): string[] {
+  const out = new Set<string>();
+  for (const m of raw.matchAll(REDIRECT)) out.add(unquote(m[1]!));
+  for (const seg of raw.split(/[;|&]+/)) {
+    const toks = seg.trim().split(/\s+/);
+    if (toks[0] === undefined || path.basename(toks[0]) !== "tee") continue;
+    for (const t of toks.slice(1)) if (!t.startsWith("-") && !/[<>]/.test(t)) out.add(unquote(t));
+  }
+  return [...out].filter((t) => t !== "" && !t.startsWith("/dev/"));
+}
 
 function looksLikePath(t: string): boolean {
   return /^(?:~\/|\$HOME\/|\.\.?\/|\/(?!\/))\S*$/.test(t) && t.length > 1;

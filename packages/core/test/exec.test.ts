@@ -63,3 +63,15 @@ describe("classifyExec", () => {
     expect(classifyExec("cat x").readOnly).toBe(false);
   });
 });
+
+describe("write targets (redirection and tee)", () => {
+  it("finds redirect and tee targets, not fd duplications or /dev", () => {
+    expect(classifyExec("echo x >> MEMORY.md").writeTargets).toEqual(["MEMORY.md"]);
+    expect(classifyExec("echo x > ~/notes/a.md 2>&1").writeTargets).toEqual(["~/notes/a.md"]);
+    expect(classifyExec("printf x | tee -a MEMORY.md notes.md").writeTargets).toEqual(["MEMORY.md", "notes.md"]);
+    expect(classifyExec("make &> build.log").writeTargets).toEqual(["build.log"]);
+    expect(classifyExec('echo "x" >"q.md"').writeTargets).toEqual(["q.md"]);
+    expect(classifyExec("ls 2>/dev/null").writeTargets).toEqual([]);
+    expect(classifyExec("git status").writeTargets).toEqual([]);
+  });
+});

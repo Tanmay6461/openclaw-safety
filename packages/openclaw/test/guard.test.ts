@@ -306,6 +306,25 @@ describe("entry-level memory labels (§5.11)", () => {
     expect(h.guard.session("agent:main:later").tainted).toBe(false);
   });
 
+  it("an exec that appends to MEMORY.md in a tainted session taints later sessions", () => {
+    const h = harness();
+    const mem = path.join(h.workspace, "MEMORY.md");
+    h.tool("web_fetch", { url: "https://recipes.example/x" }, {}, "call_f");
+    persist(h, "call_f", "web_fetch", "a page");
+    h.tool("exec", { command: `echo "- ${INJECTED}" >> ${mem}` });
+    writeFileSync(mem, `- ${INJECTED}\n`);
+    expect(h.guard.session("agent:main:next").tainted).toBe(true);
+  });
+
+  it("a change the exec parser can't see is still caught at bootstrap through the exec window", () => {
+    const h = harness();
+    h.tool("web_fetch", { url: "https://recipes.example/x" }, {}, "call_f");
+    persist(h, "call_f", "web_fetch", "a page");
+    h.tool("exec", { command: "python3 -c 'import updater; updater.run()'", workdir: h.workspace });
+    writeFileSync(path.join(h.workspace, "MEMORY.md"), `- ${INJECTED}\n`); // written by the script
+    expect(h.guard.session("agent:main:next").tainted).toBe(true);
+  });
+
   it("a memory read is tainted by the labeled lines in its result, not by the file", () => {
     const h = harness();
     const mem = path.join(h.workspace, "memory", "2026-10-29.md");
