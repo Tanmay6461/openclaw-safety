@@ -47,6 +47,10 @@ describe("harvestOwnerText", () => {
     expect(h.domains).toEqual(["python.org"]);
     expect(h.quoted).toEqual(["Q3 report"]);
   });
+  it("finds channel targets in OpenClaw's <kind>:<id> form, not ordinary colons", () => {
+    expect(harvestOwnerText("send dm:carol the time, then post in channel:C123.").targets).toEqual(["dm:carol", "channel:C123"]);
+    expect(harvestOwnerText("note: meet at 10:30, re:invoice").targets).toEqual([]);
+  });
   it("doesn't read an email's domain as a handle", () => {
     expect(harvestOwnerText("bob@example.com").handles).toEqual([]);
   });

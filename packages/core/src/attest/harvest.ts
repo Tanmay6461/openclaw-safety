@@ -72,6 +72,8 @@ export interface Harvest {
   emails: string[];
   phones: string[];
   handles: string[];
+  /** Channel targets in OpenClaw's `<kind>:<id>` form (`dm:carol`, `channel:C123`). */
+  targets: string[];
   paths: string[];
   codeSpans: string[];
   quoted: string[];
@@ -99,6 +101,7 @@ export function extractUrls(text: string): string[] {
   return [...text.matchAll(URL_PATTERN)].map((m) => trimUrl(m[0]));
 }
 
+const TARGET = /^(?:dm|user|channel|group|chat|thread|room):[A-Za-z0-9_.@+#:-]+$/i;
 const WRAPPING = /^[("'`\[<]+|[)"'`\]>.,;:!?]+$/g;
 
 export function harvestOwnerText(text: string): Harvest {
@@ -122,10 +125,13 @@ export function harvestOwnerText(text: string): Harvest {
 
   const paths: string[] = [];
   const domains: string[] = [];
+  const targets: string[] = [];
   for (const token of noEmails.split(/\s+/)) {
     const t = token.replace(WRAPPING, "");
     if (t === "") continue;
-    if (/^(?:~\/\S+|\.\.?\/\S+|\/(?!\/)\S+)$/.test(t)) {
+    if (TARGET.test(t)) {
+      targets.push(t);
+    } else if (/^(?:~\/\S+|\.\.?\/\S+|\/(?!\/)\S+)$/.test(t)) {
       paths.push(t);
     } else if (/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}$/i.test(t)) {
       const d = parseDomain(t);
@@ -144,6 +150,7 @@ export function harvestOwnerText(text: string): Harvest {
     emails,
     phones,
     handles,
+    targets,
     paths,
     codeSpans: codeSpans.filter((c) => c !== ""),
     quoted,

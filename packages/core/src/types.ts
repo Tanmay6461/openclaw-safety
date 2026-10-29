@@ -25,7 +25,8 @@ export interface SourceRef {
 export type PrivateCategory = "secret" | "email" | "memory" | "private_file" | "personal";
 
 /** Who started the run. Anything other than a host-confirmed "owner" is treated as autonomous. */
-export type Trigger = "owner" | "cron" | "heartbeat" | "hook" | "inter_session" | "unknown";
+/** `non_owner`: a channel turn from a known human who isn't the owner (host `senderIsOwner: false`). */
+export type Trigger = "owner" | "non_owner" | "cron" | "heartbeat" | "hook" | "inter_session" | "unknown";
 
 /** Labels carried by an artifact or inherited by a session. */
 export interface Labels {

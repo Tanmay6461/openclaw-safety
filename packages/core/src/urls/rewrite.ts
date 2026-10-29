@@ -20,8 +20,9 @@ const HTML_IMAGE = /<img\b[^>]*\bsrc\s*=\s*["']?([^"'\s>]+)["']?[^>]*>/gi;
 /**
  * Outbound rewrite (§5.10): strip images that point at constructed URLs (clients may load them
  * automatically) and defang constructed URLs. Attested and link-following URLs are untouched.
+ * `defang: false` only strips images.
  */
-export function rewriteOutbound(text: string, isConstructed: (url: string) => boolean): RewriteResult {
+export function rewriteOutbound(text: string, isConstructed: (url: string) => boolean, opts: { defang?: boolean } = {}): RewriteResult {
   let strippedImages = 0;
   let out = text.replace(MD_IMAGE, (whole, alt: string, src: string) => {
     if (!isConstructed(src)) return whole;
@@ -34,6 +35,7 @@ export function rewriteOutbound(text: string, isConstructed: (url: string) => bo
     return "[image removed]";
   });
   const defanged: string[] = [];
+  if (opts.defang === false) return { text: out, defanged, strippedImages };
   out = out.replace(URL_PATTERN, (match: string) => {
     const url = trimUrl(match);
     if (!isConstructed(url)) return match;

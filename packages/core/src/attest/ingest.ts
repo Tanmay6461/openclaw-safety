@@ -62,6 +62,8 @@ export function ingestOwnerMessage(
   const phoneOpts = env.defaultCallingCode ? { defaultCallingCode: env.defaultCallingCode } : {};
   for (const p of h.phones) add("phone", normalizePhone(p, phoneOpts));
   for (const hd of h.handles) add("handle", normalizeHandle(hd));
+  // A typed channel target matches a destination's "string" form exactly (destinationForms).
+  for (const t of h.targets) add("string", normalizeLoose(t));
   for (const p of h.paths) add("path", normalizePath(p, pathContext(env)));
   for (const c of h.codeSpans) {
     add("command", c.trim());

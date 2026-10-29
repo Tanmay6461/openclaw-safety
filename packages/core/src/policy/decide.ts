@@ -178,6 +178,13 @@ function approvalReaction(call: ToolCall, spec: ToolSpec, env: GuardEnv): string
   return emoji;
 }
 
+const LOCAL_SOURCES: ReadonlySet<string> = new Set(["file", "memory", "email", "inter_session"]);
+
+/** Tools whose results come from the owner's machine or accounts rather than the outside world. */
+function readsLocalData(spec: ToolSpec): boolean {
+  return (spec.resultSource !== undefined && LOCAL_SOURCES.has(spec.resultSource)) || spec.resultPrivate !== undefined;
+}
+
 function short(v: string): string {
   return sanitizePreview(v, 60);
 }
@@ -243,6 +250,15 @@ export function decide(call: ToolCall, session: SessionState, env: GuardEnv): De
       return b.build();
     }
     if (autonomous) b.raise("ask", "An automatic run wants to control your device's apps as you.");
+  }
+
+  // A non-owner's run answers that non-owner: whatever it reads from this machine can leave in the
+  // reply, which no tool call carries (benchmark a11, stranger DM). The pattern is the lethal
+  // trifecta (untrusted instructions, private data, a way out), so it holds in shadow mode too.
+  if (session.trigger === "non_owner" && readsLocalData(spec) && p.localReadForNonOwner === "block") {
+    b.trifecta = true;
+    b.raise("block", "Someone other than you started this run, and this reads your local data, which the reply would send to them.");
+    return b.build();
   }
 
   if (spec.category === "read_only" && urls.length === 0) {

@@ -21,7 +21,10 @@ import {
   normalizeUrl,
   parseSimpleCommand,
   PRESETS,
+  classifyEgressUrl,
   realpathBestEffort,
+  redactSecrets,
+  rewriteOutbound,
   SessionState,
   type AuditRecord,
   type Decision,
@@ -43,6 +46,7 @@ import type {
   ModelContext,
   MessageReceivedEvent,
   PluginApi,
+  ReplyPayloadEvent,
   SessionEvent,
   ToolCallContext,
   ToolResultPersistContext,
@@ -337,6 +341,11 @@ export class Guard {
     if (run?.provenanceKind === "inter_session") return "inter_session";
     if (run?.trigger === "cron") return "cron";
     if (run?.trigger === "heartbeat") return "heartbeat";
+    // A channel turn from someone who isn't the owner. Sub-agent and inter-session runs also report
+    // senderIsOwner false; they're caught above by provenance, or here by being a known child or
+    // arriving through webchat (the Control UI's channel name for them, channel results).
+    const r = ctx.requester;
+    if (r?.senderIsOwner === false && r.senderId && r.channel && r.channel !== "webchat" && !this.parents.has(ctx.sessionKey ?? "")) return "non_owner";
     return "unknown";
   }
 
@@ -713,6 +722,45 @@ export class Guard {
     if (ctx.sessionKey !== undefined) info.sessionKey = ctx.sessionKey;
     this.runs.set(ctx.runId, info);
     bounded(this.runs, MAX_TRACKED_RUNS);
+  }
+
+  /**
+   * reply_payload_sending: the agent's normal replies, which no tool call carries (benchmark a11,
+   * a12). In a tainted session, images that point at URLs the agent built are removed and such
+   * links defanged (§5.10). A reply to anyone but the owner also has the session's private tokens
+   * redacted. Removed images and redactions are exfiltration paths, so they apply in shadow mode too;
+   * defanging only when enforcing. Fails open, like the host hook: errors leave the reply as is.
+   */
+  replyPayloadSending(event: ReplyPayloadEvent, ctx: MessageContext): { payload: NonNullable<ReplyPayloadEvent["payload"]> } | undefined {
+    try {
+      if (this.mode === "off") return undefined;
+      const key = event.sessionKey ?? ctx.sessionKey;
+      const text = event.payload?.text;
+      if (!key || typeof text !== "string" || text === "") return undefined;
+      if (!this.sessions.has(key) && !this.store.getSession(key)) return undefined;
+      const s = this.session(key);
+      let out = text;
+      let defanged = 0;
+      let images = 0;
+      if (s.tainted) {
+        const r = rewriteOutbound(out, (url) => classifyEgressUrl(url, s, this.env).cls === "constructed", { defang: this.enforcing() });
+        defanged = r.defanged.length;
+        images = r.strippedImages;
+        out = r.text;
+      }
+      let redacted = false;
+      if (!this.isOwnerSender(ctx.channelId, ctx.senderId) && s.holdsPrivate) {
+        const r = redactSecrets(out, s, this.env.hmacKey);
+        redacted = r !== out;
+        out = r;
+      }
+      if (out === text) return undefined;
+      this.log({ ts: this.now(), kind: "reply-rewrite", sessionKey: key, defanged, images, redacted, enforcing: this.enforcing() });
+      return { payload: { ...event.payload, text: out } };
+    } catch {
+      this.counts.errors++;
+      return undefined;
+    }
   }
 
   /** Sub-agents inherit their parent's labels (§5.11). */

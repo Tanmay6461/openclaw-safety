@@ -417,7 +417,7 @@ Some exec commands are reclassified by their parsed command line: `openclaw` CLI
 - Rules created by `always` approvals.
 - The owner's own identities (always valid destinations).
 
-**Harvesting from owner-typed text:** email addresses, phone numbers, @handles, URLs, file paths, `backticked` code spans, and quoted strings. A bare domain the owner types attests that domain's root URL only, not every URL under it.
+**Harvesting from owner-typed text:** email addresses, phone numbers, @handles, channel targets in OpenClaw's `<kind>:<id>` form (`dm:carol`, `channel:C123`), URLs, file paths, `backticked` code spans, and quoted strings. Commands count as typed only inside backticks or a short fenced block: harvesting them from prose ("run ls ~/x") would also attest "don't run rm -rf ~". A bare domain the owner types attests that domain's root URL only, not every URL under it.
 
 **Normalization**
 
@@ -461,6 +461,7 @@ Two refinements from implementation:
 | Situation | Relaxed | **Balanced (default)** | Strict |
 |---|---|---|---|
 | Read-only tools | allow | allow | allow |
+| Reading local data (files, memory, mail, other sessions) in a run a non-owner started; the reply goes to them (benchmark a11) | allow | block | block |
 | Any side effect in a clean, owner-triggered session | allow | allow | allow |
 | Content to the owner (tainted) | allow + rewrite constructed URLs | allow + rewrite constructed URLs | allow + rewrite constructed URLs |
 | Attested destination (tainted, not private) | allow | allow | allow |
@@ -557,7 +558,7 @@ Blocked calls return a short, structured reason that tells the agent to stop ret
 
 ### 5.10 Rewriter
 
-- **Where:** rewrites happen in `before_tool_call`, on the `message` params. `reply_payload_sending` (normal assistant replies) and `message_sending` are backstops; both fail open, so they are never the only check. `message_sending` doesn't fire at all for sends a channel plugin handles itself (qa-channel `send`, WhatsApp `react` and `upload-file`; runtime and source, §13).
+- **Where:** rewrites happen in `before_tool_call`, on the `message` params, and in `reply_payload_sending` for the agent's normal replies, which no tool call carries (benchmark a12: a markdown image in the final reply leaked the canary). Delivery hooks fail open, so for anything a tool sends they're never the only check. In shadow mode the reply hook still removes images and redacts, and only skips defanging. `message_sending` stays a backstop. `message_sending` doesn't fire at all for sends a channel plugin handles itself (qa-channel `send`, WhatsApp `react` and `upload-file`; runtime and source, §13).
 - **Defang constructed URLs** in outbound content (`https://evil.com/x` → `hxxps://evil[.]com/x`). Many messaging apps fetch link previews automatically, which would leak data in the URL without a click. Plugins have no per-message preview control, so the setup docs recommend turning previews off in channel config (Discord and Slack already default to off).
 - **Leave attested and link-following URLs alone.** A link copied verbatim from a page was written before its author saw any private data, so a preview of it leaks at most the fact that a message was sent. Defanging every link in a research summary would make it hard to use.
 - **Strip markdown images** with constructed URLs, since some clients load them automatically.

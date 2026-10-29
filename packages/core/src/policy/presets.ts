@@ -28,6 +28,11 @@ export interface Preset {
   cronTainted: "ask" | "block";
   /** Config, policy, or protected-path writes: "standard" asks if clean and blocks if tainted. */
   protectedWrite: "standard" | "strict";
+  /**
+   * Reading local data (files, memory, mail, other sessions) in a run a non-owner started. The
+   * run's reply goes to them, and no tool call carries a reply, so the read itself is the check.
+   */
+  localReadForNonOwner: "allow" | "block";
 }
 
 export const BALANCED: Preset = {
@@ -43,6 +48,7 @@ export const BALANCED: Preset = {
   sensitiveExecAutonomous: "ask",
   cronTainted: "ask",
   protectedWrite: "standard",
+  localReadForNonOwner: "block",
 };
 
 export const STRICT: Preset = {
@@ -58,6 +64,7 @@ export const STRICT: Preset = {
   sensitiveExecAutonomous: "block",
   cronTainted: "block",
   protectedWrite: "strict",
+  localReadForNonOwner: "block",
 };
 
 export const PRESETS = { balanced: BALANCED, strict: STRICT } as const;

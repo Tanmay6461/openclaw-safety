@@ -101,6 +101,15 @@ export interface MessageContext {
   messageId?: string;
 }
 
+/** reply_payload_sending: a normal assistant reply, after normalization and before delivery. */
+export interface ReplyPayloadEvent {
+  payload?: { text?: string; [k: string]: unknown };
+  kind?: string;
+  channel?: string;
+  sessionKey?: string;
+  runId?: string;
+}
+
 export interface InputProvenance {
   kind?: string;
   sourceTool?: string;
