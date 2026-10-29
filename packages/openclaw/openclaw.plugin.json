@@ -2,30 +2,108 @@
   "id": "provenance-guard",
   "name": "Provenance Guard",
   "description": "Tracks where data came from and checks each tool argument's origin before risky actions.",
-  "activation": { "onStartup": true },
+  "activation": {
+    "onStartup": true
+  },
   "configSchema": {
     "type": "object",
     "additionalProperties": true,
     "properties": {
-      "mode": { "enum": ["shadow", "enforce", "off"] },
-      "preset": { "enum": ["balanced", "strict"] },
-      "deadlineMs": { "type": "integer", "minimum": 1, "maximum": 10000 },
-      "approvalTimeoutSec": { "type": "integer", "minimum": 1, "maximum": 600 },
+      "mode": {
+        "enum": [
+          "shadow",
+          "enforce",
+          "off"
+        ]
+      },
+      "preset": {
+        "enum": [
+          "balanced",
+          "strict"
+        ]
+      },
+      "deadlineMs": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10000
+      },
+      "approvalTimeoutSec": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 600
+      },
       "trusted": {
         "type": "object",
         "properties": {
-          "recipients": { "type": "array", "items": { "type": "string" } },
-          "domains": { "type": "array", "items": { "type": "string" } },
-          "commandPrefixes": { "type": "array", "items": { "type": "string" } }
+          "recipients": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "domains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "commandPrefixes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         }
       },
-      "untrustedPaths": { "type": "array", "items": { "type": "string" } },
-      "privateSources": { "type": "array", "items": { "type": "string" } },
-      "protectedPaths": { "type": "array", "items": { "type": "string" } },
-      "failMode": { "type": "object", "properties": { "other": { "enum": ["ask", "allow", "block"] } } },
-      "confirm": { "enum": ["auto", "approval", "command"] },
-      "stateDir": { "type": "string" },
-      "auditPath": { "type": "string" }
+      "untrustedPaths": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "privateSources": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "protectedPaths": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "failMode": {
+        "type": "object",
+        "properties": {
+          "other": {
+            "enum": [
+              "ask",
+              "allow",
+              "block"
+            ]
+          }
+        }
+      },
+      "confirm": {
+        "enum": [
+          "auto",
+          "approval",
+          "command"
+        ]
+      },
+      "stateDir": {
+        "type": "string"
+      },
+      "auditPath": {
+        "type": "string"
+      },
+      "codexWebSearch": {
+        "enum": [
+          "assume_on",
+          "off"
+        ]
+      }
     }
   }
 }

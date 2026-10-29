@@ -23,6 +23,12 @@ export interface GuardConfig {
    * approvals owner-only and visible (see `/guard doctor`).
    */
   confirm: "auto" | "approval" | "command";
+  /**
+   * Codex's hosted web_search runs on OpenAI's side and its results reach the model without any
+   * OpenClaw hook (phase0/codex-results.md). "assume_on" treats every run on the Codex runtime as
+   * having read untrusted web content; "off" is for owners who turned that search off in Codex.
+   */
+  codexWebSearch: "assume_on" | "off";
   /** Overrides for where the Guard keeps its store, audit log, and HMAC key. */
   stateDir?: string;
   auditPath?: string;
@@ -39,11 +45,12 @@ export const DEFAULT_CONFIG: GuardConfig = {
   protectedPaths: [],
   failMode: { other: "ask" },
   confirm: "auto",
+  codexWebSearch: "assume_on",
 };
 
 const KNOWN = new Set([
   "mode", "preset", "deadlineMs", "approvalTimeoutSec", "trusted", "untrustedPaths", "privateSources",
-  "protectedPaths", "failMode", "confirm", "stateDir", "auditPath", "secretScan", "extractor",
+  "protectedPaths", "failMode", "confirm", "codexWebSearch", "stateDir", "auditPath", "secretScan", "extractor",
 ]);
 
 function strings(v: unknown, where: string, errors: string[]): string[] {
@@ -90,6 +97,7 @@ export function parseConfig(raw: unknown): { config: GuardConfig; errors: string
     protectedPaths: strings(r.protectedPaths, "protectedPaths", errors),
     failMode: { other: oneOf(failMode.other, ["ask", "allow", "block"] as const, DEFAULT_CONFIG.failMode.other, "failMode.other", errors) },
     confirm: oneOf(r.confirm, ["auto", "approval", "command"] as const, DEFAULT_CONFIG.confirm, "confirm", errors),
+    codexWebSearch: oneOf(r.codexWebSearch, ["assume_on", "off"] as const, DEFAULT_CONFIG.codexWebSearch, "codexWebSearch", errors),
   };
   if (typeof r.stateDir === "string") config.stateDir = r.stateDir;
   if (typeof r.auditPath === "string") config.auditPath = r.auditPath;

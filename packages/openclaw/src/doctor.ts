@@ -3,7 +3,7 @@
 // depends entirely on the host's command settings.
 
 export interface DoctorCheck {
-  id: "owner" | "approvers" | "forwarding" | "conversationAccess" | "selfChat";
+  id: "owner" | "approvers" | "forwarding" | "conversationAccess" | "selfChat" | "codex";
   ok: boolean;
   text: string;
 }
@@ -20,7 +20,13 @@ function nonEmpty(v: unknown): boolean {
   return typeof v === "string" && v.trim() !== "";
 }
 
-export function doctorChecks(hostConfig: unknown, pluginId: string): DoctorCheck[] {
+function usesCodex(cfg: unknown): boolean {
+  const runtime = (v: unknown) => get(v, "agentRuntime", "id") === "codex";
+  const values = (v: unknown) => (v && typeof v === "object" ? Object.values(v as Record<string, unknown>) : []);
+  return runtime(get(cfg, "agents", "defaults")) || values(get(cfg, "agents", "defaults", "models")).some(runtime) || values(get(cfg, "models", "providers")).some(runtime);
+}
+
+export function doctorChecks(hostConfig: unknown, pluginId: string, codexWebSearch: "assume_on" | "off" = "assume_on"): DoctorCheck[] {
   const owner = nonEmpty(get(hostConfig, "commands", "ownerAllowFrom"));
   const allowFrom = nonEmpty(get(hostConfig, "commands", "allowFrom"));
   const forwarding = get(hostConfig, "approvals", "plugin", "enabled") === true;
@@ -62,6 +68,15 @@ export function doctorChecks(hostConfig: unknown, pluginId: string): DoctorCheck
       text: selfChat
         ? "WhatsApp may run in self-chat mode (channels.whatsapp.selfChatMode isn't false). There, loosening /guard commands only work from the Control UI or TUI, and the agent can't add approval reactions."
         : "No WhatsApp self-chat setup.",
+    },
+    {
+      id: "codex",
+      ok: true,
+      text: !usesCodex(hostConfig)
+        ? "No model runs on the Codex runtime."
+        : codexWebSearch === "off"
+          ? "Codex runtime in use; codexWebSearch is off, so Codex runs aren't labeled up front. Keep Codex's hosted web_search turned off."
+          : "Codex runtime in use: its hosted web_search reaches the model without any OpenClaw hook, so every Codex run starts as having read untrusted content. If you turn that search off in Codex, set codexWebSearch: off.",
     },
   ];
 }

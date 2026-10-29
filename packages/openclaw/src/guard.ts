@@ -40,6 +40,7 @@ import type {
   BeforeToolCallEvent,
   BeforeToolCallResult,
   MessageContext,
+  ModelContext,
   MessageReceivedEvent,
   PluginApi,
   SessionEvent,
@@ -212,7 +213,7 @@ export class Guard {
   }
 
   doctor(): DoctorCheck[] {
-    return doctorChecks(this.api.config, this.api.id);
+    return doctorChecks(this.api.config, this.api.id, this.config.codexWebSearch);
   }
 
   private hostStateDir(): string {
@@ -631,6 +632,36 @@ export class Guard {
       } else {
         labelInbound(s, text, { kind: "external_sender", id: `${ctx.channelId ?? "?"}:${sender ?? "?"}`, at: this.now() }, this.env);
       }
+      this.persist(s);
+    } catch {
+      this.counts.errors++;
+    }
+  }
+
+  /**
+   * Whether a model runs on the Codex runtime, from config: agentRuntime.id "codex" on the model entry
+   * (agents.defaults.models["provider/model"]), the provider, or the agent defaults.
+   */
+  isCodexModel(provider: string | undefined, model: string | undefined): boolean {
+    const cfg = this.api.config;
+    const ids = [
+      provider && model ? get(cfg, "agents", "defaults", "models", `${provider}/${model}`, "agentRuntime", "id") : undefined,
+      provider ? get(cfg, "models", "providers", provider, "agentRuntime", "id") : undefined,
+      get(cfg, "agents", "defaults", "agentRuntime", "id"),
+    ];
+    return ids.find((v) => typeof v === "string") === "codex";
+  }
+
+  /**
+   * before_model_resolve and llm_input: on the Codex runtime, hosted web_search results reach the
+   * model without passing any OpenClaw hook, so the session is labeled untrusted up front.
+   */
+  modelResolved(ctx: ModelContext): void {
+    try {
+      if (this.config.codexWebSearch === "off" || !this.isCodexModel(ctx.modelProviderId, ctx.modelId)) return;
+      const s = this.session(ctx.sessionKey);
+      if (s.tainted && s.labels().untrusted.some((r) => r.id === "codex-hosted-web-search")) return;
+      s.addUntrusted({ kind: "web", id: "codex-hosted-web-search", at: this.now() });
       this.persist(s);
     } catch {
       this.counts.errors++;

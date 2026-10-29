@@ -114,6 +114,15 @@ export interface AgentContext {
   inputProvenance?: InputProvenance;
 }
 
+/** before_model_resolve / llm_input ctx: the run's resolved model (seen at runtime, phase0/results/codex-5). */
+export interface ModelContext {
+  runId?: string;
+  agentId?: string;
+  sessionKey?: string;
+  modelProviderId?: string;
+  modelId?: string;
+}
+
 export interface BeforeAgentRunEvent {
   senderIsOwner?: boolean;
   senderId?: string;
