@@ -19,9 +19,17 @@ function get(obj: unknown, ...keys: string[]): unknown {
 
 const peer = (v: string) => v.trim().toLowerCase().replace(/^[a-z-]+:/, "").replace(/@.*$/, "").replace(/^\+/, "");
 
+/**
+ * Channels where the agent can run as the owner's own account, so a chat with yourself exists. On
+ * bot-account channels (Telegram, Discord, Slack, qa-channel) a DM command reports from === to,
+ * both naming the chat, which a from === to test would misread as self-chat (bench v1-mock l01).
+ */
+const PERSONAL_ACCOUNT_CHANNELS: ReadonlySet<string> = new Set(["whatsapp", "signal", "imessage", "bluebubbles"]);
+
 export function commandSurface(ctx: CommandContext, hostConfig?: unknown): CommandSurface {
   if (Array.isArray(ctx.gatewayClientScopes)) return "operator";
-  if (ctx.from && ctx.to && peer(ctx.from) !== "" && peer(ctx.from) === peer(ctx.to)) return "self_chat";
+  const personal = PERSONAL_ACCOUNT_CHANNELS.has(ctx.channel ?? "");
+  if (personal && ctx.from && ctx.to && peer(ctx.from) !== "" && peer(ctx.from) === peer(ctx.to)) return "self_chat";
   if (ctx.channel === "whatsapp") {
     const mode = (ctx.accountId && get(hostConfig, "channels", "whatsapp", "accounts", ctx.accountId, "selfChatMode")) ?? get(hostConfig, "channels", "whatsapp", "selfChatMode");
     if (mode === true) return "self_chat";

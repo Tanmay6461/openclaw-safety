@@ -636,7 +636,9 @@ describe("owner actions on chat surfaces", () => {
   it("classifies command surfaces: operator clients, chats, and chats with yourself", () => {
     expect(commandSurface({ gatewayClientScopes: ["operator.admin"], channel: "webchat" })).toBe("operator");
     expect(commandSurface({ gatewayClientScopes: [], channel: "whatsapp" })).toBe("operator");
-    expect(commandSurface({ channel: "qa-channel", from: "dm:alice", to: "openclaw" })).toBe("chat");
+    // A bot's DM reports from === to (the chat id), as qa-channel did at runtime (bench v1-mock l01): not a self-chat.
+    expect(commandSurface({ channel: "qa-channel", from: "dm:owner1", to: "dm:owner1" })).toBe("chat");
+    expect(commandSurface({ channel: "telegram", from: "telegram:7845032487", to: "telegram:7845032487" })).toBe("chat");
     expect(commandSurface({ channel: "whatsapp", from: "whatsapp:+15550001111", to: "+15550001111@s.whatsapp.net" })).toBe("self_chat");
     expect(commandSurface({ channel: "whatsapp", from: "+1", to: "+2" }, { channels: { whatsapp: { selfChatMode: true } } })).toBe("self_chat");
   });
