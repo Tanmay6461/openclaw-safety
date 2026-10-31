@@ -423,8 +423,9 @@ export class Guard {
     // OpenClaw Code Mode runs a script ({title, code}) that calls tools; each of those calls reaches
     // before_tool_call on its own and is judged there. Under the QuickJS executor the script can act
     // only through those calls, so it passes. The Node executor isn't a security boundary (a script
-    // could act without any tool call), so there it's judged as code below (bench ds-v1).
-    if (this.registry.canonical(event.toolName) === "exec" && typeof event.params?.code === "string") {
+    // could act without any tool call), so there it's judged as code below (bench ds-v1). Only the
+    // host's toolKind marks a script: a shell exec the model sends with a `code` key is still judged.
+    if (event.toolKind === "code_mode_exec") {
       if (this.codeModeExecutor(ctx.agentId) === "quickjs") {
         this.log({ ts: this.now(), kind: "code-mode-script", executor: "quickjs", tool: event.toolName, callId: event.toolCallId, sessionKey: s.sessionKey });
         return { params: event.params };

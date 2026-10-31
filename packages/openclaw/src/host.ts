@@ -29,6 +29,9 @@ export interface BeforeToolCallEvent {
   toolCallId?: string;
   runId?: string;
   derivedPaths?: string[];
+  // Set by the host, not the model: "code_mode_exec" marks an outer Code Mode script call.
+  toolKind?: string;
+  toolInputKind?: string;
 }
 
 export type ApprovalDecision = "allow-once" | "allow-always" | "deny" | "timeout" | "cancelled";
