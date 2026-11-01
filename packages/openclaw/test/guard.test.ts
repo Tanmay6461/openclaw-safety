@@ -490,7 +490,7 @@ describe("session resets (session_end.reason)", () => {
 describe("OpenClaw Code Mode (bench ds-v1: DeepSeek runs every step as a script)", () => {
   const script = "const r = await web_fetch({ url }); return r;";
   const codeMode = { toolKind: "code_mode_exec", toolInputKind: "javascript" };
-  const run = (h: Harness, ctx: Record<string, unknown> = {}) => h.tool("exec", { title: "fetch", code: script, command: script }, ctx, undefined, codeMode);
+  const run = (h: Harness, ctx: Record<string, unknown> = {}, id?: string) => h.tool("exec", { title: "fetch", code: script, command: script }, ctx, id, codeMode);
   const quickjs = { tools: { codeMode: { enabled: true, executor: "quickjs" } } };
 
   it("under QuickJS a script passes; the tool calls inside it are judged on their own", () => {
@@ -577,6 +577,27 @@ describe("OpenClaw Code Mode (bench ds-v1: DeepSeek runs every step as a script)
     expect(h.tool("wait", { runId: "cm-1" }).requireApproval).toBeUndefined();
     const stranger = { requester: { channel: "qa-channel", senderId: "stranger1", senderIsOwner: false } };
     expect(h.tool("wait", { runId: "cm-1" }, stranger).block).toBeUndefined();
+  });
+
+  it("under QuickJS a script's own result is still scanned for secrets (it can return what it saved earlier)", () => {
+    const h = harness({}, undefined, quickjs);
+    h.tool("web_fetch", { url: "https://recipes.example/x" });
+    run(h, {}, "call_cm6");
+    expect(h.guard.session("agent:main:s1").holdsPrivate).toBe(false);
+    persist(h, "call_cm6", "exec", JSON.stringify({ status: "completed", value: `GITHUB_TOKEN=ghp_${"a1B2c3D4e5".repeat(4)}` }));
+    expect(h.guard.session("agent:main:s1").holdsPrivate).toBe(true);
+  });
+
+  it("tool calls a wait finishes for a parked script don't stay pending", () => {
+    const h = harness({}, undefined, quickjs);
+    run(h, {}, "call_cm11");
+    persist(h, "call_cm11", "exec", JSON.stringify({ status: "waiting", runId: "run-11", reason: "pending_tools" }));
+    h.tool("wait", { runId: "run-11" }, {}, "call_w11");
+    // Dispatched while the wait resumes the script: the id carries the script's call id.
+    h.tool("read", { path: "notes.md" }, {}, "tool_call:call_cm11:cell:read:1");
+    expect(h.guard.session("agent:main:s1").pendingIds()).toContain("tool_call:call_cm11:cell:read:1");
+    persist(h, "call_w11", "wait", JSON.stringify({ status: "completed", value: "hello" }));
+    expect(h.guard.session("agent:main:s1").pendingIds()).toEqual([]);
   });
 
   it("doctor follows OpenClaw's activation rules", () => {

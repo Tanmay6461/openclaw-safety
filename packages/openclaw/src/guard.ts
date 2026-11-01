@@ -145,6 +145,8 @@ export class Guard {
   private readonly sessions = new Map<string, SessionState>();
   private readonly calls = new Map<string, ToolCall>();
   private readonly returned = new Map<string, string>();
+  /** Parked Code Mode scripts: runId -> the script's call id, which a resuming wait's tool calls carry. */
+  private readonly codeModeRuns = new Map<string, string>();
   private readonly runs = new Map<string, RunInfo>();
   private readonly parents = new Map<string, string>();
   private readonly urlRules: string[] = [];
@@ -445,6 +447,11 @@ export class Guard {
     if (event.toolKind === "code_mode_exec") {
       if (this.codeModeExecutor(ctx.agentId) === "quickjs") {
         this.log({ ts: this.now(), kind: "code-mode-script", executor: "quickjs", tool: event.toolName, callId: event.toolCallId, sessionKey: s.sessionKey });
+        // Tracked so its result is still scanned (secrets, labeled memory lines): a script can return
+        // what it saved earlier (load) as well as what its tool calls returned.
+        const script = prepareCall(event, this.registry, cctx).call;
+        this.calls.set(script.id, script);
+        bounded(this.calls, MAX_TRACKED_CALLS);
         return { params: event.params };
       }
       this.codeModeNodeSeen = true;
@@ -685,10 +692,19 @@ export class Guard {
       const id = event.toolCallId ?? ctx.toolCallId;
       if (!id) return undefined;
       // Wrapper results carry their inner calls' output (runtime results, compact surface).
-      const ids = [id, ...innerCallIdsFor(id, s.pendingIds())];
+      const own = this.calls.get(id);
+      // A Code Mode wait resumes a parked script: the tool calls it finishes carry the script's id,
+      // and its output is the script's.
+      const script = own && this.registry.canonical(own.tool) === "wait" ? this.codeModeRuns.get(String(own.params.runId)) : undefined;
+      const ids = [id, ...innerCallIdsFor(id, s.pendingIds()), ...(script ? innerCallIdsFor(script, s.pendingIds()) : [])];
       const content = textOf(event.message?.content);
+      const parked = /"status"\s*:\s*"waiting"/.test(content) ? /"runId"\s*:\s*"([^"\\]+)"/.exec(content)?.[1] : undefined;
+      if (parked && own && ["exec", "wait"].includes(this.registry.canonical(own.tool))) {
+        this.codeModeRuns.set(parked, script ?? id);
+        bounded(this.codeModeRuns, MAX_TRACKED_CALLS);
+      }
       for (const cid of ids) {
-        const call = this.calls.get(cid);
+        const call = cid === id && script ? (this.calls.get(script) ?? own) : this.calls.get(cid);
         if (call) {
           labelContent(call, content, s, this.env);
           this.recordCronJob(call, content, s);
