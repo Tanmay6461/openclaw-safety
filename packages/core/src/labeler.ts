@@ -13,8 +13,9 @@ import { classifyEgressUrl } from "./urls/classify.js";
 import { recordSeenUrls } from "./urls/seen.js";
 import { collectStrings, valuesAtPath } from "./util.js";
 
+// Distinct values: OpenClaw Code Mode sends each script twice, as code and its alias command.
 function valuesFor(call: ToolCall, spec: ToolSpec, role: Role): string[] {
-  return rolePaths(spec, call.params, role).flatMap((a) => valuesAtPath(call.params, a).flatMap((v) => collectStrings(v)));
+  return [...new Set(rolePaths(spec, call.params, role).flatMap((a) => valuesAtPath(call.params, a).flatMap((v) => collectStrings(v))))];
 }
 
 function isUnder(abs: string, dir: string): boolean {

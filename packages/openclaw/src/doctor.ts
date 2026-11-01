@@ -37,9 +37,20 @@ export function doctorChecks(hostConfig: unknown, pluginId: string, codexWebSear
   // while its run is alive: in tg-2 the owner approved at 119.7 s and the 120 s run timeout killed the run.
   const runTimeout = Number(get(hostConfig, "agents", "defaults", "timeoutSeconds"));
   const shortRun = Number.isFinite(runTimeout) && runTimeout > 0 && runTimeout < approvalTimeoutSec;
-  // Code Mode can also be switched on by a model or agent, which the guard sees as Node-executor scripts.
-  const codeModeOn = get(hostConfig, "tools", "codeMode", "enabled") === true || codeModeNodeSeen;
-  const quickjs = get(hostConfig, "tools", "codeMode", "executor") === "quickjs";
+  // Code Mode (docs/tools/code-mode/configuration.md): an absent tools.codeMode means "auto" (on for
+  // models their catalog prefers, such as DeepSeek V4 and Claude Opus), an object without `enabled` is
+  // off, and agents can override both. A model override shows up as Node-executor scripts seen.
+  const codeMode = get(hostConfig, "tools", "codeMode");
+  const switchedOn = (cm: unknown, inherited: boolean) =>
+    cm === true || cm === "auto" || (cm !== null && typeof cm === "object" ? [true, "auto"].includes(get(cm, "enabled") as never) || (get(cm, "enabled") === undefined && inherited) : inherited);
+  const globalOn = switchedOn(codeMode, codeMode === undefined);
+  const globalExecutor = get(codeMode, "executor") ?? "node";
+  const agents = Object.values((get(hostConfig, "agents", "entries") as Record<string, unknown> | undefined) ?? {}).map((a) => {
+    const cm = get(a, "tools", "codeMode");
+    return { on: cm === undefined ? globalOn : switchedOn(cm, globalOn), executor: get(cm, "executor") ?? globalExecutor };
+  });
+  const codeModeOn = globalOn || agents.some((a) => a.on) || codeModeNodeSeen;
+  const quickjs = (!globalOn || globalExecutor === "quickjs") && agents.every((a) => !a.on || a.executor === "quickjs") && !codeModeNodeSeen;
   return [
     {
       id: "owner",
@@ -88,11 +99,11 @@ export function doctorChecks(hostConfig: unknown, pluginId: string, codexWebSear
     {
       id: "codeMode",
       ok: !codeModeOn || quickjs,
-      text: quickjs
-        ? "Code Mode uses the QuickJS executor: scripts can act only through tools, so the guard checks each tool call inside them and lets the script itself pass."
-        : codeModeOn
-          ? 'Code Mode runs on the Node executor, which isn\'t a security boundary, so the guard treats every script as a command and asks after untrusted content. Set tools.codeMode.executor: "quickjs"; scripts then pass and each tool call inside them is still checked.'
-          : 'Code Mode is off. If you turn it on, choose tools.codeMode.executor: "quickjs".',
+      text: !codeModeOn
+        ? 'Code Mode is off. If you turn it on, set tools.codeMode to { enabled: true, executor: "quickjs" }.'
+        : quickjs
+          ? "Code Mode uses the QuickJS executor: scripts can act only through tools, so the guard checks each tool call inside them and lets the script itself pass."
+          : 'Code Mode can run on the Node executor (OpenClaw\'s default, including the "auto" default for models such as DeepSeek V4 and Claude Opus), which isn\'t a security boundary, so the guard treats every script as a command and asks after untrusted content. Set tools.codeMode to { enabled: "auto", executor: "quickjs" } (keep `enabled`: an object without it turns Code Mode off), and any agents.entries.<id>.tools.codeMode.executor to "quickjs"; scripts then pass and each tool call inside them is still checked.',
     },
     {
       id: "runTimeout",

@@ -105,10 +105,11 @@ interface ArgValue {
   value: string;
 }
 
+/** Each distinct value once: OpenClaw Code Mode sends each script twice, as code and its alias command. */
 export function argValues(call: ToolCall, spec: ToolSpec, role: Role): ArgValue[] {
   const out: ArgValue[] = [];
   for (const arg of rolePaths(spec, call.params, role)) {
-    for (const v of valuesAtPath(call.params, arg)) for (const value of collectStrings(v)) out.push({ arg, value });
+    for (const v of valuesAtPath(call.params, arg)) for (const value of collectStrings(v)) if (!out.some((o) => o.value === value)) out.push({ arg, value });
   }
   return out;
 }

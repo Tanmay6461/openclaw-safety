@@ -12,6 +12,7 @@ First beta. Tested against OpenClaw `v2026.10.8`.
   - the lethal trifecta: untrusted content, private data, and a way out.
 - **Approval forgery is always blocked:** the `openclaw` CLI from exec, the Gateway token, environment dumps, the Gateway port, and approval emoji.
 - **Runs started by a non-owner can't read local data** (files, memory, mail, other sessions).
+- **OpenClaw Code Mode:** on the QuickJS executor a script passes and every tool call inside it is judged; on the Node executor, which isn't a security boundary, the script itself is judged as a command. A script is recognized only by the host's `toolKind`, never by its parameters.
 - **Outbound text:**
   - URLs the agent built are defanged, and chat commands are neutralized;
   - the secret scan asks before sending matches, or redacts them;
@@ -27,7 +28,7 @@ First beta. Tested against OpenClaw `v2026.10.8`.
 **Owner experience**
 - **Asks** go through OpenClaw's native plugin approvals, or `/guard allow <code>` when approvals aren't owner-only.
 - **`/guard` commands** (owner-only): `status`, `doctor`, `enforce`, `shadow`, `pause`, `off`, `preset`, `rules`, `forget`, `trust`, `pending`, `allow`, `deny`, `report`.
-- **`/guard doctor`** checks the owner identity, approvers, prompt forwarding, conversation access, self-chat mode, Codex, and the run timeout.
+- **`/guard doctor`** checks the owner identity, approvers, prompt forwarding, conversation access, self-chat mode, Codex, the run timeout, and the Code Mode executor.
 - **Shadow mode** is the default.
 
 **Measured** (benchmark v0, mock model):

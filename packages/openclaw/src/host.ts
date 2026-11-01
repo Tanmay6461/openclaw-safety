@@ -190,6 +190,8 @@ export interface PluginApi {
   on(hook: string, handler: HookHandler, opts?: HookOptions): void;
   registerCommand(def: CommandDefinition): void;
   runtime?: {
+    // The config as it is now; OpenClaw applies tools.* and agents.* edits without reloading plugins.
+    config?: { current?: () => Record<string, unknown> };
     state?: {
       resolveStateDir?: (env?: NodeJS.ProcessEnv) => string;
       openKeyedStore?: OpenKeyedStore;

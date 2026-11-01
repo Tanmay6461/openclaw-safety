@@ -1320,6 +1320,12 @@
         "limit": "none"
       }
     },
+    "wait": {
+      "category": "read_only",
+      "args": {
+        "runId": "none"
+      }
+    },
     "tool_describe": {
       "category": "read_only",
       "args": {

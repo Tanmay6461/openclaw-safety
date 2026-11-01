@@ -119,6 +119,11 @@ function bounded<K, V>(map: Map<K, V>, max: number): void {
   while (map.size > max) map.delete(map.keys().next().value as K);
 }
 
+/** OpenClaw's normalizeAgentId (normalization-core/agent-id.ts). */
+function normalizeAgentId(id: string): string {
+  return id.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 64) || "main";
+}
+
 function get(obj: unknown, ...keys: string[]): unknown {
   let cur = obj;
   for (const k of keys) cur = cur && typeof cur === "object" ? (cur as Record<string, unknown>)[k] : undefined;
@@ -247,7 +252,7 @@ export class Guard {
    * (src/infra/exec-approvals-core.ts, resolveExecModePolicy).
    */
   hostExecAlwaysAsks(): boolean {
-    const exec = get(this.api.config, "tools", "exec");
+    const exec = get(this.hostConfig(), "tools", "exec");
     if (get(exec, "mode") !== undefined) return false;
     return get(exec, "ask") === "always" && get(exec, "security") !== "deny";
   }
@@ -267,16 +272,28 @@ export class Guard {
   }
 
   doctor(): DoctorCheck[] {
-    return doctorChecks(this.api.config, this.api.id, this.config.codexWebSearch, this.config.approvalTimeoutSec, this.codeModeNodeSeen);
+    return doctorChecks(this.hostConfig(), this.api.id, this.config.codexWebSearch, this.config.approvalTimeoutSec, this.codeModeNodeSeen);
   }
 
   /** Set once a Code Mode script is judged on the Node executor (a model can turn Code Mode on). */
   private codeModeNodeSeen = false;
 
+  /** The host config as it is now (api.config is the snapshot from registration). */
+  private hostConfig(): Record<string, unknown> | undefined {
+    try {
+      return this.api.runtime?.config?.current?.() ?? this.api.config;
+    } catch {
+      return this.api.config;
+    }
+  }
+
   /** The Code Mode executor for an agent: its own setting, then the global one; Node by default. */
   private codeModeExecutor(agentId: string | undefined): string {
-    const cfg = this.api.config;
-    const own = agentId ? get(cfg, "agents", "entries", agentId, "tools", "codeMode", "executor") : undefined;
+    const cfg = this.hostConfig();
+    const entries = get(cfg, "agents", "entries");
+    // OpenClaw matches agents.entries keys to the agent id after normalizing both.
+    const key = agentId && entries && typeof entries === "object" ? Object.keys(entries).find((k) => normalizeAgentId(k) === normalizeAgentId(agentId)) : undefined;
+    const own = key ? get(entries, key, "tools", "codeMode", "executor") : undefined;
     return String(own ?? get(cfg, "tools", "codeMode", "executor") ?? "node");
   }
 
@@ -468,7 +485,7 @@ export class Guard {
       bounded(this.calls, MAX_TRACKED_CALLS);
       this.persist(s);
       this.record(prepared.call, outcome, s);
-      const result = this.toHost(outcome, decision, prepared, s);
+      const result = this.toHost(outcome, decision, prepared, s, event.toolKind === "code_mode_exec");
       if (result.params && event.toolCallId) {
         this.returned.set(event.toolCallId, JSON.stringify(result.params));
         bounded(this.returned, MAX_TRACKED_CALLS);
@@ -486,7 +503,7 @@ export class Guard {
     }
   }
 
-  private toHost(outcome: Outcome, decision: Decision, prepared: PreparedCall, s: SessionState): BeforeToolCallResult {
+  private toHost(outcome: Outcome, decision: Decision, prepared: PreparedCall, s: SessionState, codeModeScript = false): BeforeToolCallResult {
     const reason = outcome.reason ?? decision.reasons[0] ?? "blocked";
     if (outcome.action === "block") {
       const stop = outcome.stopRun ? " Stop retrying this action; tell the owner what happened." : "";
@@ -500,8 +517,9 @@ export class Guard {
     if (outcome.action === "allow") return { params: finalParams };
 
     // Host exec approvals run after this hook and would prompt a second time (§5.9). When the host
-    // asks on every exec, the Guard defers to that prompt instead of asking too.
-    if (this.registry.canonical(prepared.call.tool) === "exec" && !decision.hardSink && this.hostExecAlwaysAsks()) {
+    // asks on every exec, the Guard defers to that prompt instead of asking too. That prompt belongs
+    // to the shell exec, so a Code Mode script never gets it.
+    if (!codeModeScript && this.registry.canonical(prepared.call.tool) === "exec" && !decision.hardSink && this.hostExecAlwaysAsks()) {
       this.log({ ts: this.now(), kind: "deferred-to-host-exec-approval", tool: prepared.call.tool, callId: prepared.call.id, sessionKey: s.sessionKey });
       return { params: finalParams };
     }
