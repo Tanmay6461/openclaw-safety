@@ -1,0 +1,60 @@
+name: Release
+
+# Pushing a tag vX.Y.Z (or vX.Y.Z-beta.N) publishes @provenance-guard/core, then
+# @provenance-guard/openclaw, to npm with provenance. Needs the repo secret NPM_TOKEN.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write # the GitHub release
+  id-token: write # npm provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+          registry-url: "https://registry.npmjs.org"
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+      - name: Check the tag matches every version
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          for f in packages/core/package.json packages/openclaw/package.json packages/openclaw/openclaw.plugin.json; do
+            got=$(node -p "require('./$f').version")
+            [ "$got" = "$v" ] || { echo "$f has $got, tag is $v"; exit 1; }
+          done
+          dep=$(node -p "require('./packages/openclaw/package.json').dependencies['@provenance-guard/core']")
+          [ "$dep" = "$v" ] || { echo "the plugin depends on core $dep, tag is $v"; exit 1; }
+          echo "VERSION=$v" >> "$GITHUB_ENV"
+          # Prereleases go to the beta dist-tag.
+          case "$v" in *-*) echo "DIST_TAG=beta" >> "$GITHUB_ENV" ;; *) echo "DIST_TAG=latest" >> "$GITHUB_ENV" ;; esac
+
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npm publish -w packages/core --provenance --access public --tag "$DIST_TAG"
+          npm publish -w packages/openclaw --provenance --access public --tag "$DIST_TAG"
+          # Until a stable release exists, point latest at the newest beta so a plain install works.
+          for p in @provenance-guard/core @provenance-guard/openclaw; do
+            if ! npm view "$p" dist-tags.latest >/dev/null 2>&1 || [ -z "$(npm view "$p" dist-tags.latest)" ]; then
+              npm dist-tag add "$p@$VERSION" latest
+            fi
+          done
+
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          flags=""
+          case "$VERSION" in *-*) flags="--prerelease" ;; esac
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes "See CHANGELOG.md for $VERSION." $flags

@@ -9,7 +9,7 @@ Provenance Guard is a security plugin for OpenClaw. It tracks where the data in 
 - **Low friction.** Values you typed yourself, and links you're following while reading, pass without a prompt.
 - **Fast.** About 0.3 ms per decision (p95) on a large test state.
 
-> **Status: beta (`0.1.0-beta.0`, unreleased).** Not yet on npm or ClawHub. MIT licensed. Tested against OpenClaw `v2026.10.8` with about 570 unit, property and fuzz tests, runtime tests on a real Gateway (qa-channel and Telegram), and an injection benchmark ([results](#results)).
+> **Status: beta (`0.1.0-beta.0`).** MIT licensed. Tested against OpenClaw `v2026.10.8` with about 570 unit, property and fuzz tests, runtime tests on a real Gateway (qa-channel and Telegram), and an injection benchmark ([results](#results)).
 
 ## Why
 
@@ -100,20 +100,21 @@ Details and methodology are in plan §9.
 
 ## Quickstart
 
-Build the plugin from source:
+Install the plugin:
 
 ```bash
-npm ci
-npm run bundle            # -> dist/provenance-guard
+openclaw plugins install clawhub:@provenance-guard/openclaw   # from ClawHub
+openclaw plugins install npm:@provenance-guard/openclaw       # or from npm
 ```
 
-Point OpenClaw at the bundle and start in **shadow mode**, which logs what the Guard would ask or block without enforcing it:
+Or build it from source (`npm ci && npm run bundle`, then add `dist/provenance-guard` to `plugins.load.paths`).
+
+Enable it and start in **shadow mode**, which logs what the Guard would ask or block without enforcing it:
 
 ```jsonc
 // openclaw.json
 {
   "plugins": {
-    "load": { "paths": ["/path/to/dist/provenance-guard"] },
     "entries": {
       "provenance-guard": {
         "enabled": true,

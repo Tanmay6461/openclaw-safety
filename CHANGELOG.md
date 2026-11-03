@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0-beta.0 (unreleased)
+## 0.1.0-beta.0 (2026-11-03)
 
 First beta. Tested against OpenClaw `v2026.10.8`.
 
