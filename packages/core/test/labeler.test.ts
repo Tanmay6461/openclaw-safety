@@ -75,13 +75,19 @@ describe("up-front labels (before_tool_call)", () => {
 
     // An unlabeled file modified after the exec started, read by a clean session, inherits the window's labels.
     mtimes.set("/home/u/work/out/generated.txt", env.now() + 5);
-    mtimes.set("/home/u/work/old.txt", env.now() - 5);
+    // Well before the window (its start allows for timestamps that trail the wall clock).
+    mtimes.set("/home/u/work/old.txt", env.now() - 10_000);
     const fresh = session("owner", "s2");
     applyUpfrontLabels(call("read", { path: "out/generated.txt" }), fresh, env);
     expect(fresh.tainted).toBe(true);
     const fresh2 = session("owner", "s3");
     applyUpfrontLabels(call("read", { path: "old.txt" }), fresh2, env);
     expect(fresh2.tainted).toBe(false);
+    // Linux stamps files from a coarse clock, so a file the exec wrote can look a few ms older than it.
+    mtimes.set("/home/u/work/coarse.txt", env.now() - 3);
+    const fresh3 = session("owner", "s4");
+    applyUpfrontLabels(call("read", { path: "coarse.txt" }), fresh3, env);
+    expect(fresh3.tainted).toBe(true);
   });
 
   it("exec windows cover only the exec's own run (closed when its result comes back)", () => {

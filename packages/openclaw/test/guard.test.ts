@@ -1,4 +1,4 @@
-import { mkdtempSync, utimesSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, utimesSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -31,9 +31,14 @@ interface Harness {
   tool: (name: string, params: Record<string, unknown>, ctx?: Record<string, unknown>, id?: string, event?: Record<string, unknown>) => BeforeToolCallResult;
 }
 
+// Not under os.tmpdir(): on Linux that's /tmp, one of the default untrusted paths, so every read
+// in the workspace would taint the session.
+const WORKSPACES = path.join(import.meta.dirname, "..", "..", "..", ".test-workspaces");
+mkdirSync(WORKSPACES, { recursive: true });
+
 let n = 0;
 function harness(pluginConfig: Record<string, unknown> = {}, store?: FileBackedStore, hostConfig: Record<string, unknown> = {}): Harness {
-  const workspace = mkdtempSync(path.join(os.tmpdir(), "pg-ws-"));
+  const workspace = mkdtempSync(path.join(WORKSPACES, "pg-ws-"));
   writeFileSync(path.join(workspace, "notes.md"), "hello");
   const hooks: Harness["hooks"] = new Map();
   const commands: CommandDefinition[] = [];

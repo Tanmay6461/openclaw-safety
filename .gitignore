@@ -17,3 +17,6 @@ packages/openclaw/README.md
 
 # Local Claude Code settings
 .claude/
+
+# Test workspaces (packages/openclaw/test/guard.test.ts)
+.test-workspaces/

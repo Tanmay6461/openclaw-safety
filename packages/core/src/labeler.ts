@@ -24,7 +24,10 @@ function isUnder(abs: string, dir: string): boolean {
 
 /** How long a window that never got its result (background commands) counts as open. */
 export const EXEC_WINDOW_OPEN_MS = 30 * 60 * 1000;
-/** Filesystem timestamps can trail the result by a little. */
+/**
+ * Filesystem timestamps can trail the wall clock: Linux stamps files from a coarse kernel clock, so a
+ * file written right after the exec started can look older than the window (CI on ubuntu).
+ */
 const EXEC_WINDOW_SLACK_MS = 2000;
 
 /**
@@ -37,7 +40,7 @@ export function execWindowLabels(abs: string, env: GuardEnv): Labels[] {
   if (windows.length === 0) return [];
   const mtime = env.mtime?.(abs);
   if (mtime === undefined) return [];
-  return windows.filter((w) => mtime >= w.start && mtime <= (w.end ?? w.start + EXEC_WINDOW_OPEN_MS) + EXEC_WINDOW_SLACK_MS).map((w) => w.labels);
+  return windows.filter((w) => mtime >= w.start - EXEC_WINDOW_SLACK_MS && mtime <= (w.end ?? w.start + EXEC_WINDOW_OPEN_MS) + EXEC_WINDOW_SLACK_MS).map((w) => w.labels);
 }
 
 const contentHash = (text: string) => createHash("sha256").update(text).digest("hex");
